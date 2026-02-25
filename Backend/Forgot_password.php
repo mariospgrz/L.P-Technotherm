@@ -17,13 +17,13 @@ define('BASE_URL', 'http://localhost/L.P-Technotherm');
 // To get an App Password:
 // Google Account → Security → 2-Step Verification ON → App Passwords → Create
 define('GMAIL_USER', 'mariosand55@gmail.com');       // ← your Gmail address
-define('GMAIL_PASS', 'otol emhu soyz xzkj');        // ← 16-char App Password
+define('GMAIL_PASS', 'mtwm nczv humj jjxl');        // ← 16-char App Password
 define('FROM_EMAIL', 'mariosand55@gmail.com');       // ← same Gmail address
 define('FROM_NAME', 'Technotherm');
 
-// true  = show reset link on screen (no email sent) — use while testing
+// true  = show reset link on screen (no email  sent) — use while testing
 // false = send real email via Gmail
-define('DEBUG_MODE', true);
+define('DEBUG_MODE', false);
 // ────────────────────────────────────────────────────────────────────────────
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -103,7 +103,9 @@ if (DEBUG_MODE) {
                 <h2>🛠️ Debug Mode</h2>
                 <p class="subtitle">Email not sent. Use the link below to test the reset flow.</p>
                 <div class="debug-box">
-                    <div class="debug-label">⚠️ Dev Only — Link for: <?= htmlspecialchars($email) ?></div>
+                    <div class="debug-label">⚠️ Dev Only — Link for:
+                        <?= htmlspecialchars($email) ?>
+                    </div>
                     <a class="reset-link" href="<?= htmlspecialchars($resetLink) ?>">
                         <?= htmlspecialchars($resetLink) ?>
                     </a>
@@ -130,6 +132,17 @@ try {
     $mail->Password = GMAIL_PASS;
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port = 587;
+
+    // Fix for XAMPP localhost: PHP's OpenSSL can't verify Gmail's SSL cert locally.
+    // Safe for local dev — remove these lines on a production server with a valid CA bundle.
+    /*$mail->SMTPOptions = [
+        'ssl' => [
+            'verify_peer' => false,
+            'verify_peer_name' => false,
+            'allow_self_signed' => true,
+        ],
+    ];
+    */
 
     // Sender & recipient
     $mail->setFrom(FROM_EMAIL, FROM_NAME);
