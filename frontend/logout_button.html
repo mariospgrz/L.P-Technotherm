@@ -1,0 +1,15 @@
+<!-- 
+  Logout Button Snippet
+  Add this wherever the logged-in user navigation appears (e.g. dashboard header).
+  Matches the existing login form button style.
+-->
+
+<!-- Option A: Simple link-button (recommended) -->
+<a href="/Backend/logout.php">
+  <button type="button" class="cancelbtn">Logout</button>
+</a>
+
+<!-- Option B: Styled logout form (if you prefer a POST request for extra security) -->
+<form action="/Backend/logout.php" method="post" style="display:inline;">
+  <button type="submit" class="cancelbtn">Logout</button>
+</form>
