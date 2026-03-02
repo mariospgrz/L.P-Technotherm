@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Νέος Χρήστης | LP Technotherm</title>
+</head>
+<body>
+
+<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+
+    <!-- Header -->
+    <div class="modal-header">
+        <h1 id="modalTitle">Νέος Χρήστης</h1>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+
+        <form action="/L.P-Technotherm/Backend/CreateUser/create_user.php" method="POST">
+
+            <!-- Username -->
+            <div class="field">
+                <label for="username">Username *</label>
+                <input type="text" id="username" name="username" placeholder="π.χ. nikos123" autocomplete="off">
+            </div>
+
+            <!-- Password -->
+            <div class="field">
+                <label for="password">Κωδικός *</label>
+                <input type="password" id="password" name="password" placeholder="Τουλάχιστον 6 χαρακτήρες">
+            </div>
+
+            <!-- Full name -->
+            <div class="field">
+                <label for="full_name">Ονοματεπώνυμο *</label>
+                <input type="text" id="full_name" name="full_name" placeholder="π.χ. Νίκος Παπαδόπουλος" autocomplete="off">
+            </div>
+
+            <!-- Role -->
+            <div class="field">
+                <label for="role">Ρόλος *</label>
+                <select id="role" name="role">
+                    <option value="" disabled selected>Επιλογή ρόλου</option>
+                    <option value="administrator">Διαχειριστής (Administrator)</option>
+                    <option value="supervisor">Υπεύθυνος (Supervisor)</option>
+                    <option value="helper">Βοηθός (Helper)</option>
+                </select>
+            </div>
+
+            <!-- Hourly rate -->
+            <div class="field">
+                <label for="hourly_rate">Ωρομίσθιο (€)</label>
+                <input type="number" id="hourly_rate" name="hourly_rate" placeholder="π.χ. 15.00" min="0" step="0.01">
+            </div>
+
+            <!-- Phone -->
+            <div class="field">
+                <label for="phone">Τηλέφωνο *</label>
+                <input type="text" id="phone" name="phone" placeholder="π.χ. 6912345678" autocomplete="off">
+            </div>
+
+            <!-- Email -->
+            <div class="field">
+                <label for="email">Email *</label>
+                <input type="email" id="email" name="email" placeholder="π.χ. nikos@gmail.com" autocomplete="off">
+            </div>
+
+            <!-- Buttons -->
+            <button type="submit">Δημιουργία</button>
+            <button type="reset">Ακύρωση</button>
+
+        </form>
+    </div>
+
+</div>
+
+</body>
+</html>
