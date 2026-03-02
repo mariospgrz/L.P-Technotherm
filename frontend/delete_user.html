@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="el">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Διαγραφή Χρήστη | LP Technotherm</title>
+    <link rel="stylesheet" href="index.css">
+    <style>
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.35);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 6px 22px rgba(239, 68, 68, 0.45);
+        }
+
+        .confirm-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+            margin-bottom: 1.4rem;
+        }
+
+        .confirm-row input[type="checkbox"] {
+            width: 1rem;
+            height: 1rem;
+            margin-top: 0.15rem;
+            accent-color: #ef4444;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .confirm-row label {
+            margin: 0;
+            font-size: 0.875rem;
+            color: var(--label-color);
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+
+        <!-- ── Header ────────────────────────────────────────────────── -->
+        <div class="card-header">
+            <div class="logo-circle">
+                <img src="images/logo.png" alt="LP Technotherm Logo"
+                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                <span class="logo-icon" style="display:none">🔧</span>
+            </div>
+            <h1>Διαγραφή Χρήστη</h1>
+            <p class="header-subtitle">LP Technotherm - Εταιρεία Μηχανολογικών Εγκαταστάσεων</p>
+        </div>
+
+        <!-- ── Body ──────────────────────────────────────────────────── -->
+        <div class="card-body">
+
+            <div id="alertSuccess" class="alert success"></div>
+            <div id="alertError" class="alert error"></div>
+
+            <form id="deleteForm" action="/L.P-Technotherm/Backend/DeleteUser/delete_user.php" method="POST">
+
+                <!-- Username -->
+                <div class="form-group">
+                    <label for="username">Username χρήστη προς διαγραφή *</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                        </span>
+                        <input type="text" id="username" name="username"
+                            placeholder="π.χ. nikos123" autocomplete="off" required>
+                    </div>
+                </div>
+
+                <!-- Confirmation checkbox -->
+                <div class="confirm-row">
+                    <input type="checkbox" id="confirm" name="confirm" required>
+                    <label for="confirm">
+                        Επιβεβαιώνω ότι θέλω να διαγράψω οριστικά αυτόν τον χρήστη.
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-danger">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                        <path d="M10 11v6" />
+                        <path d="M14 11v6" />
+                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                    </svg>
+                    Οριστική Διαγραφή
+                </button>
+
+            </form>
+
+            <div class="links">
+                <a href="create_user.html">← Δημιουργία νέου χρήστη</a>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const success = params.get('success');
+        const error = params.get('error');
+
+        if (success) {
+            const el = document.getElementById('alertSuccess');
+            el.textContent = decodeURIComponent(success);
+            el.style.display = 'block';
+            document.getElementById('deleteForm').style.display = 'none';
+        }
+
+        if (error) {
+            const el = document.getElementById('alertError');
+            el.textContent = decodeURIComponent(error);
+            el.style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>
