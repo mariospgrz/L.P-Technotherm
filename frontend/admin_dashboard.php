@@ -1,33 +1,47 @@
 <?php
 /**
  * frontend/admin_dashboard.php
- * Admin Dashboard – requires administrator session via admin_session.php
+ * Admin-only dashboard.
+ * Uses the UI from Admin dashboard.html + admin.js + admin dashboard.css
+ * with real PHP session guard, DB user management, and flash messages.
  */
 require_once __DIR__ . '/../Backend/admin_session.php';
 require_once __DIR__ . '/../Backend/Database/Database.php';
 
-// ── Read flash messages from URL ─────────────────────────────────────────────
+// ── Flash messages & active tab from URL ─────────────────────────────────────
 $flash_success = isset($_GET['success']) ? htmlspecialchars(urldecode($_GET['success'])) : '';
 $flash_error = isset($_GET['error']) ? htmlspecialchars(urldecode($_GET['error'])) : '';
-$active_tab = isset($_GET['tab']) ? htmlspecialchars($_GET['tab']) : 'users';
+$active_tab = (isset($_GET['tab']) && $_GET['tab'] === 'projects') ? 'projects' : 'users';
 
-// ── Fetch all users for the Users tab ────────────────────────────────────────
+// ── Fetch all users for User Management tab ───────────────────────────────────
 $users = [];
-$result = $conn->query('SELECT id, username, name, role, email, `Phone number` AS phone, hourly_rate, created_at FROM users ORDER BY created_at DESC');
-if ($result) {
-    while ($row = $result->fetch_assoc()) {
+$res = $conn->query(
+    'SELECT id, username, name, role, email, `Phone number` AS phone, hourly_rate, created_at
+       FROM users
+      ORDER BY created_at DESC'
+);
+if ($res) {
+    while ($row = $res->fetch_assoc()) {
         $users[] = $row;
     }
 }
 
-$logged_in_username = $_SESSION['username'];
-$logged_in_id = $_SESSION['user_id'];
+$logged_in_id = (int) $_SESSION['user_id'];
+$logged_in_username = htmlspecialchars($_SESSION['username']);
 
 $role_labels = [
     'administrator' => 'Διαχειριστής',
     'supervisor' => 'Υπεύθυνος',
     'helper' => 'Βοηθός',
 ];
+
+// Build employees JSON for admin.js appState (real DB data)
+$employees_json = json_encode(array_map(fn($u) => [
+    'name' => $u['name'] ?? '',
+    'role' => $u['role'] ?? '',
+    'rate' => (float) ($u['hourly_rate'] ?? 0),
+    'hours' => 0,
+], $users));
 ?>
 <!DOCTYPE html>
 <html lang="el">
@@ -35,27 +49,54 @@ $role_labels = [
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Πίνακας Διαχειριστή | LP Technotherm</title>
+    <title>Dashboard Διαχειριστή | LP Technotherm</title>
     <meta name="description" content="Πίνακας ελέγχου διαχειριστή - LP Technotherm">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Admin Dashboard CSS -->
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Admin CSS (existing) -->
     <link rel="stylesheet" href="admin dashboard.css">
     <style>
-        /* ───── Extra styles for PHP admin dashboard ───── */
-        body {
-            font-family: 'Inter', 'Segoe UI', sans-serif;
+        /* ── Top-level tab bar (Users vs Projects) ── */
+        .main-tab-bar {
+            display: flex;
+            gap: 0;
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--border-color);
         }
 
-        /* Flash alerts */
+        .main-tab-btn {
+            padding: 12px 28px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s;
+        }
+
+        .main-tab-btn:hover {
+            color: var(--primary);
+        }
+
+        .main-tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* ── Flash banner ── */
         .flash-banner {
-            padding: 14px 20px;
+            padding: 13px 18px;
             border-radius: 10px;
-            margin-bottom: 22px;
-            font-size: 0.93rem;
+            margin-bottom: 20px;
+            font-size: 0.92rem;
             font-weight: 500;
             display: flex;
             align-items: center;
@@ -74,15 +115,15 @@ $role_labels = [
             border: 1px solid #fecaca;
         }
 
-        /* User management panel */
+        /* ── User Management panel ── */
         .users-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            margin-bottom: 30px;
+            gap: 22px;
+            margin-bottom: 28px;
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 860px) {
             .users-grid {
                 grid-template-columns: 1fr;
             }
@@ -92,50 +133,59 @@ $role_labels = [
             background: #fff;
             border: 1px solid var(--border-color);
             border-radius: 14px;
-            padding: 24px;
+            padding: 22px;
         }
 
         .panel-box h3 {
-            margin: 0 0 18px;
+            margin: 0 0 16px;
             font-size: 1rem;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text-main);
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .panel-box h3 i {
+        .panel-box.danger-box {
+            border-color: #fca5a5;
+            background: #fff8f8;
+        }
+
+        .panel-box h3 .icon-primary {
             color: var(--primary);
         }
 
-        /* Form inside panel */
+        .panel-box.danger-box h3 .icon-primary {
+            color: var(--danger);
+        }
+
+        /* Form fields inside panels */
         .panel-form .form-group {
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
 
         .panel-form label {
             display: block;
-            font-size: 0.82rem;
-            font-weight: 600;
+            font-size: 0.78rem;
+            font-weight: 700;
             color: var(--text-muted);
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             text-transform: uppercase;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.05em;
         }
 
         .panel-form input,
         .panel-form select {
             width: 100%;
-            padding: 10px 14px;
+            padding: 9px 12px;
             border: 1.5px solid var(--border-color);
             border-radius: 8px;
             font-size: 0.9rem;
-            font-family: 'Inter', sans-serif;
             color: var(--text-main);
             background: #f8fafc;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, background 0.2s;
             box-sizing: border-box;
+            font-family: inherit;
         }
 
         .panel-form input:focus,
@@ -148,24 +198,16 @@ $role_labels = [
         .panel-form .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 10px;
         }
 
-        /* Delete danger zone */
-        .danger-box {
-            border-color: #fca5a5;
-            background: #fff8f8;
-        }
-
-        .danger-box h3 i {
-            color: var(--danger);
-        }
-
+        /* Confirm row for delete */
         .confirm-row {
             display: flex;
             align-items: flex-start;
             gap: 8px;
             margin-bottom: 14px;
+            margin-top: 4px;
         }
 
         .confirm-row input[type="checkbox"] {
@@ -180,9 +222,66 @@ $role_labels = [
             cursor: pointer;
         }
 
-        /* Users table */
-        .users-table-wrap {
-            overflow-x: auto;
+        /* Submit buttons */
+        .btn-panel {
+            width: 100%;
+            padding: 11px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-panel:hover {
+            opacity: 0.88;
+        }
+
+        .btn-panel-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-panel-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        /* Users table section */
+        .section-heading {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 24px 0 14px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-heading i {
+            color: var(--primary);
+        }
+
+        .section-heading .count-pill {
+            margin-left: auto;
+            background: #eff6ff;
+            color: var(--primary);
+            font-size: 0.78rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8faff;
         }
 
         .data-table .badge-administrator {
@@ -200,85 +299,25 @@ $role_labels = [
             color: #15803d;
         }
 
-        .data-table tbody tr:hover {
-            background: #f8faff;
-        }
-
-        /* Section heading */
-        .section-heading {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin: 28px 0 16px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .section-heading i {
-            color: var(--primary);
-        }
-
-        /* Logout / header tweaks */
-        .header-meta {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-
-        .header-meta strong {
-            color: var(--text-main);
-        }
-
-        /* btn submit variants */
-        .btn-submit-danger {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-            border: none;
-            padding: 11px 20px;
-            border-radius: 8px;
-            cursor: pointer;
+        .you-badge {
+            background: #fef3c7;
+            color: #92400e;
+            font-size: 0.72rem;
+            padding: 2px 7px;
+            border-radius: 10px;
+            margin-left: 6px;
             font-weight: 600;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            transition: opacity 0.2s;
-            width: 100%;
-            justify-content: center;
         }
 
-        .btn-submit-danger:hover {
-            opacity: 0.9;
-        }
-
-        .btn-submit-primary {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 11px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            transition: opacity 0.2s;
-            width: 100%;
-            justify-content: center;
-        }
-
-        .btn-submit-primary:hover {
-            opacity: 0.9;
-        }
-
-        .no-users {
+        .no-data {
             text-align: center;
             color: var(--text-muted);
-            padding: 30px;
+            padding: 32px;
             font-size: 0.95rem;
+        }
+
+        .overflow-x {
+            overflow-x: auto;
         }
     </style>
 </head>
@@ -290,22 +329,21 @@ $role_labels = [
         <header class="main-header">
             <div class="header-left">
                 <div class="logo-container">
-                    <img src="images/logo.png" alt="LP Technotherm Logo"
-                        onerror="this.src='https://via.placeholder.com/150x50?text=LP+Technotherm'"
+                    <img src="images/images.jpg" alt="LP Technotherm"
+                        onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'150\' height=\'45\'><rect width=\'150\' height=\'45\' fill=\'%232563eb\' rx=\'6\'/><text x=\'75\' y=\'28\' font-family=\'Arial\' font-size=\'13\' font-weight=\'bold\' fill=\'white\' text-anchor=\'middle\'>LP Technotherm</text></svg>'"
                         class="company-logo">
                 </div>
                 <div class="user-info">
                     <h1>Πίνακας Ελέγχου Διαχειριστή</h1>
-                    <p>Καλώς ήρθατε, <strong>
+                    <p>Καλώς ήρθατε, <span id="account-name">
                             <?= $logged_in_username ?>
-                        </strong>
-                        &nbsp;·&nbsp;<span class="header-meta">Ρόλος: <strong>Διαχειριστής</strong></span></p>
+                        </span></p>
                 </div>
             </div>
             <div class="header-right">
-                <a href="/L.P-Technotherm/Backend/logout.php" class="logout-link" id="logoutBtn">
+                <button class="logout-link" onclick="handleLogout()">
                     <i class="fas fa-sign-out-alt"></i> Αποσύνδεση
-                </a>
+                </button>
             </div>
         </header>
 
@@ -323,28 +361,29 @@ $role_labels = [
             </div>
         <?php endif; ?>
 
-        <!-- ========== TAB NAVIGATION ========== -->
-        <nav class="tabs-nav" id="mainTabs">
-            <button class="tab-link <?= $active_tab === 'users' ? 'active' : '' ?>" onclick="switchTab('users')"
-                id="tab-users">
-                <i class="fas fa-users"></i> Διαχείριση Χρηστών
+        <!-- ========== TOP-LEVEL TAB BAR ========== -->
+        <div class="main-tab-bar">
+            <button class="main-tab-btn <?= $active_tab === 'users' ? 'active' : '' ?>" id="mainTabUsers"
+                onclick="showMainTab('users')">
+                <i class="fas fa-users-cog"></i> Διαχείριση Χρηστών
             </button>
-            <button class="tab-link <?= $active_tab === 'dashboard' ? 'active' : '' ?>" onclick="switchTab('dashboard')"
-                id="tab-dashboard">
+            <button class="main-tab-btn <?= $active_tab === 'projects' ? 'active' : '' ?>" id="mainTabProjects"
+                onclick="showMainTab('projects')">
                 <i class="fas fa-chart-bar"></i> Επισκόπηση Έργων
             </button>
-        </nav>
+        </div>
 
-        <!-- ========== TAB: USER MANAGEMENT ========== -->
-        <div id="view-users" class="tab-view" style="display:<?= $active_tab === 'users' ? 'block' : 'none' ?>;">
+        <!-- ===================================================== -->
+        <!-- TAB A: USER MANAGEMENT                                -->
+        <!-- ===================================================== -->
+        <div id="panel-users" style="display:<?= $active_tab === 'users' ? 'block' : 'none' ?>;">
 
             <div class="users-grid">
 
-                <!-- CREATE USER FORM -->
+                <!-- CREATE USER -->
                 <div class="panel-box">
-                    <h3><i class="fas fa-user-plus"></i> Δημιουργία Νέου Χρήστη</h3>
-                    <form class="panel-form" action="/L.P-Technotherm/Backend/CreateUser/create_user.php" method="POST"
-                        id="createUserForm">
+                    <h3><i class="fas fa-user-plus icon-primary"></i> Δημιουργία Νέου Χρήστη</h3>
+                    <form class="panel-form" action="/Backend/CreateUser/create_user.php" method="POST">
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="cu_username">Username *</label>
@@ -389,25 +428,24 @@ $role_labels = [
                                     required>
                             </div>
                         </div>
-                        <button type="submit" class="btn-submit-primary" id="createUserBtn">
+                        <button type="submit" class="btn-panel btn-panel-primary">
                             <i class="fas fa-plus"></i> Δημιουργία Χρήστη
                         </button>
                     </form>
                 </div>
 
-                <!-- DELETE USER FORM -->
+                <!-- DELETE USER -->
                 <div class="panel-box danger-box">
-                    <h3><i class="fas fa-user-minus"></i> Διαγραφή Χρήστη</h3>
-                    <form class="panel-form" action="/L.P-Technotherm/Backend/DeleteUser/delete_user.php" method="POST"
-                        id="deleteUserForm">
+                    <h3><i class="fas fa-user-minus icon-primary"></i> Διαγραφή Χρήστη</h3>
+                    <form class="panel-form" action="/Backend/DeleteUser/delete_user.php" method="POST">
                         <div class="form-group">
-                            <label for="du_username">Username χρήστη προς διαγραφή *</label>
+                            <label for="du_username">Χρήστης προς διαγραφή *</label>
                             <select id="du_username" name="username" required>
-                                <option value="" disabled selected>Επιλέξτε χρήστη...</option>
+                                <option value="" disabled selected>Επιλέξτε χρήστη…</option>
                                 <?php foreach ($users as $u): ?>
-                                    <?php if ((int) $u['id'] !== (int) $logged_in_id): ?>
+                                    <?php if ((int) $u['id'] !== $logged_in_id): ?>
                                         <option value="<?= htmlspecialchars($u['username']) ?>">
-                                            <?= htmlspecialchars($u['name'] . ' (' . $u['username'] . ')') ?>
+                                            <?= htmlspecialchars(($u['name'] ?: $u['username']) . ' (@' . $u['username'] . ')') ?>
                                         </option>
                                     <?php endif; ?>
                                 <?php endforeach; ?>
@@ -419,7 +457,7 @@ $role_labels = [
                                 Επιβεβαιώνω ότι θέλω να διαγράψω <strong>οριστικά</strong> αυτόν τον χρήστη.
                             </label>
                         </div>
-                        <button type="submit" class="btn-submit-danger" id="deleteUserBtn">
+                        <button type="submit" class="btn-panel btn-panel-danger">
                             <i class="fas fa-trash-alt"></i> Οριστική Διαγραφή
                         </button>
                     </form>
@@ -429,17 +467,16 @@ $role_labels = [
 
             <!-- USERS TABLE -->
             <div class="section-heading">
-                <i class="fas fa-list"></i> Κατάλογος Χρηστών
-                <span style="margin-left:auto;font-size:0.85rem;font-weight:500;color:var(--text-muted);">
-                    Σύνολο:
+                <i class="fas fa-list-ul"></i> Κατάλογος Χρηστών
+                <span class="count-pill">
                     <?= count($users) ?> χρήστες
                 </span>
             </div>
-            <div class="users-table-wrap">
+            <div class="overflow-x">
                 <?php if (empty($users)): ?>
-                    <div class="no-users"><i class="fas fa-users-slash"></i> Δεν βρέθηκαν χρήστες.</div>
+                    <div class="no-data"><i class="fas fa-users-slash"></i> Δεν βρέθηκαν χρήστες.</div>
                 <?php else: ?>
-                    <table class="data-table" id="usersTable">
+                    <table class="data-table">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -453,16 +490,16 @@ $role_labels = [
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($users as $i => $u): ?>
-                                <tr <?= (int) $u['id'] === (int) $logged_in_id ? 'style="background:#fffbeb;"' : '' ?>>
+                            <?php foreach ($users as $i => $u):
+                                $isMe = ((int) $u['id'] === $logged_in_id); ?>
+                                <tr <?= $isMe ? 'style="background:#fffbeb;"' : '' ?>>
                                     <td>
                                         <?= $i + 1 ?>
                                     </td>
                                     <td>
                                         <?= htmlspecialchars($u['name'] ?? '—') ?>
-                                        <?php if ((int) $u['id'] === (int) $logged_in_id): ?>
-                                            <span class="badge"
-                                                style="background:#fef3c7;color:#92400e;margin-left:6px;">Εσείς</span>
+                                        <?php if ($isMe): ?>
+                                            <span class="you-badge">Εσείς</span>
                                         <?php endif; ?>
                                     </td>
                                     <td><code><?= htmlspecialchars($u['username']) ?></code></td>
@@ -481,7 +518,7 @@ $role_labels = [
                                         <?= $u['hourly_rate'] !== null ? '€' . number_format((float) $u['hourly_rate'], 2) : '—' ?>
                                     </td>
                                     <td>
-                                        <?= $u['created_at'] ? date('d/m/Y', strtotime($u['created_at'])) : '—' ?>
+                                        <?= !empty($u['created_at']) ? date('d/m/Y', strtotime($u['created_at'])) : '—' ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -490,33 +527,34 @@ $role_labels = [
                 <?php endif; ?>
             </div>
 
-        </div><!-- /view-users -->
+        </div><!-- /panel-users -->
 
-        <!-- ========== TAB: PROJECT OVERVIEW (from Admin dashboard.html) ========== -->
-        <div id="view-dashboard" class="tab-view"
-            style="display:<?= $active_tab === 'dashboard' ? 'block' : 'none' ?>;">
+        <!-- ===================================================== -->
+        <!-- TAB B: PROJECT OVERVIEW  (original Admin dashboard UI)-->
+        <!-- ===================================================== -->
+        <div id="panel-projects" style="display:<?= $active_tab === 'projects' ? 'block' : 'none' ?>;">
 
             <!-- KPI CARDS -->
-            <section class="kpi-grid" style="margin-top:20px;">
+            <section class="kpi-grid">
                 <div class="kpi-card">
                     <div class="icon-box blue"><i class="fas fa-chart-bar"></i></div>
                     <div class="kpi-info">
                         <h4>Συνολικός Προϋπολογισμός</h4>
-                        <h2 id="stat-budget">€113.000</h2>
+                        <h2 id="stat-budget">€0</h2>
                     </div>
                 </div>
                 <div class="kpi-card">
                     <div class="icon-box orange"><i class="fas fa-clock"></i></div>
                     <div class="kpi-info">
                         <h4>Συνολικό Κόστος</h4>
-                        <h2 id="stat-cost">€27.210</h2>
+                        <h2 id="stat-cost">€0</h2>
                     </div>
                 </div>
                 <div class="kpi-card">
                     <div class="icon-box green"><i class="fas fa-chart-line"></i></div>
                     <div class="kpi-info">
                         <h4>Συνολικό Κέρδος</h4>
-                        <h2 id="stat-profit">+€85.790</h2>
+                        <h2 id="stat-profit">€0</h2>
                     </div>
                 </div>
             </section>
@@ -525,31 +563,37 @@ $role_labels = [
             <div class="action-bar">
                 <div class="search-container">
                     <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="globalSearch" placeholder="Αναζήτηση έργου..." onkeyup="filterContent()">
+                    <input type="text" id="globalSearch" placeholder="Αναζήτηση έργου (όνομα ή τοποθεσία)..."
+                        onkeyup="filterContent()">
                 </div>
                 <div class="btn-group">
                     <button class="btn btn-blue" onclick="toggleModal('projectModal')">
                         <i class="fas fa-plus"></i> Νέο Έργο
                     </button>
+                    <button class="btn btn-green" onclick="toggleModal('workerModal')">
+                        <i class="fas fa-user-plus"></i> Νέος Υπάλληλος
+                    </button>
                 </div>
             </div>
 
-            <!-- PROJECT TABS -->
-            <nav class="tabs-nav" style="margin-top:10px;">
-                <button class="tab-link active" onclick="switchView('active-projects')">Ενεργά Έργα (2)</button>
-                <button class="tab-link" onclick="switchView('completed-projects')">Ολοκληρωμένα Έργα (1)</button>
-                <button class="tab-link" onclick="switchView('invoices')">Τιμολόγια (4)</button>
+            <!-- PROJECT SUB-TABS -->
+            <nav class="tabs-nav">
+                <button class="tab-link active" onclick="switchView('active-projects')">Ενεργά Έργα</button>
+                <button class="tab-link" onclick="switchView('completed-projects')">Ολοκληρωμένα Έργα</button>
+                <button class="tab-link" onclick="switchView('invoices')">Τιμολόγια</button>
                 <button class="tab-link" onclick="switchView('employees')">Υπάλληλοι (
                     <?= count($users) ?>)
                 </button>
-                <button class="tab-link" onclick="switchView('overtime')">Αιτήσεις Επιπλέον Ωρών (2)</button>
+                <button class="tab-link" onclick="switchView('overtime')">Αιτήσεις Επιπλέον Ωρών</button>
             </nav>
 
             <main id="mainContent"></main>
 
-        </div><!-- /view-dashboard -->
+        </div><!-- /panel-projects -->
+
 
         <!-- ========== MODALS ========== -->
+
         <!-- Modal: Νέο Έργο -->
         <div id="projectModal" class="modal-overlay">
             <div class="modal-container" style="max-width:400px;">
@@ -567,57 +611,81 @@ $role_labels = [
             </div>
         </div>
 
+        <!-- Modal: Νέος Υπάλληλος -->
+        <div id="workerModal" class="modal-overlay">
+            <div class="modal-container" style="max-width:400px;">
+                <div class="modal-header">
+                    <h3>Προσθήκη Υπαλλήλου</h3>
+                    <button class="close-modal" onclick="toggleModal('workerModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="workName" placeholder="Ονοματεπώνυμο"
+                        style="width:100%;margin-bottom:10px;padding:10px;">
+                    <select id="workRole" style="width:100%;margin-bottom:10px;padding:10px;">
+                        <option value="administrator">Διαχειριστής</option>
+                        <option value="supervisor">Υπεύθυνος</option>
+                        <option value="helper">Βοηθός</option>
+                    </select>
+                    <input type="number" id="workRate" placeholder="Ωρομίσθιο (€)"
+                        style="width:100%;margin-bottom:20px;padding:10px;">
+                    <button class="btn btn-green" onclick="saveWorker()" style="width:100%;">Αποθήκευση</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Modal: Λεπτομέρειες Έργου -->
         <div id="detailsModal" class="modal-overlay">
             <div class="modal-container">
                 <div class="modal-header">
                     <div class="modal-title">
-                        <h2 id="modalProjName">Εγκατάσταση Κλιματισμού - Hotel Αθήνα</h2>
-                        <p><i class="fas fa-map-marker-alt"></i> <span id="modalProjLoc">Αθήνα, Κέντρο</span>
-                            | <i class="fas fa-calendar"></i> <span id="modalProjDate">15/11/2024</span></p>
+                        <h2 id="modalProjName"></h2>
+                        <p><i class="fas fa-map-marker-alt"></i> <span id="modalProjLoc"></span>
+                            | <i class="fas fa-calendar"></i> <span id="modalProjDate"></span></p>
                     </div>
                     <button class="close-modal" onclick="closeDetails()">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="details-kpi-grid">
                         <div class="d-card"><span>Συνολικός Προϋπολογισμός</span>
-                            <h3 id="det-budget">€50.000</h3><small>(Αρχικός: €45.000)</small>
+                            <h3 id="det-budget"></h3>
                         </div>
                         <div class="d-card green-bg"><span>Σύνολο Πληρωμών</span>
-                            <h3 id="det-paid">€25.000</h3>
+                            <h3 id="det-paid"></h3>
                         </div>
                         <div class="d-card red-bg"><span>Οφειλή Πελάτη</span>
-                            <h3 id="det-owed">€25.000</h3>
+                            <h3 id="det-owed"></h3>
                         </div>
                         <div class="d-card green-bg"><span>Κέρδος</span>
-                            <h3 id="det-profit">+€37.712</h3>
+                            <h3 id="det-profit"></h3>
                         </div>
                     </div>
+
                     <div class="payment-summary-box">
                         <h4><i class="fas fa-file-invoice-dollar"></i> Σύνοψη Πληρωμών</h4>
                         <div class="progress-section">
                             <div class="prog-item">
-                                <span>Συνολικό Τιμολόγιο: <strong>€50.000</strong></span>
+                                <span>Συνολικό Τιμολόγιο: <strong id="ps-total"></strong></span>
                                 <div class="bar">
                                     <div class="fill blue" style="width:100%"></div>
                                 </div>
                             </div>
                             <div class="prog-item">
-                                <span>Εισπραχθέντα: <strong class="text-green">€25.000</strong></span>
+                                <span>Εισπραχθέντα: <strong class="text-green" id="ps-paid"></strong></span>
                                 <div class="bar">
-                                    <div class="fill green" style="width:50%"></div>
+                                    <div class="fill green" id="bar-paid" style="width:0%"></div>
                                 </div>
-                                <small>50.0% του συνολικού</small>
+                                <small id="ps-paid-pct"></small>
                             </div>
                             <div class="prog-item">
-                                <span>Προς Είσπραξη: <strong class="text-red">€25.000</strong></span>
+                                <span>Προς Είσπραξη: <strong class="text-red" id="ps-owed"></strong></span>
                                 <div class="bar">
-                                    <div class="fill red" style="width:50%"></div>
+                                    <div class="fill red" id="bar-owed" style="width:0%"></div>
                                 </div>
-                                <small>50.0% του συνολικού</small>
+                                <small id="ps-owed-pct"></small>
                             </div>
                         </div>
                     </div>
+
                     <div class="management-grid">
                         <div class="m-box">
                             <h4><i class="fas fa-cash-register"></i> Καταχώρηση Πληρωμής</h4>
@@ -641,219 +709,170 @@ $role_labels = [
                             <ul id="adjHistory" class="history-list"></ul>
                         </div>
                     </div>
+
                     <div class="cost-footer">
                         <h4><i class="fas fa-dollar-sign"></i> Ανάλυση Κόστους</h4>
                         <div class="cost-pills">
-                            <div class="pill blue-pill">Κόστος Εργατοωρών: <strong id="det-labor">€588</strong></div>
-                            <div class="pill orange-pill">Κόστος Υλικών: <strong id="det-materials">€11.700</strong>
-                            </div>
-                            <div class="pill purple-pill">Συνολικό Κόστος: <strong id="det-total-cost">€12.288</strong>
-                            </div>
+                            <div class="pill blue-pill">Κόστος Εργατοωρών: <strong id="det-labor"></strong></div>
+                            <div class="pill orange-pill">Κόστος Υλικών: <strong id="det-materials"></strong></div>
+                            <div class="pill purple-pill">Συνολικό Κόστος: <strong id="det-total-cost"></strong></div>
                         </div>
                     </div>
+
+                    <div style="margin-top:20px;text-align:right;">
+                        <button class="btn btn-blue" onclick="openReport()">Αναφορά Έργου</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Αναφορά Έργου -->
+        <div id="reportModal" class="modal-overlay">
+            <div class="modal-container report-container">
+                <div class="modal-header">
+                    <div>
+                        <h2>Αναφορά Έργου</h2>
+                        <p id="reportProjName"></p>
+                    </div>
+                    <button class="close-modal" onclick="closeReport()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+                        <div class="kpi-card"><span>Προϋπολογισμός</span>
+                            <h3 id="rep-budget"></h3>
+                        </div>
+                        <div class="kpi-card"><span>Συνολικό Κόστος</span>
+                            <h3 id="rep-cost"></h3>
+                        </div>
+                        <div class="kpi-card"><span>Κέρδος/Ζημία</span>
+                            <h3 id="rep-profit"></h3>
+                        </div>
+                        <div class="kpi-card"><span>Ποσοστό</span>
+                            <h3 id="rep-pct"></h3>
+                        </div>
+                    </div>
+                    <div class="analytics-grid">
+                        <div class="chart-box">
+                            <h4>Κατανομή Κόστους</h4>
+                            <canvas id="costPieChart" style="max-height:200px;"></canvas>
+                        </div>
+                        <div class="chart-box">
+                            <h4>Εργατοώρες ανά Άτομο</h4>
+                            <canvas id="laborBarChart" style="max-height:200px;"></canvas>
+                        </div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Όνομα</th>
+                                <th>Ρόλος</th>
+                                <th>Ώρες</th>
+                                <th>Κόστος</th>
+                            </tr>
+                        </thead>
+                        <tbody id="staffTableBody"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
     </div><!-- /app-container -->
 
+    <!-- ── Inject real DB employees into appState BEFORE admin.js loads ── -->
     <script>
-        // ── Tab switching ─────────────────────────────────────────────────────────────
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-view').forEach(v => v.style.display = 'none');
-            document.querySelectorAll('#mainTabs .tab-link').forEach(b => b.classList.remove('active'));
-            const view = document.getElementById('view-' + tabName);
-            if (view) view.style.display = 'block';
-            const btn = document.getElementById('tab-' + tabName);
-            if (btn) btn.classList.add('active');
-            // Update URL without reload
-            const url = new URL(window.location);
-            url.searchParams.set('tab', tabName);
-            history.replaceState({}, '', url);
-        }
+        // PHP passes real users so admin.js Employees tab shows live data
+        window.__DB_EMPLOYEES__ = <?= $employees_json ?>;
+    </script>
 
-        // ── Project sub-tabs ──────────────────────────────────────────────────────────
-        const projectData = {
-            'active-projects': [
-                { name: 'Εγκατάσταση Κλιματισμού - Hotel Αθήνα', location: 'Αθήνα, Κέντρο', date: '15/11/2024', budget: 50000, paid: 25000, profit: 37712 },
-                { name: 'Αντικατάσταση Λεβήτων - Εργοστάσιο Πειραιά', location: 'Πειραιάς', date: '03/01/2025', budget: 63000, paid: 20000, profit: 48078 }
-            ],
-            'completed-projects': [
-                { name: 'Συντήρηση HVAC - Νοσοκομείο Θεσσαλονίκης', location: 'Θεσσαλονίκη', date: '10/09/2024', budget: 28000, paid: 28000, profit: 22000 }
-            ],
-            'invoices': [
-                { number: 'ΤΙΜ-001', project: 'Hotel Αθήνα', amount: 25000, status: 'Εξοφλημένο' },
-                { number: 'ΤΙΜ-002', project: 'Hotel Αθήνα', amount: 25000, status: 'Εκκρεμεί' },
-                { number: 'ΤΙΜ-003', project: 'Εργοστάσιο Πειραιά', amount: 20000, status: 'Εξοφλημένο' },
-                { number: 'ΤΙΜ-004', project: 'Εργοστάσιο Πειραιά', amount: 43000, status: 'Εκκρεμεί' }
-            ],
-            'employees': <?= json_encode(array_map(fn($u) => [
-                'name' => $u['name'] ?? '—',
-                'role' => $u['role'] ?? '—',
-                'email' => $u['email'] ?? '—',
-                'phone' => $u['phone'] ?? '—',
-                'rate' => $u['hourly_rate'],
-            ], $users)) ?>,
-                'overtime': [
-                    { name: 'Νίκος Καραγιάννης', project: 'Hotel Αθήνα', hours: 3, reason: 'Επείγουσα βλάβη' },
-                    { name: 'Κώστας Ιωάννου', project: 'Εργοστάσιο Πειραιά', hours: 2, reason: 'Καθυστέρηση υλικών' }
-                ]
-};
+    <!-- Admin JS (existing — unchanged except handleLogout is overridden below) -->
+    <script src="admin.js"></script>
 
-        let currentView = 'active-projects';
-
-        function switchView(view) {
-            document.querySelectorAll('#view-dashboard .tabs-nav .tab-link').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-            currentView = view;
-            renderContent(view, document.getElementById('globalSearch').value.toLowerCase());
-        }
-
-        function filterContent() {
-            renderContent(currentView, document.getElementById('globalSearch').value.toLowerCase());
-        }
-
-        function renderContent(view, filter) {
-            const el = document.getElementById('mainContent');
-            filter = filter || '';
-
-            if (view === 'active-projects' || view === 'completed-projects') {
-                const data = projectData[view].filter(p =>
-                    p.name.toLowerCase().includes(filter) || p.location.toLowerCase().includes(filter)
-                );
-                el.innerHTML = data.length ? data.map(p => `
-            <div class="card">
-                <div>
-                    <h3>${p.name}</h3>
-                    <p><i class="fas fa-map-marker-alt"></i> ${p.location} &nbsp;|&nbsp;
-                       <i class="fas fa-calendar"></i> ${p.date}</p>
-                </div>
-                <div style="display:flex;gap:12px;align-items:center;">
-                    <span class="badge badge-admin">€${p.budget.toLocaleString()}</span>
-                    <span class="badge badge-helper" style="background:#dcfce7;color:#15803d;">+€${p.profit.toLocaleString()}</span>
-                    <button class="btn btn-blue" onclick="openDetails(${JSON.stringify(p).replace(/"/g, '&quot;')})">
-                        <i class="fas fa-eye"></i> Λεπτομέρειες
-                    </button>
-                </div>
-            </div>`).join('') : '<div class="no-users">Δεν βρέθηκαν έργα.</div>';
-
-            } else if (view === 'invoices') {
-                const data = projectData.invoices.filter(i =>
-                    i.number.toLowerCase().includes(filter) || i.project.toLowerCase().includes(filter)
-                );
-                el.innerHTML = `<div class="invoice-list">${data.map(inv => `
-            <div class="invoice-item">
-                <div class="inv-info">
-                    <i class="fas fa-file-invoice" style="font-size:1.4rem;color:#94a3b8;"></i>
-                    <div>
-                        <strong>${inv.number}</strong>
-                        <p style="margin:0;font-size:0.85rem;color:#64748b;">${inv.project}</p>
-                    </div>
-                </div>
-                <div style="display:flex;align-items:center;gap:16px;">
-                    <strong>€${inv.amount.toLocaleString()}</strong>
-                    <span class="badge ${inv.status === 'Εξοφλημένο' ? 'badge-helper' : 'badge-foreman'}">${inv.status}</span>
-                </div>
-            </div>`).join('')}</div>`;
-
-            } else if (view === 'employees') {
-                const data = projectData.employees.filter(e =>
-                    (e.name || '').toLowerCase().includes(filter) || (e.role || '').toLowerCase().includes(filter)
-                );
-                const roleBadge = { administrator: 'badge-administrator', supervisor: 'badge-supervisor', helper: 'badge-helper' };
-                const roleLabel = { administrator: 'Διαχειριστής', supervisor: 'Υπεύθυνος', helper: 'Βοηθός' };
-                el.innerHTML = `<table class="data-table">
-            <thead><tr><th>Ονοματεπώνυμο</th><th>Ρόλος</th><th>Email</th><th>Τηλέφωνο</th><th>Ωρομίσθιο</th></tr></thead>
-            <tbody>${data.length ? data.map(e => `<tr>
-                <td>${e.name || '—'}</td>
-                <td><span class="badge ${roleBadge[e.role] || ''}">${roleLabel[e.role] || e.role}</span></td>
-                <td>${e.email || '—'}</td>
-                <td>${e.phone || '—'}</td>
-                <td>${e.rate ? '€' + parseFloat(e.rate).toFixed(2) : '—'}</td>
-            </tr>`).join('') : '<tr><td colspan="5" class="no-users">Δεν βρέθηκαν υπάλληλοι.</td></tr>'}</tbody>
-        </table>`;
-
-            } else if (view === 'overtime') {
-                const data = projectData.overtime;
-                el.innerHTML = `<div class="overtime-list">${data.map(ot => `
-            <div class="ot-card">
-                <div class="ot-header">
-                    <div>
-                        <strong>${ot.name}</strong>
-                        <p style="margin:4px 0 0;color:#64748b;font-size:0.88rem;">${ot.project}</p>
-                    </div>
-                    <div style="display:flex;gap:8px;">
-                        <button class="btn-approve"><i class="fas fa-check"></i> Έγκριση</button>
-                        <button class="btn-reject"><i class="fas fa-times"></i> Απόρριψη</button>
-                    </div>
-                </div>
-                <p><strong>Επιπλέον ώρες:</strong> ${ot.hours}h &nbsp;|&nbsp; <strong>Λόγος:</strong> ${ot.reason}</p>
-            </div>`).join('')}</div>`;
+    <script>
+        // ── Override: real logout ─────────────────────────────────────────────────────
+        function handleLogout() {
+            if (confirm('Αποσύνδεση;')) {
+                window.location.href = '/Backend/logout.php';
             }
         }
 
-        // ── Details Modal ─────────────────────────────────────────────────────────────
-        function openDetails(proj) {
-            document.getElementById('modalProjName').textContent = proj.name;
-            document.getElementById('modalProjLoc').textContent = proj.location;
-            document.getElementById('modalProjDate').textContent = proj.date;
-            document.getElementById('det-budget').textContent = '€' + proj.budget.toLocaleString();
-            document.getElementById('det-paid').textContent = '€' + proj.paid.toLocaleString();
-            document.getElementById('det-owed').textContent = '€' + (proj.budget - proj.paid).toLocaleString();
-            document.getElementById('det-profit').textContent = '+€' + proj.profit.toLocaleString();
-            document.getElementById('paymentHistory').innerHTML = '';
-            document.getElementById('adjHistory').innerHTML = '';
-            document.getElementById('detailsModal').style.display = 'flex';
+        // ── Replace appState.employees with real DB data ───────────────────────────────
+        if (window.__DB_EMPLOYEES__ && window.__DB_EMPLOYEES__.length) {
+            appState.employees = window.__DB_EMPLOYEES__;
         }
 
-        function closeDetails() {
-            document.getElementById('detailsModal').style.display = 'none';
+        // ── Top-level tab switching (Users ↔ Projects) ────────────────────────────────
+        function showMainTab(tab) {
+            document.getElementById('panel-users').style.display = tab === 'users' ? 'block' : 'none';
+            document.getElementById('panel-projects').style.display = tab === 'projects' ? 'block' : 'none';
+            document.getElementById('mainTabUsers').classList.toggle('active', tab === 'users');
+            document.getElementById('mainTabProjects').classList.toggle('active', tab === 'projects');
+
+            // Keep URL in sync
+            const url = new URL(window.location);
+            url.searchParams.set('tab', tab);
+            history.replaceState({}, '', url);
+
+            // Init project view when switching to it for the first time
+            if (tab === 'projects') {
+                renderView(appState.currentView);
+            }
         }
 
-        function toggleModal(id) {
-            const m = document.getElementById(id);
-            m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
-        }
+        // ── Bootstrap: if starting on Projects tab, render it ────────────────────────
+        document.addEventListener('DOMContentLoaded', function () {
+            <?php if ($active_tab === 'projects'): ?>
+                renderView(appState.currentView);
+            <?php endif; ?>
 
-        function addPaymentRecord() {
-            const inv = document.getElementById('payInv').value.trim();
-            const amt = document.getElementById('payAmt').value.trim();
-            if (!inv || !amt) return;
-            const li = document.createElement('li');
-            li.className = 'history-item';
-            li.innerHTML = `<span>${inv}</span><strong>€${parseFloat(amt).toLocaleString()}</strong>`;
-            document.getElementById('paymentHistory').prepend(li);
-            document.getElementById('payInv').value = '';
-            document.getElementById('payAmt').value = '';
-        }
-
-        function adjustBudget() {
-            const amt = document.getElementById('adjAmt').value.trim();
-            const desc = document.getElementById('adjDesc').value.trim();
-            if (!amt) return;
-            const li = document.createElement('li');
-            li.className = 'history-item';
-            li.innerHTML = `<span>${desc || 'Αναπροσαρμογή'}</span><strong style="color:${parseFloat(amt) >= 0 ? 'green' : 'red'};">${parseFloat(amt) >= 0 ? '+' : ''}€${parseFloat(amt).toLocaleString()}</strong>`;
-            document.getElementById('adjHistory').prepend(li);
-            document.getElementById('adjAmt').value = '';
-            document.getElementById('adjDesc').value = '';
-        }
-
-        function saveProject() {
-            alert('Αποθηκεύτηκε (demo - σύνδεση με βάση δεδομένων απαιτείται).');
-            toggleModal('projectModal');
-        }
-
-        // Close modals on overlay click
-        document.querySelectorAll('.modal-overlay').forEach(overlay => {
-            overlay.addEventListener('click', function (e) {
-                if (e.target === this) this.style.display = 'none';
-            });
+            // Update progress bars in details modal dynamically
+            document.addEventListener('_detailsOpened', updateProgressBars);
         });
 
-        // Init
-        renderContent('active-projects', '');
+        // ── Enhance openDetails to also populate progress bar spans ──────────────────
+        const _origOpenDetails = openDetails;
+        function openDetails(projectId) {
+            _origOpenDetails(projectId);
+            const proj = appState.projects.find(p => p.id === projectId);
+            if (!proj) return;
+            const pct = proj.budget > 0 ? Math.round((proj.paid / proj.budget) * 100) : 0;
+            const owedAmt = proj.budget - proj.paid;
+            const owedPct = 100 - pct;
+            document.getElementById('ps-total').textContent = `€${proj.budget.toLocaleString()}`;
+            document.getElementById('ps-paid').textContent = `€${proj.paid.toLocaleString()}`;
+            document.getElementById('ps-owed').textContent = `€${owedAmt.toLocaleString()}`;
+            document.getElementById('ps-paid-pct').textContent = `${pct}% του συνολικού`;
+            document.getElementById('ps-owed-pct').textContent = `${owedPct}% του συνολικού`;
+            document.getElementById('bar-paid').style.width = `${pct}%`;
+            document.getElementById('bar-owed').style.width = `${owedPct}%`;
+        }
+
+        // ── Enhance openReport to also populate report KPI cards ─────────────────────
+        const _origOpenReport = openReport;
+        function openReport() {
+            _origOpenReport();
+            const proj = appState.projects.find(p => p.id === currentProjectId);
+            if (!proj) return;
+            const totalCost = proj.costLabor + proj.costMaterials;
+            const profit = proj.budget - totalCost;
+            const pct = proj.budget > 0 ? ((profit / proj.budget) * 100).toFixed(1) : 0;
+            document.getElementById('rep-budget').textContent = `€${proj.budget.toLocaleString()}`;
+            document.getElementById('rep-cost').textContent = `€${totalCost.toLocaleString()}`;
+            document.getElementById('rep-profit').textContent = `${profit >= 0 ? '+' : ''}€${profit.toLocaleString()}`;
+            document.getElementById('rep-pct').textContent = `${profit >= 0 ? '+' : ''}${pct}%`;
+
+            // Staff table
+            const tbody = document.getElementById('staffTableBody');
+            tbody.innerHTML = appState.employees
+                .filter(e => e.hours > 0)
+                .map(e => `<tr>
+            <td>${e.name}</td>
+            <td>${e.role}</td>
+            <td>${e.hours}h</td>
+            <td>€${(e.rate * e.hours).toFixed(2)}</td>
+        </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:#94a3b8;">Δεν υπάρχουν εγγραφές ωρών.</td></tr>';
+        }
     </script>
+
 </body>
 
 </html>
