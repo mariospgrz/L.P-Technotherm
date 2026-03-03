@@ -1,26 +1,65 @@
- <form action="action_page.php" method="post">
-  <div class="imgcontainer">
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtAP1PtdsbT2A9rAoqB1g9Eg7XVWfmJr4SRA&s" alt="Technotherm Login" class="Avatar">
-  </div>
+<!DOCTYPE html>
+<html lang="el">
 
-  <div class="container">
-    <label for="uname"><b>Username</b></label>
-    <input type="text" placeholder="Enter Username" name="uname" required>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Σύνδεση | LP Technotherm</title>
+  <meta name="description" content="Σύνδεση χρήστη - LP Technotherm">
+  <link rel="stylesheet" href="login.css">
+</head>
 
-   <div> <label for="psw"><b>Password</b></label>
-    <input type="password" placeholder="Enter Password" name="psw" required>
+<body>
+
+  <form id="loginForm" action="/L.P-Technotherm/Backend/login.php" method="POST">
+
+    <!-- Logo -->
+    <div class="imgcontainer">
+      <img src="../frontend/images/logo.png" alt="LP Technotherm Logo" class="Avatar"
+        onerror="this.src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtAP1PtdsbT2A9rAoqB1g9Eg7XVWfmJr4SRA&s'">
+      <p class="logo-caption">LP Technotherm</p>
     </div>
-    <div>
-    <button type="submit">Login</button>
-   </div>
-    <label><div>
-      <input type="checkbox" checked="checked" name="remember"> Remember me
-    </label>
-  </div>
 
-  <div class="container" style="background-color:#f1f1f1">
-    <button type="button" class="cancelbtn">Cancel</button>
+    <!-- Alert messages (populated from URL params) -->
+    <div id="alertSuccess" class="alert-msg success" style="display:none;"></div>
+    <div id="alertError" class="alert-msg error" style="display:none;"></div>
+
+    <!-- Form fields -->
+    <div class="container">
+      <label for="username"><b>Username</b></label>
+      <input type="text" id="username" name="username" placeholder="Εισάγετε username" required autofocus
+        autocomplete="username">
+
+      <label for="password"><b>Κωδικός</b></label>
+      <input type="password" id="password" name="password" placeholder="Εισάγετε κωδικό" required
+        autocomplete="current-password">
+
+      <div style="text-align:right; margin-bottom: 8px;">
+        <a class="psw" href="/L.P-Technotherm/frontend/forgot_password.html">Ξεχάσατε τον κωδικό;</a>
+      </div>
+
+      <button type="submit">Σύνδεση</button>
     </div>
-    <div><span class="psw">Forgot <a href="#">password?</a></span>
-  </div>
-</form> 
+
+  </form>
+
+  <script>
+    // Show ?error= or ?success= messages from PHP redirect
+    const params = new URLSearchParams(window.location.search);
+    const success = params.get('success');
+    const error = params.get('error');
+
+    if (success) {
+      const el = document.getElementById('alertSuccess');
+      el.textContent = decodeURIComponent(success);
+      el.style.display = 'block';
+    }
+    if (error) {
+      const el = document.getElementById('alertError');
+      el.textContent = decodeURIComponent(error);
+      el.style.display = 'block';
+    }
+  </script>
+</body>
+
+</html>

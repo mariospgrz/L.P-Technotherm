@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="el">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Διαχειριστή</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- External CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- ========== HEADER ========== -->
+        <header class="main-header">
+            <div class="header-left">
+                <div class="logo-container">
+                    <!-- Replace with your actual logo if available -->
+                    <img src="https://via.placeholder.com/150x50?text=LOGO" alt="Company Logo" class="company-logo">
+                </div>
+                <div class="user-info">
+                    <h1>Πίνακας Ελέγχου Διαχειριστή</h1>
+                    <p>Καλώς ήρθατε, <span id="account-name">Φόρτωση...</span></p>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="logout-link" onclick="handleLogout()">
+                    <i class="fas fa-sign-out-alt"></i> Αποσύνδεση
+                </button>
+            </div>
+        </header>
+
+        <!-- ========== KPI CARDS ========== -->
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <div class="icon-box blue"><i class="fas fa-chart-bar"></i></div>
+                <div class="kpi-info">
+                    <h4>Συνολικός Προϋπολογισμός</h4>
+                    <h2 id="stat-budget">€113.000</h2>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="icon-box orange"><i class="fas fa-clock"></i></div>
+                <div class="kpi-info">
+                    <h4>Συνολικό Κόστος</h4>
+                    <h2 id="stat-cost">€27.210</h2>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="icon-box green"><i class="fas fa-chart-line"></i></div>
+                <div class="kpi-info">
+                    <h4>Συνολικό Κέρδος</h4>
+                    <h2 id="stat-profit">+€85.790</h2>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== ACTION BAR (SEARCH + BUTTONS) ========== -->
+        <div class="action-bar">
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="globalSearch" placeholder="Αναζήτηση έργου (όνομα ή τοποθεσία)..."
+                    onkeyup="filterContent()">
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-blue" onclick="toggleModal('projectModal')">
+                    <i class="fas fa-plus"></i> Νέο Έργο
+                </button>
+                <button class="btn btn-green" onclick="toggleModal('workerModal')">
+                    <i class="fas fa-user-plus"></i> Νέος Υπάλληλος
+                </button>
+            </div>
+        </div>
+
+        <!-- ========== TAB NAVIGATION ========== -->
+        <nav class="tabs-nav">
+            <button class="tab-link active" onclick="switchView('active-projects')">Ενεργά Έργα (2)</button>
+            <button class="tab-link" onclick="switchView('completed-projects')">Ολοκληρωμένα Έργα (1)</button>
+            <button class="tab-link" onclick="switchView('invoices')">Τιμολόγια (4)</button>
+            <button class="tab-link" onclick="switchView('employees')">Υπάλληλοι (6)</button>
+            <button class="tab-link" onclick="switchView('overtime')">Αιτήσεις Επιπλέον Ωρών (2)</button>
+        </nav>
+
+        <!-- ========== MAIN CONTENT (DYNAMIC) ========== -->
+        <main id="mainContent"></main>
+
+        <!-- ========== MODALS ========== -->
+        <!-- Modal: Νέο Έργο -->
+        <div id="projectModal" class="modal-overlay">
+            <div class="modal-container" style="max-width:400px;">
+                <div class="modal-header">
+                    <h3>Δημιουργία Νέου Έργου</h3>
+                    <button class="close-modal" onclick="toggleModal('projectModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="projName" placeholder="Όνομα Έργου"
+                        style="width:100%; margin-bottom:10px; padding:10px;">
+                    <input type="text" id="projLocation" placeholder="Τοποθεσία"
+                        style="width:100%; margin-bottom:20px; padding:10px;">
+                    <button class="btn btn-blue" onclick="saveProject()" style="width:100%;">Αποθήκευση</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Νέος Υπάλληλος -->
+        <div id="workerModal" class="modal-overlay">
+            <div class="modal-container" style="max-width:400px;">
+                <div class="modal-header">
+                    <h3>Προσθήκη Υπαλλήλου</h3>
+                    <button class="close-modal" onclick="toggleModal('workerModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="workName" placeholder="Ονοματεπώνυμο"
+                        style="width:100%; margin-bottom:10px; padding:10px;">
+                    <select id="workRole" style="width:100%; margin-bottom:10px; padding:10px;">
+                        <option value="admin">Admin</option>
+                        <option value="foreman">Επιβλέπων</option>
+                        <option value="helper">Βοηθός</option>
+                    </select>
+                    <input type="number" id="workRate" placeholder="Ωρομίσθιο (€)"
+                        style="width:100%; margin-bottom:20px; padding:10px;">
+                    <button class="btn btn-green" onclick="saveWorker()" style="width:100%;">Αποθήκευση</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Λεπτομέρειες Έργου -->
+        <div id="detailsModal" class="modal-overlay">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <h2 id="modalProjName">Εγκατάσταση Κλιματισμού - Hotel Αθήνα</h2>
+                        <p><i class="fas fa-map-marker-alt"></i> <span id="modalProjLoc">Αθήνα, Κέντρο</span> | <i
+                                class="fas fa-calendar"></i> <span id="modalProjDate">15/11/2024</span></p>
+                    </div>
+                    <button class="close-modal" onclick="closeDetails()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="details-kpi-grid">
+                        <div class="d-card"><span>Συνολικός Προϋπολογισμός</span>
+                            <h3 id="det-budget">€50.000</h3><small>(Αρχικός: €45.000)</small>
+                        </div>
+                        <div class="d-card green-bg"><span>Σύνολο Πληρωμών</span>
+                            <h3 id="det-paid">€25.000</h3>
+                        </div>
+                        <div class="d-card red-bg"><span>Οφειλή Πελάτη</span>
+                            <h3 id="det-owed">€25.000</h3>
+                        </div>
+                        <div class="d-card green-bg"><span>Κέρδος</span>
+                            <h3 id="det-profit">+€37.712</h3>
+                        </div>
+                    </div>
+
+                    <div class="payment-summary-box">
+                        <h4><i class="fas fa-file-invoice-dollar"></i> Σύνοψη Πληρωμών</h4>
+                        <div class="progress-section">
+                            <div class="prog-item">
+                                <span>Συνολικό Τιμολόγιο: <strong>€50.000</strong></span>
+                                <div class="bar">
+                                    <div class="fill blue" style="width: 100%"></div>
+                                </div>
+                            </div>
+                            <div class="prog-item">
+                                <span>Εισπραχθέντα: <strong class="text-green">€25.000</strong></span>
+                                <div class="bar">
+                                    <div class="fill green" style="width: 50%"></div>
+                                </div>
+                                <small>50.0% του συνολικού</small>
+                            </div>
+                            <div class="prog-item">
+                                <span>Προς Είσπραξη: <strong class="text-red">€25.000</strong></span>
+                                <div class="bar">
+                                    <div class="fill red" style="width: 50%"></div>
+                                </div>
+                                <small>50.0% του συνολικού</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="management-grid">
+                        <div class="m-box">
+                            <h4><i class="fas fa-cash-register"></i> Καταχώρηση Πληρωμής</h4>
+                            <input type="text" id="payInv" placeholder="Αριθμός Τιμολογίου (π.χ. ΤΙΜ-001)">
+                            <input type="number" id="payAmt" placeholder="Ποσό Πληρωμής (€)">
+                            <button class="btn btn-dark" onclick="addPaymentRecord()"><i class="fas fa-plus"></i>
+                                Προσθήκη Πληρωμής</button>
+                            <h5>Ιστορικό Πληρωμών</h5>
+                            <ul id="paymentHistory" class="history-list"></ul>
+                        </div>
+                        <div class="m-box">
+                            <h4><i class="fas fa-edit"></i> Αναπροσαρμογή Προϋπολογισμού</h4>
+                            <input type="number" id="adjAmt" placeholder="Επιπλέον Ποσό (€)">
+                            <p class="hint">Θετικό για επιπλέον έργα, αρνητικό για μειώσεις</p>
+                            <textarea id="adjDesc" placeholder="Περιγραφή (προαιρετικό)"></textarea>
+                            <button class="btn btn-outline" onclick="adjustBudget()"><i class="fas fa-plus"></i>
+                                Ενημέρωση Προϋπολογισμού</button>
+                            <h5>Ιστορικό Αναπροσαρμογών</h5>
+                            <ul id="adjHistory" class="history-list"></ul>
+                        </div>
+                    </div>
+
+                    <div class="cost-footer">
+                        <h4><i class="fas fa-dollar-sign"></i> Ανάλυση Κόστους</h4>
+                        <div class="cost-pills">
+                            <div class="pill blue-pill">Κόστος Εργατοωρών: <strong id="det-labor">€588</strong></div>
+                            <div class="pill orange-pill">Κόστος Υλικών: <strong id="det-materials">€11.700</strong>
+                            </div>
+                            <div class="pill purple-pill">Συνολικό Κόστος: <strong id="det-total-cost">€12.288</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:20px; text-align:right;">
+                        <button class="btn btn-blue" onclick="openReport()">Αναφορά Έργου</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Αναφορά Έργου -->
+        <div id="reportModal" class="modal-overlay">
+            <div class="modal-container report-container">
+                <div class="modal-header">
+                    <div>
+                        <h2>Αναφορά Έργου</h2>
+                        <p id="reportProjName">Εγκατάσταση Κλιματισμού - Hotel Αθήνα</p>
+                    </div>
+                    <button class="close-modal" onclick="closeReport()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+                        <div class="kpi-card"><span>Προϋπολογισμός</span>
+                            <h3>€45.000</h3>
+                        </div>
+                        <div class="kpi-card"><span>Συνολικό Κόστος</span>
+                            <h3>€12.288</h3>
+                        </div>
+                        <div class="kpi-card"><span>Κέρδος/Ζημία</span>
+                            <h3>+€32.712</h3>
+                        </div>
+                        <div class="kpi-card"><span>Ποσοστό</span>
+                            <h3>+72.7%</h3>
+                        </div>
+                    </div>
+
+                    <div class="analytics-grid">
+                        <div class="chart-box">
+                            <h4>Κατανομή Κόστους</h4>
+                            <canvas id="costPieChart" style="max-height:200px;"></canvas>
+                        </div>
+                        <div class="chart-box">
+                            <h4>Εργατοώρες ανά Άτομο</h4>
+                            <canvas id="laborBarChart" style="max-height:200px;"></canvas>
+                        </div>
+                    </div>
+
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Όνομα</th>
+                                <th>Ρόλος</th>
+                                <th>Ώρες</th>
+                                <th>Κόστος</th>
+                            </tr>
+                        </thead>
+                        <tbody id="staffTableBody">
+                            <tr>
+                                <td>Νίκος Καραγιάννης</td>
+                                <td>Επιβλέπων</td>
+                                <td>17.75 ώρες</td>
+                                <td>€444</td>
+                            </tr>
+                            <tr>
+                                <td>Κώστας Ιωάννου</td>
+                                <td>Βοηθός</td>
+                                <td>8.00 ώρες</td>
+                                <td>€144</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- External JavaScript -->
+    <script src="script.js"></script>
+</body>
+
+</html>

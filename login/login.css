@@ -127,59 +127,29 @@ button[type="submit"]:active {
     transform: translateY(0);
 }
 
-/* Remember me section */
-.remember-container {
-    display: flex;
-    align-items: center;
-    margin-bottom: 25px;
-    padding: 12px 0;
-    border-top: 1px solid #eee;
-    border-bottom: 1px solid #eee;
-}
-
-input[type="checkbox"] {
-    margin-right: 10px;
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-    accent-color: #2575fc;
-}
-
-/* Cancel button container */
-.cancel-container {
-    background-color: #f8f9fa;
-    padding: 20px;
+/* Alert messages (success / error from PHP redirect) */
+.alert-msg {
+    padding: 0.75rem 1rem;
     border-radius: 10px;
-    margin-bottom: 20px;
+    font-size: 0.875rem;
+    margin-bottom: 16px;
     text-align: center;
 }
 
-.cancelbtn {
-    background-color: #6c757d;
-    color: white;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 15px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    width: 100%;
+.alert-msg.success {
+    background: rgba(34, 197, 94, 0.10);
+    border: 1px solid rgba(34, 197, 94, 0.30);
+    color: #15803d;
 }
 
-.cancelbtn:hover {
-    background-color: #5a6268;
-    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+.alert-msg.error {
+    background: rgba(239, 68, 68, 0.09);
+    border: 1px solid rgba(239, 68, 68, 0.28);
+    color: #dc2626;
 }
 
 /* Forgot password link */
 .psw {
-    text-align: center;
-    display: block;
-    margin-top: 20px;
-}
-
-.psw a {
     color: #2575fc;
     text-decoration: none;
     font-weight: 600;
@@ -187,7 +157,7 @@ input[type="checkbox"] {
     transition: color 0.3s ease;
 }
 
-.psw a:hover {
+.psw:hover {
     color: #1c6ae4;
     text-decoration: underline;
 }

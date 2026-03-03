@@ -1,23 +1,17 @@
 <?php
-
-session_start();
-
+// ── Admin guard ──────────────────────────────────────────────────────────────
+require_once __DIR__ . '/../admin_session.php';
 require_once __DIR__ . '/../Database/Database.php';
 
 // Only allow POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: /L.P-Technotherm/frontend/delete_user.html');
+    header('Location: /L.P-Technotherm/frontend/admin_dashboard.php');
     exit();
 }
 
-function redirectError(string $msg): void {
-    header('Location: /L.P-Technotherm/frontend/delete_user.html?error=' . urlencode($msg));
-    exit();
-}
-
-// Require active session
-if (!isset($_SESSION['user_id'])) {
-    header('Location: /L.P-Technotherm/login/login.html');
+function redirectError(string $msg): void
+{
+    header('Location: /L.P-Technotherm/frontend/admin_dashboard.php?error=' . urlencode($msg) . '&tab=users');
     exit();
 }
 
@@ -30,21 +24,6 @@ if (!isset($_POST['confirm'])) {
 $target_username = trim($_POST['username'] ?? '');
 if ($target_username === '') {
     redirectError('Το username είναι υποχρεωτικό.');
-}
-
-// Verify that the logged-in user is an administrator
-$stmt = $conn->prepare('SELECT role FROM users WHERE id = ? LIMIT 1');
-if (!$stmt) {
-    redirectError('Σφάλμα βάσης δεδομένων. Παρακαλώ δοκιμάστε ξανά.');
-}
-$stmt->bind_param('i', $_SESSION['user_id']);
-$stmt->execute();
-$stmt->bind_result($logged_in_role);
-$stmt->fetch();
-$stmt->close();
-
-if ($logged_in_role !== 'administrator') {
-    redirectError('Δεν έχετε δικαίωμα να διαγράψετε χρήστες.');
 }
 
 // Find the target user
@@ -63,7 +42,7 @@ if (!$target_id) {
 }
 
 // Prevent self-deletion
-if ($target_id === (int)$_SESSION['user_id']) {
+if ($target_id === (int) $_SESSION['user_id']) {
     redirectError('Δεν μπορείτε να διαγράψετε τον δικό σας λογαριασμό.');
 }
 
@@ -94,7 +73,7 @@ if (!$stmt->execute()) {
 }
 $stmt->close();
 
-header('Location: /L.P-Technotherm/frontend/delete_user.html?success=' . urlencode(
+header('Location: /L.P-Technotherm/frontend/admin_dashboard.php?success=' . urlencode(
     'Ο χρήστης «' . $target_username . '» διαγράφηκε επιτυχώς!'
-));
+) . '&tab=users');
 exit();

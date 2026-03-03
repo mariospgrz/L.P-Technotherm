@@ -35,5 +35,5 @@ header('Cache-Control: post-check=0, pre-check=0', false);
 header('Pragma: no-cache');
 
 // 6. Redirect to login page
-header('Location: /login/login.html');
+header('Location: /L.P-Technotherm/login/login.html');
 exit;

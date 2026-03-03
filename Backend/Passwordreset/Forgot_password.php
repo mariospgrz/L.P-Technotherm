@@ -1,9 +1,9 @@
 <?php
-// Backend/Forgot_password.php
+// Backend/Passwordreset/Forgot_password.php
 
-require_once __DIR__ . '/Database.php';
+require_once __DIR__ . '/../Database/Database.php';
 require_once __DIR__ . '/JWT.php';
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
@@ -27,14 +27,14 @@ define('DEBUG_MODE', false);
 // ────────────────────────────────────────────────────────────────────────────
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ../frontend/forgot_password.html');
+    header('Location: /L.P-Technotherm/frontend/forgot_password.html');
     exit();
 }
 
 $email = trim(filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL));
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    header('Location: ../frontend/forgot_password.html?error=' . urlencode('Please enter a valid email address.'));
+    header('Location: /L.P-Technotherm/frontend/forgot_password.html?error=' . urlencode('Παρακαλώ εισάγετε έγκυρη διεύθυνση email.'));
     exit();
 }
 
@@ -47,7 +47,7 @@ $stmt->close();
 
 if ($result->num_rows === 0) {
     // Don't reveal whether the email exists
-    header('Location: ../frontend/forgot_password.html?success=' . urlencode('If that email is registered, a reset link has been sent.'));
+    header('Location: /L.P-Technotherm/frontend/forgot_password.html?success=' . urlencode('Εάν το email είναι καταχωρημένο, θα σταλεί σύνδεσμος επαναφοράς.'));
     exit();
 }
 
@@ -110,7 +110,7 @@ if (DEBUG_MODE) {
                         <?= htmlspecialchars($resetLink) ?>
                     </a>
                 </div>
-                <div class="links"><a href="../frontend/forgot_password.html">← Try another email</a></div>
+                <div class="links"><a href="/L.P-Technotherm/frontend/forgot_password.html">← Δοκιμάστε άλλο email</a></div>
             </div>
         </div>
     </body>
@@ -161,11 +161,11 @@ try {
 
     $mail->send();
 
-    header('Location: ../frontend/forgot_password.html?success=' . urlencode('A password reset link has been sent to your email.'));
+    header('Location: /L.P-Technotherm/frontend/forgot_password.html?success=' . urlencode('Ο σύνδεσμος επαναφοράς κωδικού σάς στάλθηκε στο email σας.'));
 
 } catch (Exception $e) {
     error_log("Mailer Error: " . $mail->ErrorInfo);
-    header('Location: ../frontend/forgot_password.html?error=' . urlencode('Failed to send email. Please try again later.'));
+    header('Location: /L.P-Technotherm/frontend/forgot_password.html?error=' . urlencode('Αποτυχία αποστολής email. Παρακαλώ δοκιμάστε ξανά.'));
 }
 
 exit();
