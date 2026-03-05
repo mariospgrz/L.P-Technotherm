@@ -1,0 +1,183 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Form container */
+form {
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 420px;
+    padding: 40px;
+    transition: transform 0.3s ease;
+}
+
+form:hover {
+    transform: translateY(-5px);
+}
+
+/* Logo/Image container */
+.imgcontainer {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 10px;
+}
+
+.Avatar {
+    width: 160px; /* Increased size */
+    height: 160px; /* Square aspect ratio */
+    object-fit: contain; /* Changed from 'cover' to 'contain' */
+    border: 2px solid #e1e5eb; /* Softer border */
+    border-radius: 8px; /* Square with slight rounding */
+    padding: 10px; /* More padding */
+    background-color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: inline-block;
+}
+
+/* Optional: Add a caption/subtitle below the logo */
+.logo-caption {
+    margin-top: 12px;
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    font-style: italic;
+}
+
+/* Container for form elements */
+.container {
+    margin-bottom: 25px;
+}
+
+/* Labels */
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Input fields */
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    border: 2px solid #e1e5eb;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background-color: #f8f9fa;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+    outline: none;
+    border-color: #2575fc;
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.1);
+}
+
+input[type="text"]::placeholder,
+input[type="password"]::placeholder {
+    color: #999;
+}
+
+/* Buttons */
+button[type="submit"] {
+    background: linear-gradient(to right, #2575fc, #6a11cb);
+    color: white;
+    padding: 16px 24px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+button[type="submit"]:hover {
+    background: linear-gradient(to right, #1c6ae4, #5a0cb9);
+    box-shadow: 0 6px 20px rgba(37, 117, 252, 0.4);
+    transform: translateY(-2px);
+}
+
+button[type="submit"]:active {
+    transform: translateY(0);
+}
+
+/* Alert messages (success / error from PHP redirect) */
+.alert-msg {
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.alert-msg.success {
+    background: rgba(34, 197, 94, 0.10);
+    border: 1px solid rgba(34, 197, 94, 0.30);
+    color: #15803d;
+}
+
+.alert-msg.error {
+    background: rgba(239, 68, 68, 0.09);
+    border: 1px solid rgba(239, 68, 68, 0.28);
+    color: #dc2626;
+}
+
+/* Forgot password link */
+.psw {
+    color: #2575fc;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: color 0.3s ease;
+}
+
+.psw:hover {
+    color: #1c6ae4;
+    text-decoration: underline;
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+    form {
+        padding: 30px 20px;
+        margin: 10px;
+    }
+    
+    .Avatar {
+        width: 140px; /* Adjusted for mobile */
+        height: 140px;
+    }
+    
+    input[type="text"],
+    input[type="password"],
+    button[type="submit"],
+    .cancelbtn {
+        padding: 14px;
+    }
+}

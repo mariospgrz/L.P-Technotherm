@@ -1,5 +1,5 @@
 <?php
-// Backend/Database.php
+// Backend/Database/Database.php
 
 $servername = "localhost";
 $username = "root";
@@ -12,3 +12,6 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die(json_encode(["error" => "Connection failed: " . $conn->connect_error]));
 }
+
+// Enforce UTF-8 so Greek characters are stored/retrieved correctly
+$conn->set_charset('utf8mb4');
