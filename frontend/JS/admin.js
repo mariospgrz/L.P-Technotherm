@@ -1,27 +1,11 @@
 // ==================== GLOBAL STATE ====================
 const appState = {
     user: { fullName: "Διαχειριστής", role: "Admin" },
-    kpi: { budget: 113000, cost: 27210 },
-    projects: [
-        { id: 1, name: 'Εγκατάσταση Κλιματισμού - Hotel Αθήνα', status: 'active', location: 'Αθήνα, Κέντρο', date: '15/11/2024', budget: 45000, paid: 25000, costLabor: 588, costMaterials: 11700 },
-        { id: 2, name: 'Υδραυλική Εγκατάσταση - Συγκρότημα Κατοικιών', status: 'active', location: 'Θεσσαλονίκη', date: '20/11/2024', budget: 32000, paid: 5000, costLabor: 323, costMaterials: 2100 },
-        { id: 3, name: 'Ανακαίνιση Γραφείων - Εμπορικό Κέντρο', status: 'completed', location: 'Πάτρα', date: '10/10/2024', budget: 28000, paid: 28000, costLabor: 1200, costMaterials: 8000 }
-    ],
-    employees: [
-        { name: 'Γιώργος Παπαδόπουλος', role: 'administrator', rate: 35, hours: 0 },
-        { name: 'Νίκος Καραγιάννης', role: 'supervisor', rate: 25, hours: 17.8 },
-        { name: 'Κώστας Ιωάννου', role: 'helper', rate: 18, hours: 8 }
-    ],
-    invoices: [
-        { id: 1, vendor: 'ΤΕΧΝΙΚΗ ΑΕ', project: 'Εγκατάσταση Κλιματισμού · Hotel Αθήνα', amount: 3500, date: '2024-11-25' },
-        { id: 2, vendor: 'ΚΛΙΜΑ SYSTEMS', project: 'Εγκατάσταση Κλιματισμού · Hotel Αθήνα', amount: 8200, date: '2024-11-26' },
-        { id: 3, vendor: 'ΥΔΡΑΥΛΙΚΑ ΥΛΙΚΑ ΕΠΕ', project: 'Υδραυλική Εγκατάσταση · Συγκρότημα Κατοικιών', amount: 2100, date: '2024-11-28' },
-        { id: 4, vendor: 'ΘΕΡΜΑΝΣΗ PLUS', project: 'Σύστημα Θέρμανσης · Εμπορικό Κέντρο', amount: 12500, date: '2024-11-10' }
-    ],
-    overtimeRequests: [
-        { id: 1, name: 'Κώστας Ιωάννου', hours: 2, status: 'pending', reason: 'Εγκατάσταση κλιματισμού – καθυστέρηση λόγω υλικών' },
-        { id: 2, name: 'Μιχάλης Γεωργίου', hours: 1.5, status: 'approved', reason: 'Υδραυλικές εγκαταστάσεις Σαββατοκύριακο' }
-    ],
+    kpi: { budget: 0, cost: 0 },   // will be populated from DB
+    projects: [],                  // will be populated from DB
+    employees: [],                 // will be populated from DB via PHP injection
+    invoices: [],                  // will be populated from DB
+    overtimeRequests: [],          // will be populated from DB
     currentView: 'active-projects',
     overtimeFilter: 'all'
 };
@@ -519,3 +503,29 @@ function handleLogout() {
 
 // ==================== TAB SWITCHING ====================
 function switchView(viewName) { renderView(viewName); }
+
+// ==================== MAIN TAB (Users ↔ Projects) ====================
+function showMainTab(tab) {
+    const usersPanel = document.getElementById('panel-users');
+    const projectsPanel = document.getElementById('panel-projects');
+    const tabUsers = document.getElementById('mainTabUsers');
+    const tabProjects = document.getElementById('mainTabProjects');
+
+    if (usersPanel) usersPanel.style.display = tab === 'users' ? 'block' : 'none';
+    if (projectsPanel) projectsPanel.style.display = tab === 'projects' ? 'block' : 'none';
+    if (tabUsers) tabUsers.classList.toggle('active', tab === 'users');
+    if (tabProjects) tabProjects.classList.toggle('active', tab === 'projects');
+
+    // Keep URL in sync
+    const url = new URL(window.location);
+    url.searchParams.set('tab', tab);
+    history.replaceState({}, '', url);
+
+    // Init project view when switching to it for the first time
+    if (tab === 'projects') renderView(appState.currentView);
+}
+
+// Inject real DB employees (set by PHP before this script loads)
+if (window.__DB_EMPLOYEES__ && window.__DB_EMPLOYEES__.length) {
+    appState.employees = window.__DB_EMPLOYEES__;
+}

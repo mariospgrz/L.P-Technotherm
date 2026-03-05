@@ -1179,3 +1179,270 @@ body {
     color: var(--text-muted);
     margin-top: 3px;
 }
+
+/* ===== USER MANAGEMENT (from admin_dashboard.php inline styles) ===== */
+
+/* Top-level tab bar */
+.main-tab-bar {
+    display: flex;
+    gap: 0;
+    margin-bottom: 24px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.main-tab-btn {
+    padding: 12px 28px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.2s;
+    font-family: inherit;
+}
+
+.main-tab-btn:hover {
+    color: var(--primary);
+}
+
+.main-tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+/* Flash messages */
+.flash-banner {
+    padding: 13px 18px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.flash-banner.success {
+    background: #dcfce7;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.flash-banner.error {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+/* Users 2-column grid */
+.users-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+    margin-bottom: 28px;
+}
+
+@media (max-width: 860px) {
+    .users-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Panel boxes */
+.panel-box {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-box h3 {
+    margin: 0 0 16px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.panel-box.danger-box {
+    border-color: #fca5a5;
+    background: #fff8f8;
+}
+
+.panel-box h3 .icon-primary {
+    color: var(--primary);
+}
+
+.panel-box.danger-box h3 .icon-primary {
+    color: var(--danger);
+}
+
+/* Panel forms */
+.panel-form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.panel-form .form-group {
+    margin-bottom: 12px;
+}
+
+.panel-form .btn-panel {
+    margin-top: auto;
+}
+
+.panel-form label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.panel-form input,
+.panel-form select {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    background: #f8fafc;
+    transition: border-color 0.2s, background 0.2s;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.panel-form input:focus,
+.panel-form select:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: #fff;
+}
+
+.panel-form .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+/* Confirm / delete row */
+.confirm-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 14px;
+    margin-top: 4px;
+    width: 100%;
+}
+
+.confirm-row input[type="checkbox"] {
+    margin-top: 3px;
+    accent-color: var(--danger);
+    flex-shrink: 0;
+    width: 15px;
+    height: 15px;
+}
+
+.confirm-row label {
+    font-size: 0.83rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    flex: 1;
+    min-width: 0;
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+.confirm-row label i {
+    color: var(--danger);
+    margin-right: 4px;
+}
+
+/* Panel submit buttons */
+.btn-panel {
+    width: 100%;
+    padding: 11px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    transition: opacity 0.2s;
+}
+
+.btn-panel:hover {
+    opacity: 0.88;
+}
+
+.btn-panel-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-panel-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}
+
+/* Section heading above users table */
+.section-heading {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 24px 0 14px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-heading i {
+    color: var(--primary);
+}
+
+.section-heading .count-pill {
+    margin-left: auto;
+    background: #eff6ff;
+    color: var(--primary);
+    font-size: 0.78rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+/* You-badge in row */
+.you-badge {
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 0.72rem;
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-left: 6px;
+    font-weight: 600;
+}
+
+.overflow-x {
+    overflow-x: auto;
+}

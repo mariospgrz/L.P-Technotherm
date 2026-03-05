@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * frontend/admin_dashboard.php
  * Admin-only dashboard.
@@ -55,271 +55,8 @@ $employees_json = json_encode(array_map(fn($u) => [
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <!-- Admin CSS (existing) -->
-    <link rel="stylesheet" href="admin dashboard.css">
-    <style>
-        /* ── Top-level tab bar (Users vs Projects) ── */
-        .main-tab-bar {
-            display: flex;
-            gap: 0;
-            margin-bottom: 24px;
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        .main-tab-btn {
-            padding: 12px 28px;
-            background: none;
-            border: none;
-            border-bottom: 3px solid transparent;
-            margin-bottom: -2px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: color 0.2s;
-        }
-
-        .main-tab-btn:hover {
-            color: var(--primary);
-        }
-
-        .main-tab-btn.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
-        }
-
-        /* ── Flash banner ── */
-        .flash-banner {
-            padding: 13px 18px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 0.92rem;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .flash-banner.success {
-            background: #dcfce7;
-            color: #15803d;
-            border: 1px solid #bbf7d0;
-        }
-
-        .flash-banner.error {
-            background: #fef2f2;
-            color: #b91c1c;
-            border: 1px solid #fecaca;
-        }
-
-        /* ── User Management panel ── */
-        .users-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 22px;
-            margin-bottom: 28px;
-        }
-
-        @media (max-width: 860px) {
-            .users-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .panel-box {
-            background: #fff;
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 22px;
-        }
-
-        .panel-box h3 {
-            margin: 0 0 16px;
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .panel-box.danger-box {
-            border-color: #fca5a5;
-            background: #fff8f8;
-        }
-
-        .panel-box h3 .icon-primary {
-            color: var(--primary);
-        }
-
-        .panel-box.danger-box h3 .icon-primary {
-            color: var(--danger);
-        }
-
-        /* Form fields inside panels */
-        .panel-form .form-group {
-            margin-bottom: 12px;
-        }
-
-        .panel-form label {
-            display: block;
-            font-size: 0.78rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .panel-form input,
-        .panel-form select {
-            width: 100%;
-            padding: 9px 12px;
-            border: 1.5px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 0.9rem;
-            color: var(--text-main);
-            background: #f8fafc;
-            transition: border-color 0.2s, background 0.2s;
-            box-sizing: border-box;
-            font-family: inherit;
-        }
-
-        .panel-form input:focus,
-        .panel-form select:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: #fff;
-        }
-
-        .panel-form .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        /* Confirm row for delete */
-        .confirm-row {
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            margin-bottom: 14px;
-            margin-top: 4px;
-        }
-
-        .confirm-row input[type="checkbox"] {
-            margin-top: 3px;
-            accent-color: var(--danger);
-            flex-shrink: 0;
-        }
-
-        .confirm-row label {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            cursor: pointer;
-        }
-
-        /* Submit buttons */
-        .btn-panel {
-            width: 100%;
-            padding: 11px;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            font-family: inherit;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-            transition: opacity 0.2s;
-        }
-
-        .btn-panel:hover {
-            opacity: 0.88;
-        }
-
-        .btn-panel-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-panel-danger {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-        }
-
-        /* Users table section */
-        .section-heading {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin: 24px 0 14px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .section-heading i {
-            color: var(--primary);
-        }
-
-        .section-heading .count-pill {
-            margin-left: auto;
-            background: #eff6ff;
-            color: var(--primary);
-            font-size: 0.78rem;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-
-        .data-table tbody tr:hover {
-            background: #f8faff;
-        }
-
-        .data-table .badge-administrator {
-            background: #ede9fe;
-            color: #6d28d9;
-        }
-
-        .data-table .badge-supervisor {
-            background: #e0f2fe;
-            color: #0369a1;
-        }
-
-        .data-table .badge-helper {
-            background: #dcfce7;
-            color: #15803d;
-        }
-
-        .you-badge {
-            background: #fef3c7;
-            color: #92400e;
-            font-size: 0.72rem;
-            padding: 2px 7px;
-            border-radius: 10px;
-            margin-left: 6px;
-            font-weight: 600;
-        }
-
-        .no-data {
-            text-align: center;
-            color: var(--text-muted);
-            padding: 32px;
-            font-size: 0.95rem;
-        }
-
-        .overflow-x {
-            overflow-x: auto;
-        }
-    </style>
+    <!-- Admin CSS -->
+    <link rel="stylesheet" href="CSS/admin dashboard.css">
 </head>
 
 <body>
@@ -454,6 +191,7 @@ $employees_json = json_encode(array_map(fn($u) => [
                         <div class="confirm-row">
                             <input type="checkbox" id="du_confirm" name="confirm" required>
                             <label for="du_confirm">
+                                <i class="fas fa-exclamation-triangle"></i>
                                 Επιβεβαιώνω ότι θέλω να διαγράψω <strong>οριστικά</strong> αυτόν τον χρήστη.
                             </label>
                         </div>
@@ -778,100 +516,20 @@ $employees_json = json_encode(array_map(fn($u) => [
 
     </div><!-- /app-container -->
 
-    <!-- ── Inject real DB employees into appState BEFORE admin.js loads ── -->
+    <!-- ── PHP data injection: must be inline because it uses PHP values ── -->
     <script>
-        // PHP passes real users so admin.js Employees tab shows live data
+        // Passes real DB users to admin.js so the Employees tab shows live data
         window.__DB_EMPLOYEES__ = <?= $employees_json ?>;
-    </script>
-
-    <!-- Admin JS (existing — unchanged except handleLogout is overridden below) -->
-    <script src="admin.js"></script>
-
-    <script>
-        // ── Override: real logout ─────────────────────────────────────────────────────
-        function handleLogout() {
-            if (confirm('Αποσύνδεση;')) {
-                window.location.href = '/Backend/logout.php';
-            }
-        }
-
-        // ── Replace appState.employees with real DB data ───────────────────────────────
-        if (window.__DB_EMPLOYEES__ && window.__DB_EMPLOYEES__.length) {
-            appState.employees = window.__DB_EMPLOYEES__;
-        }
-
-        // ── Top-level tab switching (Users ↔ Projects) ────────────────────────────────
-        function showMainTab(tab) {
-            document.getElementById('panel-users').style.display = tab === 'users' ? 'block' : 'none';
-            document.getElementById('panel-projects').style.display = tab === 'projects' ? 'block' : 'none';
-            document.getElementById('mainTabUsers').classList.toggle('active', tab === 'users');
-            document.getElementById('mainTabProjects').classList.toggle('active', tab === 'projects');
-
-            // Keep URL in sync
-            const url = new URL(window.location);
-            url.searchParams.set('tab', tab);
-            history.replaceState({}, '', url);
-
-            // Init project view when switching to it for the first time
-            if (tab === 'projects') {
-                renderView(appState.currentView);
-            }
-        }
-
-        // ── Bootstrap: if starting on Projects tab, render it ────────────────────────
+        <?php if ($active_tab === 'projects'): ?>
+        // Start on projects tab — trigger first render after admin.js loads
         document.addEventListener('DOMContentLoaded', function () {
-            <?php if ($active_tab === 'projects'): ?>
-                renderView(appState.currentView);
-            <?php endif; ?>
-
-            // Update progress bars in details modal dynamically
-            document.addEventListener('_detailsOpened', updateProgressBars);
+            renderView(appState.currentView);
         });
-
-        // ── Enhance openDetails to also populate progress bar spans ──────────────────
-        const _origOpenDetails = openDetails;
-        function openDetails(projectId) {
-            _origOpenDetails(projectId);
-            const proj = appState.projects.find(p => p.id === projectId);
-            if (!proj) return;
-            const pct = proj.budget > 0 ? Math.round((proj.paid / proj.budget) * 100) : 0;
-            const owedAmt = proj.budget - proj.paid;
-            const owedPct = 100 - pct;
-            document.getElementById('ps-total').textContent = `€${proj.budget.toLocaleString()}`;
-            document.getElementById('ps-paid').textContent = `€${proj.paid.toLocaleString()}`;
-            document.getElementById('ps-owed').textContent = `€${owedAmt.toLocaleString()}`;
-            document.getElementById('ps-paid-pct').textContent = `${pct}% του συνολικού`;
-            document.getElementById('ps-owed-pct').textContent = `${owedPct}% του συνολικού`;
-            document.getElementById('bar-paid').style.width = `${pct}%`;
-            document.getElementById('bar-owed').style.width = `${owedPct}%`;
-        }
-
-        // ── Enhance openReport to also populate report KPI cards ─────────────────────
-        const _origOpenReport = openReport;
-        function openReport() {
-            _origOpenReport();
-            const proj = appState.projects.find(p => p.id === currentProjectId);
-            if (!proj) return;
-            const totalCost = proj.costLabor + proj.costMaterials;
-            const profit = proj.budget - totalCost;
-            const pct = proj.budget > 0 ? ((profit / proj.budget) * 100).toFixed(1) : 0;
-            document.getElementById('rep-budget').textContent = `€${proj.budget.toLocaleString()}`;
-            document.getElementById('rep-cost').textContent = `€${totalCost.toLocaleString()}`;
-            document.getElementById('rep-profit').textContent = `${profit >= 0 ? '+' : ''}€${profit.toLocaleString()}`;
-            document.getElementById('rep-pct').textContent = `${profit >= 0 ? '+' : ''}${pct}%`;
-
-            // Staff table
-            const tbody = document.getElementById('staffTableBody');
-            tbody.innerHTML = appState.employees
-                .filter(e => e.hours > 0)
-                .map(e => `<tr>
-            <td>${e.name}</td>
-            <td>${e.role}</td>
-            <td>${e.hours}h</td>
-            <td>€${(e.rate * e.hours).toFixed(2)}</td>
-        </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:#94a3b8;">Δεν υπάρχουν εγγραφές ωρών.</td></tr>';
-        }
+        <?php endif; ?>
     </script>
+
+    <!-- Admin JS -->
+    <script src="JS/admin.js"></script>
 
 </body>
 
