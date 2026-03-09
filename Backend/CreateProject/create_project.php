@@ -6,19 +6,19 @@ require_once __DIR__ . '/../Database/Database.php';
 
 function redirectError(string $msg): void
 {
-    header('Location: /frontend/admin_dashboard.php?error=' . urlencode($msg) . '&tab=projects');
+    header('Location: /dashboards/admin_dashboard.php?error=' . urlencode($msg) . '&tab=projects');
     exit();
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: /frontend/admin_dashboard.php?tab=projects');
+    header('Location: /dashboards/admin_dashboard.php?tab=projects');
     exit();
 }
 
-$name       = trim($_POST['project_name'] ?? '');
-$location   = trim($_POST['location']     ?? '');
-$budget_raw = trim($_POST['budget']       ?? '');
-$start_date = trim($_POST['start_date']   ?? '');
+$name = trim($_POST['project_name'] ?? '');
+$location = trim($_POST['location'] ?? '');
+$budget_raw = trim($_POST['budget'] ?? '');
+$start_date = trim($_POST['start_date'] ?? '');
 
 
 if ($name === '') {
@@ -94,7 +94,7 @@ if (!$stmt->execute()) {
 }
 $stmt->close();
 
-header('Location: /frontend/admin_dashboard.php?success=' . urlencode(
+header('Location: /dashboards/admin_dashboard.php?success=' . urlencode(
     'Το έργο «' . $name . '» δημιουργήθηκε επιτυχώς!'
 ) . '&tab=projects');
 exit();

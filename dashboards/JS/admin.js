@@ -496,9 +496,7 @@ function closeReport() { document.getElementById('reportModal').style.display = 
 
 // ==================== LOGOUT ====================
 function handleLogout() {
-    if (confirm('Αποσύνδεση;')) {
-        window.location.href = '/Backend/logout.php';
-    }
+    window.location.href = '/Backend/logout.php';
 }
 
 // ==================== TAB SWITCHING ====================
@@ -532,10 +530,10 @@ if (window.__DB_EMPLOYEES__ && window.__DB_EMPLOYEES__.length) {
 // ==================== Create Project ====================
 
 function validateProjectForm() {
-    const name     = document.getElementById('proj_name').value.trim();
+    const name = document.getElementById('proj_name').value.trim();
     const location = document.getElementById('proj_location').value.trim();
-    const budget   = parseFloat(document.getElementById('proj_budget').value);
-    const date     = document.getElementById('proj_start_date').value;
+    const budget = parseFloat(document.getElementById('proj_budget').value);
+    const date = document.getElementById('proj_start_date').value;
     const errorBox = document.getElementById('projectFormError');
     const errorMsg = document.getElementById('projectFormErrorMsg');
 

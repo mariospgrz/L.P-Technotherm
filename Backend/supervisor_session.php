@@ -1,7 +1,7 @@
 <?php
 /**
- * Backend/admin_session.php
- * Include at the TOP of every admin-only PHP page.
+ * Backend/supervisor_session.php
+ * Include at the TOP of every supervisor-only PHP page.
  */
 session_start();
 
@@ -25,10 +25,10 @@ if (
 
 $_SESSION['LAST_ACTIVITY'] = time();
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'administrator') {
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'supervisor') {
     session_unset();
     session_destroy();
     header('Location: /login/login.html?error=' .
-        urlencode('Δεν έχετε δικαίωμα πρόσβασης στον πίνακα διαχείρισης.'));
+        urlencode('Δεν έχετε δικαίωμα πρόσβασης στην σελίδα επιβλέποντα.'));
     exit();
 }

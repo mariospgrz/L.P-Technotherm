@@ -56,7 +56,8 @@ $employees_json = json_encode(array_map(fn($u) => [
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <!-- Admin CSS -->
-    <link rel="stylesheet" href="CSS/admin dashboard.css">
+    <link rel="stylesheet" href="CSS/admin_dashboard.css">
+    <link rel="stylesheet" href="/frontend/CSS/logout_button.css">
 </head>
 
 <body>
@@ -66,7 +67,7 @@ $employees_json = json_encode(array_map(fn($u) => [
         <header class="main-header">
             <div class="header-left">
                 <div class="logo-container">
-                    <img src="images/images.jpg" alt="LP Technotherm"
+                    <img src="../frontend/images/images.jpg" alt="LP Technotherm"
                         onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'150\' height=\'45\'><rect width=\'150\' height=\'45\' fill=\'%232563eb\' rx=\'6\'/><text x=\'75\' y=\'28\' font-family=\'Arial\' font-size=\'13\' font-weight=\'bold\' fill=\'white\' text-anchor=\'middle\'>LP Technotherm</text></svg>'"
                         class="company-logo">
                 </div>
@@ -78,8 +79,14 @@ $employees_json = json_encode(array_map(fn($u) => [
                 </div>
             </div>
             <div class="header-right">
-                <button class="logout-link" onclick="handleLogout()">
-                    <i class="fas fa-sign-out-alt"></i> Αποσύνδεση
+                <button class="btn-logout" onclick="handleLogout()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                    Αποσύνδεση
                 </button>
             </div>
         </header>
@@ -334,47 +341,57 @@ $employees_json = json_encode(array_map(fn($u) => [
 
         <!-- Modal: Νέο Έργο -->
         <div id="projectModal" class="modal-overlay">
-    <div class="modal-container" style="max-width:480px;">
-        <div class="modal-header">
-            <h3><i class="fas fa-plus-circle" style="color:var(--primary);margin-right:8px;"></i>Δημιουργία Νέου Έργου</h3>
-            <button class="close-modal" onclick="toggleModal('projectModal')" title="Κλείσιμο">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div id="projectFormError" style="display:none;background:#fef2f2;border:1px solid #fca5a5;color:#b91c1c;border-radius:8px;padding:10px 14px;font-size:0.85rem;margin-bottom:14px;">
-                <i class="fas fa-exclamation-triangle" style="margin-right:6px;"></i>
-                <span id="projectFormErrorMsg"></span>
+            <div class="modal-container" style="max-width:480px;">
+                <div class="modal-header">
+                    <h3><i class="fas fa-plus-circle" style="color:var(--primary);margin-right:8px;"></i>Δημιουργία Νέου
+                        Έργου</h3>
+                    <button class="close-modal" onclick="toggleModal('projectModal')" title="Κλείσιμο">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="projectFormError"
+                        style="display:none;background:#fef2f2;border:1px solid #fca5a5;color:#b91c1c;border-radius:8px;padding:10px 14px;font-size:0.85rem;margin-bottom:14px;">
+                        <i class="fas fa-exclamation-triangle" style="margin-right:6px;"></i>
+                        <span id="projectFormErrorMsg"></span>
+                    </div>
+                    <form id="createProjectForm" action="/Backend/CreateProject/create_project.php" method="POST"
+                        onsubmit="return validateProjectForm()" novalidate>
+                        <div class="panel-form" style="margin-bottom:0;">
+                            <div class="form-group">
+                                <label for="proj_name">Όνομα Έργου <span style="color:var(--danger);">*</span></label>
+                                <input type="text" id="proj_name" name="project_name"
+                                    placeholder="π.χ. Εγκατάσταση Κλιματισμού - Hotel Αθήνα" maxlength="200" required
+                                    autocomplete="off">
+                            </div>
+                            <div class="form-group">
+                                <label for="proj_location">Τοποθεσία <span style="color:var(--danger);">*</span></label>
+                                <input type="text" id="proj_location" name="location" placeholder="π.χ. Αθήνα, Κέντρο"
+                                    maxlength="200" required autocomplete="off">
+                            </div>
+                            <div class="form-group">
+                                <label for="proj_budget">Προϋπολογισμός (€) <span
+                                        style="color:var(--danger);">*</span></label>
+                                <input type="number" id="proj_budget" name="budget" placeholder="π.χ. 45000" min="0.01"
+                                    step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="proj_start_date">Ημερομηνία Έναρξης <span
+                                        style="color:var(--danger);">*</span></label>
+                                <input type="date" id="proj_start_date" name="start_date" required>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:10px;margin-top:6px;">
+                            <button type="button" class="btn" onclick="toggleModal('projectModal')"
+                                style="flex:1;background:#f3f4f6;color:#374151;border:1px solid var(--border-color);">
+                                <i class="fas fa-times"></i> Ακύρωση
+                            </button>
+                            <button type="submit" class="btn btn-blue" style="flex:2;">
+                                <i class="fas fa-plus"></i> Δημιουργία
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <form id="createProjectForm" action="/Backend/CreateProject/create_project.php" method="POST" onsubmit="return validateProjectForm()" novalidate>
-                <div class="panel-form" style="margin-bottom:0;">
-                    <div class="form-group">
-                        <label for="proj_name">Όνομα Έργου <span style="color:var(--danger);">*</span></label>
-                        <input type="text" id="proj_name" name="project_name" placeholder="π.χ. Εγκατάσταση Κλιματισμού - Hotel Αθήνα" maxlength="200" required autocomplete="off">
-                    </div>
-                    <div class="form-group">
-                        <label for="proj_location">Τοποθεσία <span style="color:var(--danger);">*</span></label>
-                        <input type="text" id="proj_location" name="location" placeholder="π.χ. Αθήνα, Κέντρο" maxlength="200" required autocomplete="off">
-                    </div>
-                    <div class="form-group">
-                        <label for="proj_budget">Προϋπολογισμός (€) <span style="color:var(--danger);">*</span></label>
-                        <input type="number" id="proj_budget" name="budget" placeholder="π.χ. 45000" min="0.01" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="proj_start_date">Ημερομηνία Έναρξης <span style="color:var(--danger);">*</span></label>
-                        <input type="date" id="proj_start_date" name="start_date" required>
-                    </div>
-                </div>
-                <div style="display:flex;gap:10px;margin-top:6px;">
-                    <button type="button" class="btn" onclick="toggleModal('projectModal')" style="flex:1;background:#f3f4f6;color:#374151;border:1px solid var(--border-color);">
-                        <i class="fas fa-times"></i> Ακύρωση
-                    </button>
-                    <button type="submit" class="btn btn-blue" style="flex:2;">
-                        <i class="fas fa-plus"></i> Δημιουργία
-                    </button>
-                </div>
-            </form>
         </div>
-    </div>
-</div>
 
         <!-- Modal: Νέος Υπάλληλος -->
         <div id="workerModal" class="modal-overlay">
@@ -548,10 +565,10 @@ $employees_json = json_encode(array_map(fn($u) => [
         // Passes real DB users to admin.js so the Employees tab shows live data
         window.__DB_EMPLOYEES__ = <?= $employees_json ?>;
         <?php if ($active_tab === 'projects'): ?>
-        // Start on projects tab — trigger first render after admin.js loads
-        document.addEventListener('DOMContentLoaded', function () {
-            renderView(appState.currentView);
-        });
+            // Start on projects tab — trigger first render after admin.js loads
+            document.addEventListener('DOMContentLoaded', function () {
+                renderView(appState.currentView);
+            });
         <?php endif; ?>
     </script>
 

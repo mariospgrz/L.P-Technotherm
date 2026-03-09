@@ -5,10 +5,13 @@ require_once __DIR__ . '/Database/Database.php';
 
 // If user is already logged in, redirect by role
 if (isset($_SESSION['user_id'])) {
-    if (isset($_SESSION['role']) && $_SESSION['role'] === 'administrator') {
-        header('Location: /frontend/admin_dashboard.php');
+    if ($_SESSION['role'] === 'administrator') {
+        header('Location: /dashboards/admin_dashboard.php');
+    } elseif ($_SESSION['role'] === 'supervisor') {
+        header('Location: /dashboards/supervisor_dashboard.php');
     } else {
-        header('Location: /frontend/dashboard.php');
+        // helper or other roles - redirect to login for now
+        header('Location: /login/login.html');
     }
     exit;
 }
@@ -45,9 +48,12 @@ if ($user && password_verify($password, $user['password'])) {
     $_SESSION['LAST_ACTIVITY'] = time();
 
     if ($user['role'] === 'administrator') {
-        header('Location: /frontend/admin_dashboard.php');
+        header('Location: /dashboards/admin_dashboard.php');
+    } else if ($user['role'] === 'supervisor') {
+        header('Location: /dashboards/supervisor_dashboard.php');
     } else {
-        header('Location: /frontend/dashboard.php');
+        // helper or other roles - redirect to login for now
+        header('Location: /login/login.html?error=' . urlencode('Δεν υπάρχει dashboard για τον ρόλο σας ακόμα.'));
     }
     exit;
 } else {

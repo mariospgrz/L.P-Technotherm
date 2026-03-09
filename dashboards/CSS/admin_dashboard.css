@@ -76,25 +76,6 @@ body {
     margin-top: 1px;
 }
 
-.logout-link {
-    background: none;
-    border: 1px solid var(--border-color);
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    padding: 7px 14px;
-    border-radius: 8px;
-    font-family: inherit;
-    transition: all 0.18s;
-}
-
-.logout-link:hover {
-    color: var(--danger);
-    border-color: var(--danger);
-}
 
 /* ===== KPI GRID ===== */
 .kpi-grid {
