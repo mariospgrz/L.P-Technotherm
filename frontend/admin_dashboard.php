@@ -334,20 +334,47 @@ $employees_json = json_encode(array_map(fn($u) => [
 
         <!-- Modal: Νέο Έργο -->
         <div id="projectModal" class="modal-overlay">
-            <div class="modal-container" style="max-width:400px;">
-                <div class="modal-header">
-                    <h3>Δημιουργία Νέου Έργου</h3>
-                    <button class="close-modal" onclick="toggleModal('projectModal')">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <input type="text" id="projName" placeholder="Όνομα Έργου"
-                        style="width:100%;margin-bottom:10px;padding:10px;">
-                    <input type="text" id="projLocation" placeholder="Τοποθεσία"
-                        style="width:100%;margin-bottom:20px;padding:10px;">
-                    <button class="btn btn-blue" onclick="saveProject()" style="width:100%;">Αποθήκευση</button>
-                </div>
-            </div>
+    <div class="modal-container" style="max-width:480px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-plus-circle" style="color:var(--primary);margin-right:8px;"></i>Δημιουργία Νέου Έργου</h3>
+            <button class="close-modal" onclick="toggleModal('projectModal')" title="Κλείσιμο">&times;</button>
         </div>
+        <div class="modal-body">
+            <div id="projectFormError" style="display:none;background:#fef2f2;border:1px solid #fca5a5;color:#b91c1c;border-radius:8px;padding:10px 14px;font-size:0.85rem;margin-bottom:14px;">
+                <i class="fas fa-exclamation-triangle" style="margin-right:6px;"></i>
+                <span id="projectFormErrorMsg"></span>
+            </div>
+            <form id="createProjectForm" action="/Backend/CreateProject/create_project.php" method="POST" onsubmit="return validateProjectForm()" novalidate>
+                <div class="panel-form" style="margin-bottom:0;">
+                    <div class="form-group">
+                        <label for="proj_name">Όνομα Έργου <span style="color:var(--danger);">*</span></label>
+                        <input type="text" id="proj_name" name="project_name" placeholder="π.χ. Εγκατάσταση Κλιματισμού - Hotel Αθήνα" maxlength="200" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="proj_location">Τοποθεσία <span style="color:var(--danger);">*</span></label>
+                        <input type="text" id="proj_location" name="location" placeholder="π.χ. Αθήνα, Κέντρο" maxlength="200" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="proj_budget">Προϋπολογισμός (€) <span style="color:var(--danger);">*</span></label>
+                        <input type="number" id="proj_budget" name="budget" placeholder="π.χ. 45000" min="0.01" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="proj_start_date">Ημερομηνία Έναρξης <span style="color:var(--danger);">*</span></label>
+                        <input type="date" id="proj_start_date" name="start_date" required>
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;margin-top:6px;">
+                    <button type="button" class="btn" onclick="toggleModal('projectModal')" style="flex:1;background:#f3f4f6;color:#374151;border:1px solid var(--border-color);">
+                        <i class="fas fa-times"></i> Ακύρωση
+                    </button>
+                    <button type="submit" class="btn btn-blue" style="flex:2;">
+                        <i class="fas fa-plus"></i> Δημιουργία
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
         <!-- Modal: Νέος Υπάλληλος -->
         <div id="workerModal" class="modal-overlay">

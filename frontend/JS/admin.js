@@ -529,3 +529,33 @@ function showMainTab(tab) {
 if (window.__DB_EMPLOYEES__ && window.__DB_EMPLOYEES__.length) {
     appState.employees = window.__DB_EMPLOYEES__;
 }
+// ==================== Create Project ====================
+
+function validateProjectForm() {
+    const name     = document.getElementById('proj_name').value.trim();
+    const location = document.getElementById('proj_location').value.trim();
+    const budget   = parseFloat(document.getElementById('proj_budget').value);
+    const date     = document.getElementById('proj_start_date').value;
+    const errorBox = document.getElementById('projectFormError');
+    const errorMsg = document.getElementById('projectFormErrorMsg');
+
+    function showError(msg) {
+        errorMsg.textContent = msg;
+        errorBox.style.display = 'block';
+        errorBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        return false;
+    }
+
+    errorBox.style.display = 'none';
+
+    if (name.length < 3)
+        return showError('Το όνομα έργου πρέπει να έχει τουλάχιστον 3 χαρακτήρες.');
+    if (location === '')
+        return showError('Η τοποθεσία είναι υποχρεωτική.');
+    if (isNaN(budget) || budget <= 0)
+        return showError('Ο προϋπολογισμός πρέπει να είναι αριθμός μεγαλύτερος από €0.');
+    if (!date)
+        return showError('Η ημερομηνία έναρξης είναι υποχρεωτική.');
+
+    return true;
+}
