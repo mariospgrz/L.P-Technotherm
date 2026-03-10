@@ -160,6 +160,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(res => {
                     if (res.success) {
                         showToast('Ανάθεση αποθηκεύτηκε!', 'success');
+
+                        const projectId = String(data.get('project_id'));
+                        const helperIds = data.getAll('helper_ids[]');
+                        const pFound = state.projects.find(p => String(p.id) === projectId);
+
+                        if (pFound) {
+                            const pName = pFound.name;
+                            const hNames = state.helpers
+                                .filter(h => helperIds.includes(String(h.id)))
+                                .map(h => h.name);
+
+                            state.assignments = state.assignments.filter(a => a.project !== pName);
+                            if (hNames.length > 0) {
+                                state.assignments.push({ project: pName, helpers: hNames });
+                                state.assignments.sort((a, b) => a.project.localeCompare(b.project));
+                            }
+                        }
+
                         renderAssignments();
                     } else {
                         showToast(res.message || 'Σφάλμα ανάθεσης', 'error');
@@ -178,6 +196,48 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? fileInput.files[0].name
                 : 'Επιλέξτε αρχείο';
         });
+    }
+
+    // Assign Helpers Project Selection Change
+    const assignProjectSelect = document.getElementById('assign-project');
+    const assignOverlay = document.getElementById('helpers-disabled-overlay');
+    if (assignProjectSelect) {
+        assignProjectSelect.addEventListener('change', function () {
+            const projectId = this.value;
+            const pFound = state.projects.find(p => String(p.id) === projectId);
+
+            // Uncheck all first
+            document.querySelectorAll('.helper-checkbox').forEach(cb => {
+                cb.checked = false;
+            });
+
+            if (pFound) {
+                // Remove disabled overlay
+                if (assignOverlay) assignOverlay.style.display = 'none';
+
+                // Find assigned helpers for this project
+                const assignment = state.assignments.find(a => a.project === pFound.name);
+                if (assignment && assignment.helpers) {
+                    // Check the boxes for assigned helpers
+                    const helperNames = assignment.helpers;
+                    state.helpers.forEach(h => {
+                        if (helperNames.includes(h.name)) {
+                            const cb = document.getElementById(`h-${h.id}`);
+                            if (cb) cb.checked = true;
+                        }
+                    });
+                }
+            } else {
+                if (assignOverlay) assignOverlay.style.display = 'flex';
+            }
+            // Update counter UI
+            updateSelectedCount();
+        });
+
+        // Initial state
+        if (!assignProjectSelect.value && assignOverlay) {
+            assignOverlay.style.display = 'flex';
+        }
     }
 
     // Initial render
@@ -359,6 +419,14 @@ function showToast(msg, type = 'success') {
     });
     document.body.appendChild(t);
     setTimeout(() => t.remove(), 3500);
+}
+
+function updateSelectedCount() {
+    const checkedBoxes = document.querySelectorAll('.helper-checkbox:checked');
+    const label = document.getElementById('helpers-count-label');
+    if (label) {
+        label.textContent = `(${checkedBoxes.length} επιλεγμένοι)`;
+    }
 }
 
 /* ── Helpers ────────────────────────────────────────────── */

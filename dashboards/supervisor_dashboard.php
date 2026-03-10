@@ -537,17 +537,38 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                     </div>
 
                     <?php if (!empty($helpers)): ?>
-                        <div class="form-group">
-                            <label>Επιλέξτε Βοηθούς <span class="req">*</span></label>
-                            <div class="helpers-multi-select">
+                        <div class="form-group" style="position: relative;">
+                            <label>Επιλέξτε Βοηθούς <span id="helpers-count-label"
+                                    style="font-weight: normal; color: var(--text-secondary);">(0
+                                    επιλεγμένοι)</span></label>
+
+                            <div id="helpers-disabled-overlay"
+                                style="position: absolute; inset: 0; top: 24px; background: rgba(255,255,255,0.6); z-index: 10; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(1px); border-radius: var(--radius-sm);">
+                                <span
+                                    style="background: var(--bg-card); padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);">
+                                    <i class="fas fa-lock" style="margin-right: 6px;"></i> Επιλέξτε έργο πρώτα
+                                </span>
+                            </div>
+
+                            <div class="helpers-multi-select" style="max-height: none;">
                                 <?php foreach ($helpers as $h): ?>
-                                    <div class="helper-check-item">
+                                    <label class="helper-card" for="h-<?= $h['id'] ?>">
                                         <input type="checkbox" id="h-<?= $h['id'] ?>" name="helper_ids[]"
-                                            value="<?= $h['id'] ?>">
-                                        <label for="h-<?= $h['id'] ?>">
-                                            <?= htmlspecialchars($h['name']) ?>
-                                        </label>
-                                    </div>
+                                            value="<?= $h['id'] ?>" class="helper-checkbox" onchange="updateSelectedCount()">
+                                        <div class="helper-card-inner">
+                                            <div class="helper-avatar">
+                                                <i class="fas fa-user-plus icon-unselected"></i>
+                                                <i class="fas fa-check-circle icon-selected"></i>
+                                            </div>
+                                            <div class="helper-info-col">
+                                                <span class="helper-name"><?= htmlspecialchars($h['name']) ?></span>
+                                                <span class="helper-role">Βοηθός</span>
+                                            </div>
+                                            <div class="helper-badge-col">
+                                                <span class="helper-selected-badge">Επιλεγμένος</span>
+                                            </div>
+                                        </div>
+                                    </label>
                                 <?php endforeach; ?>
                             </div>
                         </div>
@@ -571,7 +592,7 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                     <?php if (!empty($helpers)): ?>
                         <button type="submit" class="btn btn-primary"
                             style="width:100%;justify-content:center;padding:13px;">
-                            <i class="fas fa-save"></i> Αποθήκευση Ανάθεσης
+                            <i class="fas fa-user-friends"></i> Αποθήκευση Ανάθεσης
                         </button>
                     <?php endif; ?>
                 </form>

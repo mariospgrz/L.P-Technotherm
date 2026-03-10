@@ -18,16 +18,12 @@ if (!$project_id) {
     exit;
 }
 
-// Verify this supervisor is assigned to the project
-$check = $conn->prepare(
-    'SELECT pa.project_id FROM project_assignments pa
-       JOIN users u ON u.id = pa.user_id
-      WHERE pa.project_id = ? AND pa.user_id = ? AND u.role = \'supervisor\''
-);
-$check->bind_param('ii', $project_id, $user_id);
+// Verify the project exists
+$check = $conn->prepare('SELECT id FROM projects WHERE id = ?');
+$check->bind_param('i', $project_id);
 $check->execute();
 if (!$check->get_result()->fetch_assoc()) {
-    echo json_encode(['success' => false, 'message' => 'Δεν έχετε πρόσβαση σε αυτό το έργο.']);
+    echo json_encode(['success' => false, 'message' => 'Το έργο δεν βρέθηκε.']);
     exit;
 }
 $check->close();

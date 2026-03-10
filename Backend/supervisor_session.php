@@ -5,7 +5,7 @@
  */
 session_start();
 
-$timeout = 180; // 10 minutes
+$timeout = 600; // 10 minutes
 
 if (!isset($_SESSION['user_id'])) {
     header('Location: /login/login.html');
