@@ -58,6 +58,7 @@ $employees_json = json_encode(array_map(fn($u) => [
     <!-- Admin CSS -->
     <link rel="stylesheet" href="CSS/admin_dashboard.css">
     <link rel="stylesheet" href="/frontend/CSS/logout_button.css">
+    <link rel="stylesheet" href="CSS/responsive.css">
 </head>
 
 <body>
