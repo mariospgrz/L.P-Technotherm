@@ -19,7 +19,7 @@ window.addEventListener('DOMContentLoaded', function () {
     }
     // Update KPI
     const profit = appState.kpi.budget - appState.kpi.cost;
-    document.getElementById('stat-profit').textContent = `+€${profit.toLocaleString()}`;
+    document.getElementById('stat-profit').textContent = `${profit >= 0 ? '+' : ''}€${profit.toLocaleString()}`;
     document.getElementById('stat-budget').textContent = `€${appState.kpi.budget.toLocaleString()}`;
     document.getElementById('stat-cost').textContent = `€${appState.kpi.cost.toLocaleString()}`;
 
@@ -120,14 +120,14 @@ function renderProjects(status) {
                 <i class="fas fa-chart-line"></i>
                 <span class="profit-label">Κέρδος</span>
                 <div class="profit-value">
-                    +€${profit.toLocaleString()}
-                    <div class="profit-pct">(+${profitPct}%)</div>
+                    ${profit >= 0 ? '+' : ''}€${profit.toLocaleString()}
+                    <div class="profit-pct">(${profit >= 0 ? '+' : ''}${profitPct}%)</div>
                 </div>
             </div>
             <div class="project-card-actions">
-                <button class="btn btn-green" onclick="openDetails(${p.id})">
+                <a href="/dashboards/project_details.php?project_id=${p.id}" class="btn btn-green" style="text-decoration:none;">
                     <i class="fas fa-dollar-sign"></i> Λεπτομέρειες
-                </button>
+                </a>
                 <button class="btn btn-blue" onclick="openReportFor(${p.id})">
                     <i class="fas fa-file-alt"></i> Αναφορά
                 </button>
@@ -355,76 +355,6 @@ function saveWorker() {
     if (appState.currentView === 'employees') renderEmployees();
 }
 
-// ==================== PROJECT DETAILS MODAL ====================
-let currentProjectId = null;
-
-function openDetails(projectId) {
-    currentProjectId = projectId;
-    const proj = appState.projects.find(p => p.id === projectId);
-    if (!proj) return;
-
-    document.getElementById('modalProjName').textContent = proj.name;
-    document.getElementById('modalProjLoc').textContent = proj.location;
-    document.getElementById('modalProjDate').textContent = proj.date;
-    document.getElementById('det-budget').textContent = `€${proj.budget.toLocaleString()}`;
-    document.getElementById('det-paid').textContent = `€${proj.paid.toLocaleString()}`;
-    document.getElementById('det-owed').textContent = `€${(proj.budget - proj.paid).toLocaleString()}`;
-    document.getElementById('det-profit').textContent = `€${(proj.budget - proj.costLabor - proj.costMaterials).toLocaleString()}`;
-    document.getElementById('det-labor').textContent = `€${proj.costLabor.toLocaleString()}`;
-    document.getElementById('det-materials').textContent = `€${proj.costMaterials.toLocaleString()}`;
-    document.getElementById('det-total-cost').textContent = `€${(proj.costLabor + proj.costMaterials).toLocaleString()}`;
-
-    // Progress bars
-    const pct = proj.budget > 0 ? Math.round((proj.paid / proj.budget) * 100) : 0;
-    const owed = proj.budget - proj.paid;
-    if (document.getElementById('ps-total')) {
-        document.getElementById('ps-total').textContent = `€${proj.budget.toLocaleString()}`;
-        document.getElementById('ps-paid').textContent = `€${proj.paid.toLocaleString()}`;
-        document.getElementById('ps-owed').textContent = `€${owed.toLocaleString()}`;
-        document.getElementById('ps-paid-pct').textContent = `${pct}% του συνολικού`;
-        document.getElementById('ps-owed-pct').textContent = `${100 - pct}% του συνολικού`;
-        document.getElementById('bar-paid').style.width = `${pct}%`;
-        document.getElementById('bar-owed').style.width = `${100 - pct}%`;
-    }
-
-    // Mock payment history
-    document.getElementById('paymentHistory').innerHTML = `
-        <li class="history-item"><span>ΤΙΜ-2024-002 <br><small>28/11/2024</small></span><strong>€10.000</strong></li>
-        <li class="history-item"><span>ΤΙΜ-2024-001 <br><small>20/11/2024</small></span><strong>€15.000</strong></li>
-    `;
-    document.getElementById('adjHistory').innerHTML = `
-        <li class="history-item"><span>Επιπλέον υλικά <br><small>22/11/2024</small></span><strong>+€5.000</strong></li>
-    `;
-
-    document.getElementById('detailsModal').style.display = 'block';
-}
-
-function closeDetails() { document.getElementById('detailsModal').style.display = 'none'; }
-
-function addPaymentRecord() {
-    const inv = document.getElementById('payInv').value;
-    const amt = parseFloat(document.getElementById('payAmt').value);
-    if (!inv || isNaN(amt) || amt <= 0) { alert('Συμπληρώστε αριθμό τιμολογίου και ποσό'); return; }
-    const li = document.createElement('li');
-    li.className = 'history-item';
-    li.innerHTML = `<span>${inv}</span><strong>€${amt.toLocaleString()}</strong>`;
-    document.getElementById('paymentHistory').prepend(li);
-    document.getElementById('payInv').value = '';
-    document.getElementById('payAmt').value = '';
-}
-
-function adjustBudget() {
-    const amt = parseFloat(document.getElementById('adjAmt').value);
-    const desc = document.getElementById('adjDesc').value || 'Αναπροσαρμογή';
-    if (isNaN(amt)) { alert('Συμπληρώστε ποσό'); return; }
-    const li = document.createElement('li');
-    li.className = 'history-item';
-    li.innerHTML = `<span>${desc}</span><strong style="color:${amt >= 0 ? 'var(--success)' : 'var(--danger)'};">${amt >= 0 ? '+' : ''}€${Math.abs(amt).toLocaleString()}</strong>`;
-    document.getElementById('adjHistory').prepend(li);
-    document.getElementById('adjAmt').value = '';
-    document.getElementById('adjDesc').value = '';
-}
-
 // ==================== REPORT MODAL ====================
 function openReport() { openReportFor(currentProjectId); }
 
@@ -526,6 +456,13 @@ function showMainTab(tab) {
 // Inject real DB employees (set by PHP before this script loads)
 if (window.__DB_EMPLOYEES__ && window.__DB_EMPLOYEES__.length) {
     appState.employees = window.__DB_EMPLOYEES__;
+}
+
+// Inject real DB projects (set by PHP before this script loads)
+if (window.__DB_PROJECTS__ && window.__DB_PROJECTS__.length) {
+    appState.projects = window.__DB_PROJECTS__;
+    appState.kpi.budget = appState.projects.reduce((sum, p) => sum + p.budget, 0);
+    appState.kpi.cost = appState.projects.reduce((sum, p) => sum + p.costLabor + p.costMaterials, 0);
 }
 // ==================== Create Project ====================
 

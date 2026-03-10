@@ -10,22 +10,22 @@ $result = $conn->query('
  ORDER BY start_date DESC
  ');
 
- echo <h2>Ενεργά Έργα</h2>;
- 
- 
- if ($result->num_rows === 0) { 
-    echo <p>Δεν υπάρχουν ενεργά έργα.</p>;
-    } 
-    else {
-    echo <table>;
-    echo <tr><th>Όνομα</th><th>Τοποθεσία</th><th>Ημερομηνία Έναρξης</th></tr>;
-    while ($row = $result->fetch_assoc()) {
-        echo <tr>;
-        echo <td> . htmlspecialchars($row['name']) . </td>;
-        echo <td> . htmlspecialchars($row['location']) . </td>;
-        echo <td> . htmlspecialchars($row['start_date']) . </td>;
-        echo </tr>;
-    }
-    echo </table>;
- }              
+echo "<h2> Ενεργά Έργα</h2>";
+while ($row = $result->fetch_assoc()) {
 
+    if ($result->num_rows === 0) {
+        echo "<p>Δεν υπάρχουν ενεργά έργα.</p>";
+    } else {
+        echo "<table>";
+        echo "<tr><th>Όνομα</th><th>Τοποθεσία</th><th>Ημερομηνία Έναρξης</th></tr>";
+        while ($row = $result->fetch_assoc()) {
+            echo "<tr>";
+            echo "<td>" . htmlspecialchars($row['name']) . "</td>";
+            echo "<td>" . htmlspecialchars($row['location']) . "</td>";
+            echo "<td>" . htmlspecialchars($row['start_date']) . "</td>";
+            echo "</tr>";
+        }
+        echo "</table>";
+    }
+
+}

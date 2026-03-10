@@ -42,6 +42,31 @@ $employees_json = json_encode(array_map(fn($u) => [
     'rate' => (float) ($u['hourly_rate'] ?? 0),
     'hours' => 0,
 ], $users));
+
+// ── Fetch all projects for Projects tab ───────────────────────────────────────
+$projects = [];
+$proj_res = $conn->query(
+    "SELECT p.id, p.name, p.status, p.location, p.start_date, p.budget,
+        (SELECT COALESCE(SUM(TIMESTAMPDIFF(MINUTE, te.clock_in, te.clock_out) / 60.0 * u.hourly_rate), 0) 
+         FROM time_entries te JOIN users u ON te.user_id = u.id 
+         WHERE te.project_id = p.id AND te.clock_out IS NOT NULL) AS costLabor,
+        (SELECT COALESCE(SUM(amount), 0) FROM invoices WHERE project_id = p.id) AS costMaterials,
+        (SELECT COALESCE(SUM(amount), 0) FROM payments WHERE project_id = p.id) AS paid
+     FROM projects p
+     ORDER BY p.start_date DESC"
+);
+if ($proj_res) {
+    while ($row = $proj_res->fetch_assoc()) {
+        $row['date'] = date('d/m/Y', strtotime($row['start_date']));
+        $row['budget'] = (float) $row['budget'];
+        $row['costLabor'] = (float) $row['costLabor'];
+        $row['costMaterials'] = (float) $row['costMaterials'];
+        $row['paid'] = (float) $row['paid'];
+        $row['id'] = (int) $row['id'];
+        $projects[] = $row;
+    }
+}
+$projects_json = json_encode($projects);
 ?>
 <!DOCTYPE html>
 <html lang="el">
@@ -416,98 +441,7 @@ $employees_json = json_encode(array_map(fn($u) => [
             </div>
         </div>
 
-        <!-- Modal: Λεπτομέρειες Έργου -->
-        <div id="detailsModal" class="modal-overlay">
-            <div class="modal-container">
-                <div class="modal-header">
-                    <div class="modal-title">
-                        <h2 id="modalProjName"></h2>
-                        <p><i class="fas fa-map-marker-alt"></i> <span id="modalProjLoc"></span>
-                            | <i class="fas fa-calendar"></i> <span id="modalProjDate"></span></p>
-                    </div>
-                    <button class="close-modal" onclick="closeDetails()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="details-kpi-grid">
-                        <div class="d-card"><span>Συνολικός Προϋπολογισμός</span>
-                            <h3 id="det-budget"></h3>
-                        </div>
-                        <div class="d-card green-bg"><span>Σύνολο Πληρωμών</span>
-                            <h3 id="det-paid"></h3>
-                        </div>
-                        <div class="d-card red-bg"><span>Οφειλή Πελάτη</span>
-                            <h3 id="det-owed"></h3>
-                        </div>
-                        <div class="d-card green-bg"><span>Κέρδος</span>
-                            <h3 id="det-profit"></h3>
-                        </div>
-                    </div>
 
-                    <div class="payment-summary-box">
-                        <h4><i class="fas fa-file-invoice-dollar"></i> Σύνοψη Πληρωμών</h4>
-                        <div class="progress-section">
-                            <div class="prog-item">
-                                <span>Συνολικό Τιμολόγιο: <strong id="ps-total"></strong></span>
-                                <div class="bar">
-                                    <div class="fill blue" style="width:100%"></div>
-                                </div>
-                            </div>
-                            <div class="prog-item">
-                                <span>Εισπραχθέντα: <strong class="text-green" id="ps-paid"></strong></span>
-                                <div class="bar">
-                                    <div class="fill green" id="bar-paid" style="width:0%"></div>
-                                </div>
-                                <small id="ps-paid-pct"></small>
-                            </div>
-                            <div class="prog-item">
-                                <span>Προς Είσπραξη: <strong class="text-red" id="ps-owed"></strong></span>
-                                <div class="bar">
-                                    <div class="fill red" id="bar-owed" style="width:0%"></div>
-                                </div>
-                                <small id="ps-owed-pct"></small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="management-grid">
-                        <div class="m-box">
-                            <h4><i class="fas fa-cash-register"></i> Καταχώρηση Πληρωμής</h4>
-                            <input type="text" id="payInv" placeholder="Αριθμός Τιμολογίου (π.χ. ΤΙΜ-001)">
-                            <input type="number" id="payAmt" placeholder="Ποσό Πληρωμής (€)">
-                            <button class="btn btn-dark" onclick="addPaymentRecord()">
-                                <i class="fas fa-plus"></i> Προσθήκη Πληρωμής
-                            </button>
-                            <h5>Ιστορικό Πληρωμών</h5>
-                            <ul id="paymentHistory" class="history-list"></ul>
-                        </div>
-                        <div class="m-box">
-                            <h4><i class="fas fa-edit"></i> Αναπροσαρμογή Προϋπολογισμού</h4>
-                            <input type="number" id="adjAmt" placeholder="Επιπλέον Ποσό (€)">
-                            <p class="hint">Θετικό για επιπλέον έργα, αρνητικό για μειώσεις</p>
-                            <textarea id="adjDesc" placeholder="Περιγραφή (προαιρετικό)"></textarea>
-                            <button class="btn btn-outline" onclick="adjustBudget()">
-                                <i class="fas fa-plus"></i> Ενημέρωση Προϋπολογισμού
-                            </button>
-                            <h5>Ιστορικό Αναπροσαρμογών</h5>
-                            <ul id="adjHistory" class="history-list"></ul>
-                        </div>
-                    </div>
-
-                    <div class="cost-footer">
-                        <h4><i class="fas fa-dollar-sign"></i> Ανάλυση Κόστους</h4>
-                        <div class="cost-pills">
-                            <div class="pill blue-pill">Κόστος Εργατοωρών: <strong id="det-labor"></strong></div>
-                            <div class="pill orange-pill">Κόστος Υλικών: <strong id="det-materials"></strong></div>
-                            <div class="pill purple-pill">Συνολικό Κόστος: <strong id="det-total-cost"></strong></div>
-                        </div>
-                    </div>
-
-                    <div style="margin-top:20px;text-align:right;">
-                        <button class="btn btn-blue" onclick="openReport()">Αναφορά Έργου</button>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Modal: Αναφορά Έργου -->
         <div id="reportModal" class="modal-overlay">
@@ -565,6 +499,8 @@ $employees_json = json_encode(array_map(fn($u) => [
     <script>
         // Passes real DB users to admin.js so the Employees tab shows live data
         window.__DB_EMPLOYEES__ = <?= $employees_json ?>;
+        // Passes real DB projects to admin.js
+        window.__DB_PROJECTS__ = <?= $projects_json ?>;
         <?php if ($active_tab === 'projects'): ?>
             // Start on projects tab — trigger first render after admin.js loads
             document.addEventListener('DOMContentLoaded', function () {
