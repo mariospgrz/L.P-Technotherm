@@ -24,7 +24,6 @@ if (!$project_id) {
     <style>
         /* ===== PROJECT DETAILS PAGE ===== */
 
-        /* Header (ROW 1) */
         .pd-header {
             display: flex;
             justify-content: space-between;
@@ -36,6 +35,9 @@ if (!$project_id) {
             margin: 24px 0 20px;
             box-shadow: var(--shadow-sm);
             gap: 16px;
+            position: sticky;
+            top: 20px;
+            z-index: 100;
         }
 
         .pd-header-left h1 {
@@ -99,11 +101,15 @@ if (!$project_id) {
         }
 
         @media (max-width: 900px) {
-            .pd-cards-grid { grid-template-columns: repeat(2, 1fr); }
+            .pd-cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
         @media (max-width: 480px) {
-            .pd-cards-grid { grid-template-columns: 1fr; }
+            .pd-cards-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .pd-fin-card {
@@ -118,7 +124,9 @@ if (!$project_id) {
             background: #f0fdf4;
             border-color: #bbf7d0;
         }
-        .pd-fin-card.green-card .card-label, .pd-fin-card.green-card .card-amount {
+
+        .pd-fin-card.green-card .card-label,
+        .pd-fin-card.green-card .card-amount {
             color: #16a34a;
         }
 
@@ -126,7 +134,9 @@ if (!$project_id) {
             background: #fef2f2;
             border-color: #fecaca;
         }
-        .pd-fin-card.red-card .card-label, .pd-fin-card.red-card .card-amount {
+
+        .pd-fin-card.red-card .card-label,
+        .pd-fin-card.red-card .card-amount {
             color: #ef4444;
         }
 
@@ -178,7 +188,9 @@ if (!$project_id) {
         }
 
         @media (max-width: 600px) {
-            .pd-progress-grid { grid-template-columns: 1fr; }
+            .pd-progress-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .pd-prog-item {
@@ -206,9 +218,20 @@ if (!$project_id) {
             font-weight: 600;
         }
 
-        .pd-prog-item .prog-amount.blue   { color: #1d4ed8; background: transparent; }
-        .pd-prog-item .prog-amount.green  { color: #16a34a; background: transparent; }
-        .pd-prog-item .prog-amount.red    { color: #ef4444; background: transparent; }
+        .pd-prog-item .prog-amount.blue {
+            color: #1d4ed8;
+            background: transparent;
+        }
+
+        .pd-prog-item .prog-amount.green {
+            color: #16a34a;
+            background: transparent;
+        }
+
+        .pd-prog-item .prog-amount.red {
+            color: #ef4444;
+            background: transparent;
+        }
 
         .pd-prog-item .prog-pct {
             font-size: 0.72rem;
@@ -228,7 +251,9 @@ if (!$project_id) {
             margin-bottom: 8px;
         }
 
-        .history-card:last-child { margin-bottom: 0; }
+        .history-card:last-child {
+            margin-bottom: 0;
+        }
 
         .history-card .hc-title {
             font-size: 0.85rem;
@@ -302,7 +327,9 @@ if (!$project_id) {
         }
 
         @media (max-width: 600px) {
-            .pd-cost-grid { grid-template-columns: 1fr; }
+            .pd-cost-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .pd-cost-card {
@@ -329,9 +356,17 @@ if (!$project_id) {
             color: var(--text-main);
         }
 
-        .pd-cost-card.blue-cost .cc-amount   { color: var(--primary); }
-        .pd-cost-card.orange-cost .cc-amount { color: #f59e0b; }
-        .pd-cost-card.purple-cost .cc-amount { color: #8b5cf6; }
+        .pd-cost-card.blue-cost .cc-amount {
+            color: var(--primary);
+        }
+
+        .pd-cost-card.orange-cost .cc-amount {
+            color: #f59e0b;
+        }
+
+        .pd-cost-card.purple-cost .cc-amount {
+            color: #8b5cf6;
+        }
 
         /* Inline form feedback messages */
         .form-msg {
@@ -375,8 +410,13 @@ if (!$project_id) {
 
         /* Responsive grids -> single column on mobile */
         @media (max-width: 600px) {
-            .management-grid { grid-template-columns: 1fr; }
-            .pd-header { flex-direction: column; }
+            .management-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pd-header {
+                flex-direction: column;
+            }
         }
 
         /* ===== TABS & LISTS ===== */
@@ -386,6 +426,12 @@ if (!$project_id) {
             border-bottom: 2px solid var(--border-color);
             margin-bottom: 24px;
             overflow-x: auto;
+            position: sticky;
+            top: 100px;
+            z-index: 99;
+            background: var(--bg);
+            padding-top: 10px;
+            margin-top: -10px;
         }
 
         .pd-tab {
@@ -398,6 +444,9 @@ if (!$project_id) {
             margin-bottom: -2px;
             transition: all 0.2s;
             white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 1;
         }
 
         .pd-tab:hover {
@@ -426,7 +475,7 @@ if (!$project_id) {
             overflow-x: auto;
             margin-bottom: 20px;
         }
-        
+
         .pd-table {
             width: 100%;
             border-collapse: collapse;
@@ -473,7 +522,7 @@ if (!$project_id) {
             cursor: pointer;
             transition: opacity 0.2s;
         }
-        
+
         .pd-invoice-thumb:hover {
             opacity: 0.8;
         }
@@ -495,7 +544,8 @@ if (!$project_id) {
                 </div>
             </div>
             <div class="pd-header-right">
-                <span class="badge" id="projStatus" style="visibility:hidden;padding:5px 14px;font-size:0.78rem;"></span>
+                <span class="badge" id="projStatus"
+                    style="visibility:hidden;padding:5px 14px;font-size:0.78rem;"></span>
                 <a href="/dashboards/admin_dashboard.php?tab=projects" class="btn-back">
                     <i class="fas fa-arrow-left"></i> Πίσω
                 </a>
@@ -510,10 +560,11 @@ if (!$project_id) {
 
         <!-- Error state -->
         <div id="errorState" style="display:none;" class="no-data">
-            <i class="fas fa-exclamation-triangle" style="color:var(--danger);font-size:2rem;display:block;margin-bottom:12px;"></i>
+            <i class="fas fa-exclamation-triangle"
+                style="color:var(--danger);font-size:2rem;display:block;margin-bottom:12px;"></i>
             <p id="errorMsg" style="color:var(--danger);"></p>
-            <a href="/dashboards/admin_dashboard.php?tab=projects"
-               class="btn btn-blue" style="display:inline-flex;margin-top:18px;">
+            <a href="/dashboards/admin_dashboard.php?tab=projects" class="btn btn-blue"
+                style="display:inline-flex;margin-top:18px;">
                 <i class="fas fa-arrow-left"></i> Πίσω στα Έργα
             </a>
         </div>
@@ -534,127 +585,127 @@ if (!$project_id) {
 
                 <!-- ========== ROW 2: 4 Financial Cards ========== -->
                 <div class="pd-cards-grid">
-                <div class="pd-fin-card">
-                    <div class="card-label">Συνολικός Προϋπολογισμός</div>
-                    <div class="card-amount" id="fc-budget">—</div>
-                    <div class="card-sub" id="fc-budget-original"></div>
-                </div>
-                <div class="pd-fin-card green-card">
-                    <div class="card-label">Σύνολο Πληρωμένων</div>
-                    <div class="card-amount" id="fc-paid">—</div>
-                </div>
-                <div class="pd-fin-card red-card">
-                    <div class="card-label">Οφειλή Πελάτη</div>
-                    <div class="card-amount" id="fc-debt">—</div>
-                </div>
-                <div class="pd-fin-card green-card">
-                    <div class="card-label">Κέρδος</div>
-                    <div class="card-amount" id="fc-profit">—</div>
-                </div>
-            </div>
-
-            <!-- ========== ROW 3: Payment Summary ========== -->
-            <div class="pd-summary-box">
-                <h4><i class="fas fa-file-invoice-dollar" style="margin-right:6px;"></i> Σύνοψη Πληρωμών</h4>
-                <div class="pd-progress-grid">
-                    <div class="pd-prog-item">
-                        <div class="prog-header">
-                            <div class="prog-label">Συνολικό Τιμολόγιο</div>
-                            <div class="prog-amount blue" id="ps-total">—</div>
-                        </div>
-                        <div class="bar">
-                            <div class="fill blue" style="width:100%"></div>
-                        </div>
+                    <div class="pd-fin-card">
+                        <div class="card-label">Συνολικός Προϋπολογισμός</div>
+                        <div class="card-amount" id="fc-budget">—</div>
+                        <div class="card-sub" id="fc-budget-original"></div>
                     </div>
-                    <div class="pd-prog-item">
-                        <div class="prog-header">
-                            <div class="prog-label">Εισπραχθέντα</div>
-                            <div class="prog-amount green" id="ps-paid">—</div>
-                        </div>
-                        <div class="bar">
-                            <div class="fill green" id="bar-paid" style="width:0%"></div>
-                        </div>
-                        <div class="prog-pct" id="ps-paid-pct"></div>
+                    <div class="pd-fin-card green-card">
+                        <div class="card-label">Σύνολο Πληρωμένων</div>
+                        <div class="card-amount" id="fc-paid">—</div>
                     </div>
-                    <div class="pd-prog-item">
-                        <div class="prog-header">
-                            <div class="prog-label">Προς Είσπραξη</div>
-                            <div class="prog-amount red" id="ps-remaining">—</div>
-                        </div>
-                        <div class="bar">
-                            <div class="fill red" id="bar-remaining" style="width:0%"></div>
-                        </div>
-                        <div class="prog-pct" id="ps-remaining-pct"></div>
+                    <div class="pd-fin-card red-card">
+                        <div class="card-label">Οφειλή Πελάτη</div>
+                        <div class="card-amount" id="fc-debt">—</div>
                     </div>
-                </div>
-            </div>
-
-            <!-- ========== ROW 4: 2 Columns ========== -->
-            <div class="management-grid">
-
-                <!-- Left: Payment Form + History -->
-                <div class="m-box">
-                    <h4><i class="fas fa-cash-register"></i> Καταχώρηση Πληρωμής</h4>
-                    <div class="form-msg" id="payment-msg"></div>
-                    <form id="paymentForm" onsubmit="submitPayment(event)" novalidate>
-                        <label for="payInvoiceNumber">Αριθμός Τιμολογίου</label>
-                        <input type="text" id="payInvoiceNumber" name="invoice_number"
-                               placeholder="π.χ. ΤΙΜ-001" required>
-                        <label for="payAmount">Ποσό Πληρωμής (€)</label>
-                        <input type="number" id="payAmount" name="amount"
-                               placeholder="0.00" min="0.01" step="0.01" required>
-                        <button type="submit" class="btn btn-blue">
-                            <i class="fas fa-plus"></i> Προσθήκη Πληρωμής
-                        </button>
-                    </form>
-                    <div class="history-title">Ιστορικό Πληρωμών</div>
-                    <div id="paymentHistory">
-                        <div class="history-empty">Δεν υπάρχουν πληρωμές.</div>
+                    <div class="pd-fin-card green-card">
+                        <div class="card-label">Κέρδος</div>
+                        <div class="card-amount" id="fc-profit">—</div>
                     </div>
                 </div>
 
-                <!-- Right: Budget Adjustment Form + History -->
-                <div class="m-box">
-                    <h4><i class="fas fa-edit"></i> Αναπροσαρμογή Προϋπολογισμού</h4>
-                    <div class="form-msg" id="adjustment-msg"></div>
-                    <form id="adjustmentForm" onsubmit="submitAdjustment(event)" novalidate>
-                        <label for="adjAmount">Επιπλέον Ποσό (€)</label>
-                        <input type="number" id="adjAmount" name="amount"
-                               placeholder="π.χ. +5000 ή -1000" step="0.01" required>
-                        <p class="hint">Θετικό για επιπλέον έργα, αρνητικό για μειώσεις</p>
-                        <label for="adjDescription">Περιγραφή (προαιρετικό)</label>
-                        <textarea id="adjDescription" name="description" rows="3"
-                                  placeholder="π.χ. Επιπλέον εργασίες κλιματισμού…"></textarea>
-                        <button type="submit" class="btn btn-outline">
-                            <i class="fas fa-sync-alt"></i> Ενημέρωση Προϋπολογισμού
-                        </button>
-                    </form>
-                    <div class="history-title">Ιστορικό Αναπροσαρμογών</div>
-                    <div id="adjustmentHistory">
-                        <div class="history-empty">Δεν υπάρχουν αναπροσαρμογές.</div>
+                <!-- ========== ROW 3: Payment Summary ========== -->
+                <div class="pd-summary-box">
+                    <h4><i class="fas fa-file-invoice-dollar" style="margin-right:6px;"></i> Σύνοψη Πληρωμών</h4>
+                    <div class="pd-progress-grid">
+                        <div class="pd-prog-item">
+                            <div class="prog-header">
+                                <div class="prog-label">Συνολικό Τιμολόγιο</div>
+                                <div class="prog-amount blue" id="ps-total">—</div>
+                            </div>
+                            <div class="bar">
+                                <div class="fill blue" style="width:100%"></div>
+                            </div>
+                        </div>
+                        <div class="pd-prog-item">
+                            <div class="prog-header">
+                                <div class="prog-label">Εισπραχθέντα</div>
+                                <div class="prog-amount green" id="ps-paid">—</div>
+                            </div>
+                            <div class="bar">
+                                <div class="fill green" id="bar-paid" style="width:0%"></div>
+                            </div>
+                            <div class="prog-pct" id="ps-paid-pct"></div>
+                        </div>
+                        <div class="pd-prog-item">
+                            <div class="prog-header">
+                                <div class="prog-label">Προς Είσπραξη</div>
+                                <div class="prog-amount red" id="ps-remaining">—</div>
+                            </div>
+                            <div class="bar">
+                                <div class="fill red" id="bar-remaining" style="width:0%"></div>
+                            </div>
+                            <div class="prog-pct" id="ps-remaining-pct"></div>
+                        </div>
                     </div>
                 </div>
 
-            </div><!-- /management-grid -->
+                <!-- ========== ROW 4: 2 Columns ========== -->
+                <div class="management-grid">
 
-            <!-- ========== ROW 5: Cost Analysis ========== -->
-            <div class="pd-cost-section">
-                <h4>💲 Ανάλυση Κόστους</h4>
-                <div class="pd-cost-grid">
-                    <div class="pd-cost-card blue-cost">
-                        <div class="cc-label">Κόστος Εργατοωρών</div>
-                        <div class="cc-amount" id="cc-labor">—</div>
+                    <!-- Left: Payment Form + History -->
+                    <div class="m-box">
+                        <h4><i class="fas fa-cash-register"></i> Καταχώρηση Πληρωμής</h4>
+                        <div class="form-msg" id="payment-msg"></div>
+                        <form id="paymentForm" onsubmit="submitPayment(event)" novalidate>
+                            <label for="payInvoiceNumber">Αριθμός Τιμολογίου</label>
+                            <input type="text" id="payInvoiceNumber" name="invoice_number" placeholder="π.χ. ΤΙΜ-001"
+                                required>
+                            <label for="payAmount">Ποσό Πληρωμής (€)</label>
+                            <input type="number" id="payAmount" name="amount" placeholder="0.00" min="0.01" step="0.01"
+                                required>
+                            <button type="submit" class="btn btn-blue">
+                                <i class="fas fa-plus"></i> Προσθήκη Πληρωμής
+                            </button>
+                        </form>
+                        <div class="history-title">Ιστορικό Πληρωμών</div>
+                        <div id="paymentHistory">
+                            <div class="history-empty">Δεν υπάρχουν πληρωμές.</div>
+                        </div>
                     </div>
-                    <div class="pd-cost-card orange-cost">
-                        <div class="cc-label">Κόστος Υλικών</div>
-                        <div class="cc-amount" id="cc-materials">—</div>
+
+                    <!-- Right: Budget Adjustment Form + History -->
+                    <div class="m-box">
+                        <h4><i class="fas fa-edit"></i> Αναπροσαρμογή Προϋπολογισμού</h4>
+                        <div class="form-msg" id="adjustment-msg"></div>
+                        <form id="adjustmentForm" onsubmit="submitAdjustment(event)" novalidate>
+                            <label for="adjAmount">Επιπλέον Ποσό (€)</label>
+                            <input type="number" id="adjAmount" name="amount" placeholder="π.χ. +5000 ή -1000"
+                                step="0.01" required>
+                            <p class="hint">Θετικό για επιπλέον έργα, αρνητικό για μειώσεις</p>
+                            <label for="adjDescription">Περιγραφή (προαιρετικό)</label>
+                            <textarea id="adjDescription" name="description" rows="3"
+                                placeholder="π.χ. Επιπλέον εργασίες κλιματισμού…"></textarea>
+                            <button type="submit" class="btn btn-outline">
+                                <i class="fas fa-sync-alt"></i> Ενημέρωση Προϋπολογισμού
+                            </button>
+                        </form>
+                        <div class="history-title">Ιστορικό Αναπροσαρμογών</div>
+                        <div id="adjustmentHistory">
+                            <div class="history-empty">Δεν υπάρχουν αναπροσαρμογές.</div>
+                        </div>
                     </div>
-                    <div class="pd-cost-card purple-cost">
-                        <div class="cc-label">Συνολικό Κόστος</div>
-                        <div class="cc-amount" id="cc-total">—</div>
+
+                </div><!-- /management-grid -->
+
+                <!-- ========== ROW 5: Cost Analysis ========== -->
+                <div class="pd-cost-section">
+                    <h4>💲 Ανάλυση Κόστους</h4>
+                    <div class="pd-cost-grid">
+                        <div class="pd-cost-card blue-cost">
+                            <div class="cc-label">Κόστος Εργατοωρών</div>
+                            <div class="cc-amount" id="cc-labor">—</div>
+                        </div>
+                        <div class="pd-cost-card orange-cost">
+                            <div class="cc-label">Κόστος Υλικών</div>
+                            <div class="cc-amount" id="cc-materials">—</div>
+                        </div>
+                        <div class="pd-cost-card purple-cost">
+                            <div class="cc-label">Συνολικό Κόστος</div>
+                            <div class="cc-amount" id="cc-total">—</div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
             </div><!-- /tab-overview -->
 
@@ -783,7 +834,7 @@ if (!$project_id) {
 
         // ── Populate all page sections ────────────────────────────────────────
         function populatePage(data) {
-            const p   = data.project;
+            const p = data.project;
             const fin = data.financial_overview;
             const pay = data.payments_summary;
 
@@ -865,12 +916,12 @@ if (!$project_id) {
                 return;
             }
             container.innerHTML = adjustments.map(adj => {
-                const amt    = parseFloat(adj.amount);
-                const color  = amt >= 0 ? '#22c55e' : '#ef4444';
+                const amt = parseFloat(adj.amount);
+                const color = amt >= 0 ? '#22c55e' : '#ef4444';
                 const prefix = amt >= 0 ? '+' : '';
-                const label  = adj.reason || adj.description || '—';
-                const by     = adj.created_by_name ? ' · ' + adj.created_by_name : '';
-                const date   = formatDate(adj.created_at || adj.date);
+                const label = adj.reason || adj.description || '—';
+                const by = adj.created_by_name ? ' · ' + adj.created_by_name : '';
+                const date = formatDate(adj.created_at || adj.date);
                 return `
                     <div class="history-card">
                         <div>
@@ -893,7 +944,7 @@ if (!$project_id) {
             tbody.innerHTML = logs.map(log => {
                 const clockIn = log.clock_in ? new Date(log.clock_in) : null;
                 const clockOut = log.clock_out ? new Date(log.clock_out) : null;
-                
+
                 let duration = '—';
                 if (clockIn && clockOut) {
                     const diffMs = clockOut - clockIn;
@@ -902,9 +953,9 @@ if (!$project_id) {
                     duration = `${hrs}ω ${mins}λ`;
                 }
 
-                const timeIn = clockIn ? clockIn.toLocaleTimeString('el-GR', {hour: '2-digit', minute:'2-digit'}) : '—';
-                const timeOut = clockOut ? clockOut.toLocaleTimeString('el-GR', {hour: '2-digit', minute:'2-digit'}) : '—';
-                
+                const timeIn = clockIn ? clockIn.toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' }) : '—';
+                const timeOut = clockOut ? clockOut.toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' }) : '—';
+
                 let roleName = log.user_role;
                 if (roleName === 'helper') roleName = 'Βοηθός';
                 if (roleName === 'supervisor') roleName = 'Μάστορας';
@@ -928,9 +979,9 @@ if (!$project_id) {
                 return;
             }
             tbody.innerHTML = invoices.map(inv => {
-                const photoPath = inv.photo_path || inv.file_path || inv.image_path; 
-                const img = photoPath 
-                    ? `<img src="/${photoPath}" class="pd-invoice-thumb" onclick="window.open('/${photoPath}', '_blank')" title="Προβολή">` 
+                const photoPath = inv.photo_path || inv.file_path || inv.image_path;
+                const img = photoPath
+                    ? `<img src="/${photoPath}" class="pd-invoice-thumb" onclick="window.open('/${photoPath}', '_blank')" title="Προβολή">`
                     : '<div style="width:50px;height:50px;background:#eee;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#aaa;"><i class="fas fa-image"></i></div>';
                 return `
                     <tr>
@@ -968,7 +1019,7 @@ if (!$project_id) {
         async function submitPayment(e) {
             e.preventDefault();
             const form = e.currentTarget;
-            const btn  = form.querySelector('button[type="submit"]');
+            const btn = form.querySelector('button[type="submit"]');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Αποθήκευση…';
 
@@ -976,7 +1027,7 @@ if (!$project_id) {
             fd.append('project_id', PROJECT_ID);
 
             try {
-                const res  = await fetch('../Backend/ProjectDetails/add_payment.php', { method: 'POST', body: fd });
+                const res = await fetch('../Backend/ProjectDetails/add_payment.php', { method: 'POST', body: fd });
                 const data = await res.json();
                 if (data.success) {
                     showMsg('payment-msg', data.message, false);
@@ -996,7 +1047,7 @@ if (!$project_id) {
         async function submitAdjustment(e) {
             e.preventDefault();
             const form = e.currentTarget;
-            const btn  = form.querySelector('button[type="submit"]');
+            const btn = form.querySelector('button[type="submit"]');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Αποθήκευση…';
 
@@ -1004,7 +1055,7 @@ if (!$project_id) {
             fd.append('project_id', PROJECT_ID);
 
             try {
-                const res  = await fetch('../Backend/ProjectDetails/add_budget_adjustment.php', { method: 'POST', body: fd });
+                const res = await fetch('../Backend/ProjectDetails/add_budget_adjustment.php', { method: 'POST', body: fd });
                 const data = await res.json();
                 if (data.success) {
                     showMsg('adjustment-msg', data.message, false);
@@ -1026,4 +1077,5 @@ if (!$project_id) {
     </script>
 
 </body>
+
 </html>

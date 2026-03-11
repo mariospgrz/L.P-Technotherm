@@ -93,44 +93,51 @@ function renderProjects(status) {
         const card = document.createElement('div');
         card.className = 'project-card';
         card.innerHTML = `
-            <div class="project-card-header">
-                <h3>${p.name}</h3>
-                <span class="badge badge-${status === 'active' ? 'active' : 'completed'}">${status === 'active' ? 'Ενεργό' : 'Ολοκληρωμένο'}</span>
-            </div>
-            <div class="project-card-meta">
-                <p><i class="fas fa-map-marker-alt"></i> ${p.location}</p>
-                <p><i class="fas fa-calendar-alt"></i> ${p.date}</p>
-            </div>
-            <div class="budget-progress-section">
-                <div class="budget-progress-label">
-                    <span>Χρήση Προϋπολογισμού</span>
-                    <strong>${usagePct}%</strong>
+            <div class="project-card-clickable" onclick="toggleProjectDetails(this)" style="cursor: pointer;">
+                <div class="project-card-header">
+                    <h3>${p.name}</h3>
+                    <span class="badge badge-${status === 'active' ? 'active' : 'completed'}">${status === 'active' ? 'Ενεργό' : 'Ολοκληρωμένο'}</span>
                 </div>
-                <div class="progress-track">
-                    <div class="progress-fill" style="width:${usagePct}%"></div>
+                <div class="project-card-meta">
+                    <p><i class="fas fa-map-marker-alt"></i> ${p.location}</p>
+                    <p><i class="fas fa-calendar-alt"></i> ${p.date}</p>
+                </div>
+                <div class="toggle-indicator" style="text-align: center; color: var(--text-light); padding-bottom: 10px; font-size: 0.85rem; transition: color 0.2s;">
+                    <i class="fas fa-chevron-down"></i> <span class="toggle-text">Περισσότερα</span>
                 </div>
             </div>
-            <div class="cost-breakdown">
-                <div class="cost-row"><span>Προϋπολογισμός:</span><span>€${p.budget.toLocaleString()}</span></div>
-                <div class="cost-row"><span>Εργατοώρες:</span><span>€${p.costLabor.toLocaleString()}</span></div>
-                <div class="cost-row"><span>Υλικά:</span><span>€${p.costMaterials.toLocaleString()}</span></div>
-                <div class="cost-row"><span>Συνολικό Κόστος:</span><span>€${totalCost.toLocaleString()}</span></div>
-            </div>
-            <div class="project-profit">
-                <i class="fas fa-chart-line"></i>
-                <span class="profit-label">Κέρδος</span>
-                <div class="profit-value">
-                    ${profit >= 0 ? '+' : ''}€${profit.toLocaleString()}
-                    <div class="profit-pct">(${profit >= 0 ? '+' : ''}${profitPct}%)</div>
+            <div class="project-card-details" style="display: none;">
+                <div class="budget-progress-section">
+                    <div class="budget-progress-label">
+                        <span>Χρήση Προϋπολογισμού</span>
+                        <strong>${usagePct}%</strong>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill" style="width:${usagePct}%"></div>
+                    </div>
                 </div>
-            </div>
-            <div class="project-card-actions">
-                <a href="/dashboards/project_details.php?project_id=${p.id}" class="btn btn-green" style="text-decoration:none;">
-                    <i class="fas fa-dollar-sign"></i> Λεπτομέρειες
-                </a>
-                <button class="btn btn-blue" onclick="openReportFor(${p.id})">
-                    <i class="fas fa-file-alt"></i> Αναφορά
-                </button>
+                <div class="cost-breakdown">
+                    <div class="cost-row"><span>Προϋπολογισμός:</span><span>€${p.budget.toLocaleString()}</span></div>
+                    <div class="cost-row"><span>Εργατοώρες:</span><span>€${p.costLabor.toLocaleString()}</span></div>
+                    <div class="cost-row"><span>Υλικά:</span><span>€${p.costMaterials.toLocaleString()}</span></div>
+                    <div class="cost-row"><span>Συνολικό Κόστος:</span><span>€${totalCost.toLocaleString()}</span></div>
+                </div>
+                <div class="project-profit">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="profit-label">Κέρδος</span>
+                    <div class="profit-value">
+                        ${profit >= 0 ? '+' : ''}€${profit.toLocaleString()}
+                        <div class="profit-pct">(${profit >= 0 ? '+' : ''}${profitPct}%)</div>
+                    </div>
+                </div>
+                <div class="project-card-actions">
+                    <a href="/dashboards/project_details.php?project_id=${p.id}" class="btn btn-green" style="text-decoration:none;">
+                        <i class="fas fa-dollar-sign"></i> Λεπτομέρειες
+                    </a>
+                    <button class="btn btn-blue" onclick="openReportFor(${p.id})">
+                        <i class="fas fa-file-alt"></i> Αναφορά
+                    </button>
+                </div>
             </div>
             ${status === 'active'
                 ? `<button class="mark-complete-bar" onclick="changeStatus(${p.id},'completed')">
@@ -232,7 +239,6 @@ function renderEmployees() {
                     <th>Ωρομίσθιο</th>
                     <th>Συνολικές Ώρες</th>
                     <th>Συνολικό Κόστος</th>
-                    <th>Ενέργειες</th>
                 </tr>
             </thead>
             <tbody id="empTableBody"></tbody>
@@ -241,14 +247,15 @@ function renderEmployees() {
                     <td colspan="3"><strong>Σύνολο</strong></td>
                     <td><strong id="totalHours">0h</strong></td>
                     <td><strong id="totalCost">€0</strong></td>
-                    <td></td>
                 </tr>
             </tfoot>
         </table>
     `;
     const body = document.getElementById('empTableBody');
     let totalH = 0, totalC = 0;
-    appState.employees.forEach((emp, index) => {
+    appState.employees
+        .filter(emp => emp.role === 'supervisor' || emp.role === 'helper')
+        .forEach(emp => {
         const cost = emp.rate * emp.hours;
         totalH += emp.hours;
         totalC += cost;
@@ -259,7 +266,6 @@ function renderEmployees() {
             <td>€${emp.rate}/h</td>
             <td>${emp.hours}h</td>
             <td>€${cost.toFixed(2)}</td>
-            <td><button class="btn-delete" onclick="deleteEmp(${index})"><i class="fas fa-trash"></i> Διαγραφή</button></td>
         `;
         body.appendChild(row);
     });
@@ -493,4 +499,22 @@ function validateProjectForm() {
         return showError('Η ημερομηνία έναρξης είναι υποχρεωτική.');
 
     return true;
+}
+
+// ==================== PROJECT CARD TOGGLE ====================
+function toggleProjectDetails(element) {
+    const card = element.closest('.project-card');
+    const details = card.querySelector('.project-card-details');
+    const icon = card.querySelector('.toggle-indicator i');
+    const text = card.querySelector('.toggle-indicator .toggle-text');
+    
+    if (details.style.display === 'none') {
+        details.style.display = 'block';
+        icon.className = 'fas fa-chevron-up';
+        text.textContent = 'Λιγότερα';
+    } else {
+        details.style.display = 'none';
+        icon.className = 'fas fa-chevron-down';
+        text.textContent = 'Περισσότερα';
+    }
 }

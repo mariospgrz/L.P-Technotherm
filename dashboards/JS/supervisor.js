@@ -427,6 +427,15 @@ function updateSelectedCount() {
     if (label) {
         label.textContent = `(${checkedBoxes.length} επιλεγμένοι)`;
     }
+
+    // Update individual helper badges
+    document.querySelectorAll('.helper-checkbox').forEach(cb => {
+        const badgeId = cb.id.replace('h-', 'h-badge-');
+        const badge = document.getElementById(badgeId);
+        if (badge) {
+            badge.textContent = cb.checked ? 'Αφαίρεση' : 'Επίλεξε';
+        }
+    });
 }
 
 /* ── Helpers ────────────────────────────────────────────── */

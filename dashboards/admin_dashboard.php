@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * frontend/admin_dashboard.php
  * Admin-only dashboard.
@@ -11,7 +11,7 @@ require_once __DIR__ . '/../Backend/Database/Database.php';
 // ── Flash messages & active tab from URL ─────────────────────────────────────
 $flash_success = isset($_GET['success']) ? htmlspecialchars(urldecode($_GET['success'])) : '';
 $flash_error = isset($_GET['error']) ? htmlspecialchars(urldecode($_GET['error'])) : '';
-$active_tab = (isset($_GET['tab']) && $_GET['tab'] === 'projects') ? 'projects' : 'users';
+$active_tab = (isset($_GET['tab']) && $_GET['tab'] === 'users') ? 'users' : 'projects';
 
 // ── Fetch all users for User Management tab ───────────────────────────────────
 $users = [];
@@ -341,9 +341,6 @@ $projects_json = json_encode($projects);
                     <button class="btn btn-blue" onclick="toggleModal('projectModal')">
                         <i class="fas fa-plus"></i> Νέο Έργο
                     </button>
-                    <button class="btn btn-green" onclick="toggleModal('workerModal')">
-                        <i class="fas fa-user-plus"></i> Νέος Υπάλληλος
-                    </button>
                 </div>
             </div>
 
@@ -353,7 +350,7 @@ $projects_json = json_encode($projects);
                 <button class="tab-link" onclick="switchView('completed-projects')">Ολοκληρωμένα Έργα</button>
                 <button class="tab-link" onclick="switchView('invoices')">Τιμολόγια</button>
                 <button class="tab-link" onclick="switchView('employees')">Υπάλληλοι (
-                    <?= count($users) ?>)
+                    <?= count(array_filter($users, fn($u) => in_array($u['role'], ['supervisor', 'helper']))) ?>)
                 </button>
                 <button class="tab-link" onclick="switchView('overtime')">Αιτήσεις Επιπλέον Ωρών</button>
             </nav>
@@ -415,28 +412,6 @@ $projects_json = json_encode($projects);
                             </button>
                         </div>
                     </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal: Νέος Υπάλληλος -->
-        <div id="workerModal" class="modal-overlay">
-            <div class="modal-container" style="max-width:400px;">
-                <div class="modal-header">
-                    <h3>Προσθήκη Υπαλλήλου</h3>
-                    <button class="close-modal" onclick="toggleModal('workerModal')">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <input type="text" id="workName" placeholder="Ονοματεπώνυμο"
-                        style="width:100%;margin-bottom:10px;padding:10px;">
-                    <select id="workRole" style="width:100%;margin-bottom:10px;padding:10px;">
-                        <option value="administrator">Διαχειριστής</option>
-                        <option value="supervisor">Υπεύθυνος</option>
-                        <option value="helper">Βοηθός</option>
-                    </select>
-                    <input type="number" id="workRate" placeholder="Ωρομίσθιο (€)"
-                        style="width:100%;margin-bottom:20px;padding:10px;">
-                    <button class="btn btn-green" onclick="saveWorker()" style="width:100%;">Αποθήκευση</button>
                 </div>
             </div>
         </div>

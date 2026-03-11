@@ -307,6 +307,20 @@ body {
     flex: 1;
 }
 
+.project-card-clickable {
+    transition: background-color 0.2s;
+    border-bottom: 1px solid transparent;
+}
+
+.project-card-clickable:hover {
+    background-color: #f9fafb;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.project-card:hover .toggle-indicator {
+    color: var(--primary) !important;
+}
+
 .project-card-meta {
     padding: 0 18px 10px;
 }
@@ -503,26 +517,41 @@ body {
 .badge-admin {
     background: #ede9fe;
     color: #6d28d9;
+    display: inline-block;
+    width: 100px;
+    text-align: center;
 }
 
 .badge-administrator {
     background: #ede9fe;
     color: #6d28d9;
+    display: inline-block;
+    width: 100px;
+    text-align: center;
 }
 
 .badge-foreman {
     background: #dbeafe;
     color: #1e40af;
+    display: inline-block;
+    width: 100px;
+    text-align: center;
 }
 
 .badge-supervisor {
     background: #dbeafe;
     color: #1e40af;
+    display: inline-block;
+    width: 100px;
+    text-align: center;
 }
 
 .badge-helper {
     background: #d1fae5;
     color: #065f46;
+    display: inline-block;
+    width: 100px;
+    text-align: center;
 }
 
 /* ===== INVOICE LIST ===== */

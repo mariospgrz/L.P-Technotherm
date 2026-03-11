@@ -911,7 +911,6 @@ body {
 
 .helper-card {
     display: block;
-    cursor: pointer;
     margin-bottom: 2px;
 }
 
@@ -971,14 +970,13 @@ body {
 }
 
 .helper-badge-col {
-    display: none;
+    display: block;
 }
 
 .icon-selected {
     display: none;
 }
 
-/* Checked State */
 .helper-checkbox:checked+.helper-card-inner {
     border-color: var(--success);
     /* background: #f0fdf4; */
@@ -1015,11 +1013,24 @@ body {
 
 .helper-selected-badge {
     background: var(--success);
-    color: #fff;
+    color: #fff !important;
     font-size: 0.75rem;
     font-weight: 700;
-    padding: 5px 12px;
+    padding: 6px 14px;
     border-radius: 20px;
+    cursor: pointer;
+    display: inline-block;
+    transition: background 0.2s, filter 0.2s;
+}
+
+.helper-selected-badge:hover {
+    filter: brightness(0.9);
+}
+
+/* Checked State - change badge to red "Αφαίρεση" */
+.helper-checkbox:checked+.helper-card-inner .helper-selected-badge {
+    background: var(--danger);
+    color: #fff !important;
 }
 
 /* ── RESPONSIVE ────────────────────────────────────────── */

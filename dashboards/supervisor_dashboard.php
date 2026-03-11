@@ -553,7 +553,7 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
 
                             <div class="helpers-multi-select" style="max-height: none;">
                                 <?php foreach ($helpers as $h): ?>
-                                    <label class="helper-card" for="h-<?= $h['id'] ?>">
+                                    <div class="helper-card">
                                         <input type="checkbox" id="h-<?= $h['id'] ?>" name="helper_ids[]"
                                             value="<?= $h['id'] ?>" class="helper-checkbox" onchange="updateSelectedCount()">
                                         <div class="helper-card-inner">
@@ -566,10 +566,10 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                                                 <span class="helper-role">Βοηθός</span>
                                             </div>
                                             <div class="helper-badge-col">
-                                                <span class="helper-selected-badge">Επιλεγμένος</span>
+                                                <label class="helper-selected-badge" for="h-<?= $h['id'] ?>" id="h-badge-<?= $h['id'] ?>">Επίλεξε</label>
                                             </div>
                                         </div>
-                                    </label>
+                                    </div>
                                 <?php endforeach; ?>
                             </div>
                         </div>
