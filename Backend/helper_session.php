@@ -32,3 +32,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'helper') {
         urlencode('Δεν έχετε δικαίωμα πρόσβασης στην σελίδα βοηθού.'));
     exit();
 }
+
+//CSRF token (generate once per session)
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
