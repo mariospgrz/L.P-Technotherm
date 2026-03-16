@@ -1,7 +1,12 @@
 // dashboards/JS/supervisor.js
 'use strict';
 
-/* ── State ──────────────────────────────────────────────── */
+/* ── CSRF helper ─────────────────────────────────────────────── */
+function getCsrf() {
+    return document.querySelector('meta[name="csrf-token"]')?.content || '';
+}
+
+/* ── State ──────────────────────────────────────────────────── */
 const state = {
     activeTab: 'hours',
     projects: window.__PROJECTS__ || [],
@@ -11,8 +16,8 @@ const state = {
     overtime: window.__OVERTIME__ || [],
     assignments: window.__ASSIGNMENTS__ || [],
     selectedProjectId: null,
-    clockedIn: false,
-    clockInTime: null,
+    selectedProjectName: null,
+    // clockedIn / clockInTime are now owned by clock_timer.js (ClockTimer)
 };
 
 /* ── Tab switching ──────────────────────────────────────── */
@@ -31,45 +36,42 @@ function switchTab(tabName) {
 }
 
 /* ── Clock In / Out (Καταγραφή Ωρών) ───────────────────── */
-function updateStatusCard() {
-    const el = document.getElementById('status-value');
-    if (!el) return;
-    if (state.clockedIn) {
-        el.textContent = 'Εντός Εργασίας';
-        el.parentElement.closest('.status-card').style.borderLeft = '4px solid var(--success)';
-        document.getElementById('clock-toggle-btn').textContent = '⏹ Clock Out';
-        document.getElementById('clock-toggle-btn').classList.remove('btn-success');
-        document.getElementById('clock-toggle-btn').classList.add('btn-danger');
-    } else {
-        el.textContent = 'Εκτός Εργασίας';
-        el.parentElement.closest('.status-card').style.borderLeft = '4px solid var(--border-color)';
-        document.getElementById('clock-toggle-btn').textContent = '▶ Clock In';
-        document.getElementById('clock-toggle-btn').classList.add('btn-success');
-        document.getElementById('clock-toggle-btn').classList.remove('btn-danger');
-    }
-}
+// updateStatusCard is now handled by clock_timer.js / ClockTimer
+function updateStatusCard() { /* delegated to ClockTimer */ }
 
 function clockToggle() {
-    if (!state.selectedProjectId) {
-        showToast('Επιλέξτε έργο πρώτα!', 'error');
-        return;
-    }
-    if (!state.clockedIn) {
-        state.clockedIn = true;
-        state.clockInTime = new Date();
-        showToast('Clock In καταχωρήθηκε!', 'success');
+    if (ClockTimer.isActive()) {
+        // Currently clocked in → clock out
+        ClockTimer.clockOut();
     } else {
-        const mins = Math.round((new Date() - state.clockInTime) / 60000);
-        state.clockedIn = false;
-        state.clockInTime = null;
-        showToast(`Clock Out! Εργάστηκες ${mins} λεπτά.`, 'success');
+        // Currently clocked out → clock in
+        if (!state.selectedProjectId) {
+            // Try to show a toast – re-use ClockTimer's internal toast via a manual call
+            const t = document.createElement('div');
+            t.id = 'ct-toast';
+            t.textContent = 'Επιλέξτε έργο πρώτα!';
+            Object.assign(t.style, { position:'fixed', bottom:'80px', right:'24px', padding:'12px 20px',
+                borderRadius:'8px', background:'var(--danger,#ef4444)', color:'#fff',
+                fontWeight:'600', fontSize:'0.875rem', zIndex:'9999' });
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+            return;
+        }
+        ClockTimer.clockIn(state.selectedProjectId, state.selectedProjectName);
     }
-    updateStatusCard();
 }
 
 /* ── Project cards ──────────────────────────────────────── */
 function selectProject(id) {
+    // Don't allow changing project while clocked in
+    if (ClockTimer.isActive()) {
+        showToast('Αποσυνδεθείτε πρώτα (πατήστε Clock Out)', 'error');
+        return;
+    }
     state.selectedProjectId = id;
+    const proj = state.projects.find(p => String(p.id) === String(id));
+    state.selectedProjectName = proj ? proj.name : '';
+
     document.querySelectorAll('.project-card').forEach(c => c.classList.remove('selected'));
     const card = document.querySelector(`.project-card[data-id="${id}"]`);
     if (card) card.classList.add('selected');
@@ -100,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
         invForm.addEventListener('submit', function (e) {
             e.preventDefault();
             const data = new FormData(this);
+            data.append('csrf_token', getCsrf());
 
             fetch('/dashboards/actions/submit_invoice.php', {
                 method: 'POST',
@@ -125,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
         otForm.addEventListener('submit', function (e) {
             e.preventDefault();
             const data = new FormData(this);
+            data.append('csrf_token', getCsrf());
 
             fetch('/dashboards/actions/submit_overtime.php', {
                 method: 'POST',
@@ -151,6 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         assignForm.addEventListener('submit', function (e) {
             e.preventDefault();
             const data = new FormData(this);
+            data.append('csrf_token', getCsrf());
 
             fetch('/dashboards/actions/assign_helpers.php', {
                 method: 'POST',
@@ -244,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderMyInvoices();
     renderOvertimeList();
     renderAssignments();
-    updateStatusCard();
+    // NOTE: updateStatusCard() / clock state restoration is handled by clock_timer.js
 });
 
 /* ── Render My Invoices ─────────────────────────────────── */
@@ -302,7 +307,7 @@ function deleteInvoice(id) {
     fetch('/dashboards/actions/delete_invoice.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ id, csrf_token: getCsrf() }),
     })
         .then(r => r.json())
         .then(res => {
@@ -379,9 +384,10 @@ document.addEventListener('click', e => {
         e.target.classList.remove('open');
     }
 
-    // Deselect project when clicking outside project cards
-    if (!e.target.closest('.project-card')) {
+    // Deselect project when clicking outside project cards – but NOT while clocked in
+    if (!e.target.closest('.project-card') && !ClockTimer.isActive()) {
         state.selectedProjectId = null;
+        state.selectedProjectName = null;
         document.querySelectorAll('.project-card').forEach(c => c.classList.remove('selected'));
         const nameEl = document.getElementById('selected-project-name');
         const btn = document.getElementById('clock-toggle-btn');

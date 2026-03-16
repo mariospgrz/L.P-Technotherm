@@ -527,6 +527,7 @@ if (!$project_id) {
             opacity: 0.8;
         }
     </style>
+    <link rel="icon" type="image/jpeg" href="/frontend/images/images.jpg">
 </head>
 
 <body>

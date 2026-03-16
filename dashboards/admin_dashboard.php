@@ -84,6 +84,7 @@ $projects_json = json_encode($projects);
     <link rel="stylesheet" href="CSS/admin_dashboard.css">
     <link rel="stylesheet" href="/frontend/CSS/logout_button.css">
     <link rel="stylesheet" href="CSS/responsive.css">
+  <link rel="icon" type="image/jpeg" href="/frontend/images/images.jpg">
 </head>
 
 <body>

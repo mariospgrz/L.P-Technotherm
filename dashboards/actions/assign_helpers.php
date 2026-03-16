@@ -1,15 +1,21 @@
 <?php
 /**
  * dashboards/actions/assign_helpers.php
- * Schema: project_assignments(project_id, user_id, assigned_at)
- * Saves helper assignments to a project for this supervisor.
+ * Fix #4: CSRF validation.
  */
 require_once __DIR__ . '/../../Backend/supervisor_session.php';
 require_once __DIR__ . '/../../Backend/Database/Database.php';
 
 header('Content-Type: application/json');
 
-$user_id = (int) $_SESSION['user_id'];
+// ── CSRF ──────────────────────────────────────────────────────────────────────
+if (!hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'] ?? '')) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'Άκυρο αίτημα (CSRF).']);
+    exit;
+}
+
+$user_id    = (int) $_SESSION['user_id'];
 $project_id = (int) ($_POST['project_id'] ?? 0);
 $helper_ids = $_POST['helper_ids'] ?? [];
 
@@ -28,7 +34,7 @@ if (!$check->get_result()->fetch_assoc()) {
 }
 $check->close();
 
-// Remove existing HELPER assignments for this project (keep supervisor assignment)
+// Remove existing helper assignments for this project
 $del = $conn->prepare(
     "DELETE pa FROM project_assignments pa
        JOIN users u ON u.id = pa.user_id

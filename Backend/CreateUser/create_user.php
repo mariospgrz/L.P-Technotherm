@@ -57,8 +57,9 @@ if ($email === '') {
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     redirectError('Μη έγκυρη διεύθυνση email.');
 }
-if (strlen($password) < 6) {
-    redirectError('Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες.');
+if (strlen($password) < 8) {
+    redirectError('Ο κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες.');
+
 }
 
 $stmt = $conn->prepare('SELECT id FROM users WHERE username = ? LIMIT 1');

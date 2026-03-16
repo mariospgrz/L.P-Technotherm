@@ -174,6 +174,7 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Πίνακας Επιβλέποντα | LP Technotherm</title>
     <meta name="description" content="Πίνακας ελέγχου επιβλέποντα - LP Technotherm">
+    <meta name="csrf-token" content="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="CSS/supervisor.css">
     <link rel="stylesheet" href="/frontend/CSS/logout_button.css">
@@ -191,6 +192,7 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
             }
         }
     </style>
+  <link rel="icon" type="image/jpeg" href="/frontend/images/images.jpg">
 </head>
 
 <body>
@@ -311,6 +313,10 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                 <div class="clock-circle-icon">
                     <i class="fas fa-clock"></i>
                 </div>
+
+                <!-- Live timer display -->
+                <div id="clock-timer-display" class="clock-timer-display">00:00:00</div>
+
                 <div class="clock-project-label">Επιλεγμένο Έργο</div>
                 <div class="clock-project-name" id="selected-project-name">
                     <?php if (empty($projects)): ?>
@@ -323,12 +329,19 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                     <i class="fas fa-play"></i> Clock In - Έναρξη Εργασίας
                 </button>
 
+                <!-- 8-hour warning banner (hidden by default) -->
+                <div id="clock-warning-banner" class="clock-warning-banner" style="display:none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Προσοχή! Εργάζεστε πάνω από 7.5 ώρες. Θα γίνει αυτόματη αποσύνδεση σε 30 λεπτά.</span>
+                </div>
+
                 <div class="info-box" style="text-align:left;margin-top:24px;">
                     <h4><i class="fas fa-info-circle"></i> Οδηγίες</h4>
                     <ul>
                         <li>Επιλέξτε το έργο στο οποίο εργάζεστε</li>
                         <li>Πατήστε Clock In για να ξεκινήσετε την καταγραφή</li>
                         <li>Πατήστε Clock Out όταν ολοκληρώσετε την εργασία σας</li>
+                        <li>Ο χρονόμετρο συνεχίζεται ακόμα και αν αποσυνδεθείτε</li>
                     </ul>
                 </div>
             </div>
@@ -765,6 +778,7 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
         window.__ASSIGNMENTS__ = <?= $js_assignments ?>;
         window.__WORK_LOGS__ = <?= $js_work_logs ?>;
     </script>
+    <script src="JS/clock_timer.js"></script>
     <script src="JS/supervisor.js"></script>
 
 </body>
