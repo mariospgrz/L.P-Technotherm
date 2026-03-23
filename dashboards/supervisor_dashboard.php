@@ -192,7 +192,7 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
             }
         }
     </style>
-  <link rel="icon" type="image/jpeg" href="/frontend/images/images.jpg">
+    <link rel="icon" type="image/jpeg" href="/frontend/images/images.jpg">
 </head>
 
 <body>
@@ -395,7 +395,8 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                     </div>
                 </div>
 
-                <form id="invoice-form" action="/Backend/upload_invoice.php" method="POST" enctype="multipart/form-data">
+                <form id="invoice-form" action="/Backend/upload_invoice.php" method="POST"
+                    enctype="multipart/form-data">
                     <div class="form-group">
                         <label for="inv-project">Έργο <span class="req">*</span></label>
                         <select id="inv-project" name="project_id" required>
@@ -579,7 +580,8 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                                                 <span class="helper-role">Βοηθός</span>
                                             </div>
                                             <div class="helper-badge-col">
-                                                <label class="helper-selected-badge" for="h-<?= $h['id'] ?>" id="h-badge-<?= $h['id'] ?>">Επίλεξε</label>
+                                                <label class="helper-selected-badge" for="h-<?= $h['id'] ?>"
+                                                    id="h-badge-<?= $h['id'] ?>">Επίλεξε</label>
                                             </div>
                                         </div>
                                     </div>
@@ -780,6 +782,7 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
     </script>
     <script src="JS/clock_timer.js"></script>
     <script src="JS/supervisor.js"></script>
+    <script src="JS/push_init.js"></script>
 
 </body>
 

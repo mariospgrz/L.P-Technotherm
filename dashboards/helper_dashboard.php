@@ -6,12 +6,12 @@
 require_once __DIR__ . '/../Backend/helper_session.php';
 require_once __DIR__ . '/../Backend/Database/Database.php';
 
-$user_id   = (int) $_SESSION['user_id'];
+$user_id = (int) $_SESSION['user_id'];
 $user_name = htmlspecialchars($_SESSION['username'] ?? 'Βοηθός');
 
 // ── Flash ──────────────────────────────────────────────────────────────────────
 $flash_success = isset($_GET['success']) ? htmlspecialchars(urldecode($_GET['success'])) : '';
-$flash_error   = isset($_GET['error'])   ? htmlspecialchars(urldecode($_GET['error']))   : '';
+$flash_error = isset($_GET['error']) ? htmlspecialchars(urldecode($_GET['error'])) : '';
 
 // ── Assigned projects (only projects assigned to this helper) ──────────────────
 $projects = [];
@@ -94,14 +94,14 @@ if ($resO) {
 }
 
 $status_labels = [
-    'pending'  => 'Σε αναμονή',
+    'pending' => 'Σε αναμονή',
     'approved' => 'Εγκρίθηκε',
     'rejected' => 'Απορρίφθηκε',
 ];
 
-$js_projects  = json_encode($projects,  JSON_UNESCAPED_UNICODE);
+$js_projects = json_encode($projects, JSON_UNESCAPED_UNICODE);
 $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
-$js_overtime  = json_encode($overtime,  JSON_UNESCAPED_UNICODE);
+$js_overtime = json_encode($overtime, JSON_UNESCAPED_UNICODE);
 ?>
 <!DOCTYPE html>
 <html lang="el">
@@ -131,8 +131,8 @@ $js_overtime  = json_encode($overtime,  JSON_UNESCAPED_UNICODE);
         </div>
         <div class="header-right">
             <button class="btn-logout" onclick="handleLogout()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                     <polyline points="16 17 21 12 16 7" />
                     <line x1="21" y1="12" x2="9" y2="12" />
@@ -182,8 +182,7 @@ $js_overtime  = json_encode($overtime,  JSON_UNESCAPED_UNICODE);
             <?php else: ?>
                 <div class="project-list">
                     <?php foreach ($projects as $proj): ?>
-                        <div class="project-card" data-id="<?= $proj['id'] ?>"
-                            onclick="selectProject(<?= $proj['id'] ?>)">
+                        <div class="project-card" data-id="<?= $proj['id'] ?>" onclick="selectProject(<?= $proj['id'] ?>)">
                             <h4><?= htmlspecialchars($proj['name']) ?></h4>
                             <div class="proj-location">
                                 <i class="fas fa-map-marker-alt"></i>
@@ -218,8 +217,7 @@ $js_overtime  = json_encode($overtime,  JSON_UNESCAPED_UNICODE);
                     <?php endif; ?>
                 </div>
 
-                <button id="clock-toggle-btn" class="btn-clock-in"
-                    onclick="clockToggle()" <?= empty($projects) ? 'disabled' : '' ?>>
+                <button id="clock-toggle-btn" class="btn-clock-in" onclick="clockToggle()" <?= empty($projects) ? 'disabled' : '' ?>>
                     <i class="fas fa-play"></i> Clock In - Έναρξη Εργασίας
                 </button>
 
@@ -261,7 +259,7 @@ $js_overtime  = json_encode($overtime,  JSON_UNESCAPED_UNICODE);
                                     <?= htmlspecialchars(substr($wl['clock_out'] ?? '', 0, 5)) ?> μ.μ.
                                 </small>
                             </div>
-                            <div class="work-item-hours"><?= number_format((float)$wl['total_hours'], 2) ?></div>
+                            <div class="work-item-hours"><?= number_format((float) $wl['total_hours'], 2) ?></div>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -271,7 +269,8 @@ $js_overtime  = json_encode($overtime,  JSON_UNESCAPED_UNICODE);
         <!-- ── 5. ΣΗΜΕΙΩΣΗ ────────────────────────────────────── -->
         <div class="note-box">
             <strong>Σημείωση</strong>
-            <p>Μπορείτε να βλέπετε μόνο τις ώρες εργασίας σας. Για οικονομικά στοιχεία και budget επικοινωνήστε με τον διαχειριστή.</p>
+            <p>Μπορείτε να βλέπετε μόνο τις ώρες εργασίας σας. Για οικονομικά στοιχεία και budget επικοινωνήστε με τον
+                διαχειριστή.</p>
         </div>
 
         <!-- ── 6. ΑΙΤΗΜΑΤΑ ΕΠΙΠΛΕΟΝ ΩΡΩΝ ─────────────────────── -->
@@ -299,13 +298,13 @@ $js_overtime  = json_encode($overtime,  JSON_UNESCAPED_UNICODE);
                                         <span>
                                             <?php
                                             $d = DateTime::createFromFormat('Y-m-d', $ot['date']);
-                                            $days   = ['Mon'=>'Δευ','Tue'=>'Τρι','Wed'=>'Τετ','Thu'=>'Πέμ','Fri'=>'Παρ','Sat'=>'Σάβ','Sun'=>'Κυρ'];
-                                            $months = ['Jan'=>'Ιαν','Feb'=>'Φεβ','Mar'=>'Μαρ','Apr'=>'Απρ','May'=>'Μαΐ','Jun'=>'Ιουν','Jul'=>'Ιουλ','Aug'=>'Αυγ','Sep'=>'Σεπ','Oct'=>'Οκτ','Nov'=>'Νοε','Dec'=>'Δεκ'];
+                                            $days = ['Mon' => 'Δευ', 'Tue' => 'Τρι', 'Wed' => 'Τετ', 'Thu' => 'Πέμ', 'Fri' => 'Παρ', 'Sat' => 'Σάβ', 'Sun' => 'Κυρ'];
+                                            $months = ['Jan' => 'Ιαν', 'Feb' => 'Φεβ', 'Mar' => 'Μαρ', 'Apr' => 'Απρ', 'May' => 'Μαΐ', 'Jun' => 'Ιουν', 'Jul' => 'Ιουλ', 'Aug' => 'Αυγ', 'Sep' => 'Σεπ', 'Oct' => 'Οκτ', 'Nov' => 'Νοε', 'Dec' => 'Δεκ'];
                                             if ($d) {
                                                 echo ($days[$d->format('D')] ?? $d->format('D')) . ' '
-                                                   . $d->format('d') . ' '
-                                                   . ($months[$d->format('M')] ?? $d->format('M')) . ' '
-                                                   . $d->format('Y');
+                                                    . $d->format('d') . ' '
+                                                    . ($months[$d->format('M')] ?? $d->format('M')) . ' '
+                                                    . $d->format('Y');
                                             } else {
                                                 echo htmlspecialchars($ot['date']);
                                             }
@@ -316,12 +315,13 @@ $js_overtime  = json_encode($overtime,  JSON_UNESCAPED_UNICODE);
                                         <label>Ώρες</label>
                                         <span>
                                             <i class="fas fa-clock" style="color:var(--primary);font-size:0.8rem;"></i>
-                                            <?= (float)$ot['hours'] ?>h
+                                            <?= (float) $ot['hours'] ?>h
                                         </span>
                                     </div>
                                 </div>
                                 <span class="badge <?= htmlspecialchars($ot['status']) ?>">
-                                    <i class="fas fa-<?= $ot['status'] === 'pending' ? 'clock' : ($ot['status'] === 'approved' ? 'check' : 'times') ?>"></i>
+                                    <i
+                                        class="fas fa-<?= $ot['status'] === 'pending' ? 'clock' : ($ot['status'] === 'approved' ? 'check' : 'times') ?>"></i>
                                     <?= htmlspecialchars($status_labels[$ot['status']] ?? $ot['status']) ?>
                                 </span>
                             </div>
@@ -349,7 +349,8 @@ $js_overtime  = json_encode($overtime,  JSON_UNESCAPED_UNICODE);
     <div id="overtime-modal" class="modal-overlay">
         <div class="modal-container">
             <div class="modal-header">
-                <h3><i class="fas fa-plus-circle" style="color:var(--primary);margin-right:8px;"></i> Αίτημα Υπερωρίας</h3>
+                <h3><i class="fas fa-plus-circle" style="color:var(--primary);margin-right:8px;"></i> Αίτημα Υπερωρίας
+                </h3>
                 <button class="close-modal" onclick="closeModal('overtime-modal')">&times;</button>
             </div>
             <div class="modal-body">
@@ -365,7 +366,8 @@ $js_overtime  = json_encode($overtime,  JSON_UNESCAPED_UNICODE);
                     </div>
                     <div class="form-group">
                         <label for="ot-hours">Επιπλέον Ώρες <span class="req">*</span></label>
-                        <input type="number" id="ot-hours" name="hours" placeholder="π.χ. 2" min="0.5" step="0.5" required>
+                        <input type="number" id="ot-hours" name="hours" placeholder="π.χ. 2" min="0.5" step="0.5"
+                            required>
                     </div>
                     <div class="form-group">
                         <label for="ot-date">Ημερομηνία <span class="req">*</span></label>
@@ -377,7 +379,8 @@ $js_overtime  = json_encode($overtime,  JSON_UNESCAPED_UNICODE);
                             placeholder="Περιγράψτε τον λόγο για τις επιπλέον ώρες..."></textarea>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-outline" onclick="closeModal('overtime-modal')">Ακύρωση</button>
+                        <button type="button" class="btn btn-outline"
+                            onclick="closeModal('overtime-modal')">Ακύρωση</button>
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-paper-plane"></i> Υποβολή
                         </button>
@@ -392,9 +395,9 @@ $js_overtime  = json_encode($overtime,  JSON_UNESCAPED_UNICODE);
 
     <!-- ════════════════ PHP → JS data injection ════════════════ -->
     <script>
-        window.__PROJECTS__  = <?= $js_projects ?>;
+        window.__PROJECTS__ = <?= $js_projects ?>;
         window.__WORK_LOGS__ = <?= $js_work_logs ?>;
-        window.__OVERTIME__  = <?= $js_overtime ?>;
+        window.__OVERTIME__ = <?= $js_overtime ?>;
     </script>
     <script src="JS/clock_timer.js"></script>
     <script src="JS/helper.js"></script>
@@ -408,6 +411,8 @@ $js_overtime  = json_encode($overtime,  JSON_UNESCAPED_UNICODE);
             }
         });
     </script>
+    <script src="JS/push_init.js"></script>
 
 </body>
+
 </html>
