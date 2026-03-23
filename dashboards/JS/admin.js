@@ -1,3 +1,8 @@
+/* ── CSRF helper ─────────────────────────────────────────────── */
+function getCsrf() {
+    return document.querySelector('meta[name="csrf-token"]')?.content || '';
+}
+
 // ==================== GLOBAL STATE ====================
 const appState = {
     user: { fullName: "Διαχειριστής", role: "Admin" },
@@ -286,11 +291,13 @@ function renderOvertime(filter) {
     const main = document.getElementById('mainContent');
     const pending = appState.overtimeRequests.filter(r => r.status === 'pending').length;
     const approved = appState.overtimeRequests.filter(r => r.status === 'approved').length;
+    const rejected = appState.overtimeRequests.filter(r => r.status === 'rejected').length;
     main.innerHTML = `
         <div class="sub-tabs">
             <button class="sub-tab ${filter === 'all' ? 'active' : ''}" onclick="renderOvertime('all')">Όλα (${appState.overtimeRequests.length})</button>
             <button class="sub-tab ${filter === 'pending' ? 'active' : ''}" onclick="renderOvertime('pending')">Σε Αναμονή (${pending})</button>
             <button class="sub-tab ${filter === 'approved' ? 'active' : ''}" onclick="renderOvertime('approved')">Εγκρίθηκαν (${approved})</button>
+            <button class="sub-tab ${filter === 'rejected' ? 'active' : ''}" onclick="renderOvertime('rejected')">Απορρίφθηκαν (${rejected})</button>
         </div>
         <div id="overtimeList" class="overtime-list"></div>
     `;
@@ -300,27 +307,38 @@ function renderOvertime(filter) {
         const card = document.createElement('div');
         card.className = 'ot-card';
         card.innerHTML = `
-            <div class="ot-header">
-                <div>
-                    <strong>${r.name}</strong>
-                    <p>${r.status === 'pending' ? '🟡 Σε αναμονή' : '✅ Εγκρίθηκε'}</p>
-                </div>
-                <div>
-                    ${r.status === 'pending' ? `
-                        <button class="btn-reject"  onclick="updateOvertimeStatus(${r.id},'rejected')">Απόρριψη</button>
-                        <button class="btn-approve" onclick="updateOvertimeStatus(${r.id},'approved')">Έγκριση</button>
-                    ` : `<button class="btn btn-outline" onclick="updateOvertimeStatus(${r.id},'pending')">Αναίρεση</button>`}
-                </div>
+            <div class="ot-card-info">
+                <strong>${r.name}</strong>
+                <p class="ot-status ${r.status === 'pending' ? 'ot-status--pending' : r.status === 'approved' ? 'ot-status--approved' : 'ot-status--rejected'}">${r.status === 'pending' ? 'Σε αναμονή' : r.status === 'approved' ? 'Εγκρίθηκε' : 'Απορρίφθηκε'}</p>
+                <p>Ώρες: <strong>${r.hours}h</strong> &nbsp;|&nbsp; Αιτιολογία: ${r.reason}</p>
             </div>
-            <p>Ώρες: <strong>${r.hours}h</strong> &nbsp;|&nbsp; Αιτιολογία: ${r.reason}</p>
+            <div class="ot-actions">
+                ${r.status === 'pending' ? `
+                    <button class="btn-reject"  onclick="updateOvertimeStatus(${r.id},'rejected')">Απόρριψη</button>
+                    <button class="btn-approve" onclick="updateOvertimeStatus(${r.id},'approved')">Έγκριση</button>
+                ` : `<button class="btn btn-outline" onclick="updateOvertimeStatus(${r.id},'pending')">Αναίρεση</button>`}
+            </div>
         `;
         list.appendChild(card);
     });
 }
 
 function updateOvertimeStatus(id, newStatus) {
-    const req = appState.overtimeRequests.find(r => r.id === id);
-    if (req) { req.status = newStatus; renderOvertime(appState.overtimeFilter); }
+    fetch('/Backend/Overtime/update_overtime.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: newStatus, csrf_token: getCsrf() })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            const req = appState.overtimeRequests.find(r => r.id === id);
+            if (req) { req.status = newStatus; renderOvertime(appState.overtimeFilter); }
+        } else {
+            alert(res.message || 'Σφάλμα ενημέρωσης');
+        }
+    })
+    .catch(() => alert('Σφάλμα δικτύου'));
 }
 
 // ==================== SEARCH ====================
@@ -469,6 +487,11 @@ if (window.__DB_PROJECTS__ && window.__DB_PROJECTS__.length) {
     appState.projects = window.__DB_PROJECTS__;
     appState.kpi.budget = appState.projects.reduce((sum, p) => sum + p.budget, 0);
     appState.kpi.cost = appState.projects.reduce((sum, p) => sum + p.costLabor + p.costMaterials, 0);
+}
+
+// Inject real DB overtime requests (set by PHP before this script loads)
+if (window.__DB_OVERTIME__) {
+    appState.overtimeRequests = window.__DB_OVERTIME__;
 }
 // ==================== Create Project ====================
 

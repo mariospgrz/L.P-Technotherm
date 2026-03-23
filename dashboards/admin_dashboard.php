@@ -67,6 +67,27 @@ if ($proj_res) {
     }
 }
 $projects_json = json_encode($projects);
+
+// ── Fetch all overtime requests for Overtime tab ───────────────────────────────
+$overtime_requests = [];
+$ot_res = $conn->query(
+    "SELECT o.id, u.name, o.hours, o.date, o.status,
+            p.name AS project,
+            COALESCE(o.reason, '') AS reason,
+            DATE_FORMAT(o.created_at, '%d/%m/%Y %H:%i') AS submitted
+       FROM overtime_requests o
+       JOIN users u    ON o.user_id    = u.id
+       JOIN projects p ON o.project_id = p.id
+      ORDER BY o.created_at DESC"
+);
+if ($ot_res) {
+    while ($row = $ot_res->fetch_assoc()) {
+        $row['id']    = (int) $row['id'];
+        $row['hours'] = (float) $row['hours'];
+        $overtime_requests[] = $row;
+    }
+}
+$overtime_json = json_encode($overtime_requests, JSON_UNESCAPED_UNICODE);
 ?>
 <!DOCTYPE html>
 <html lang="el">
@@ -76,6 +97,7 @@ $projects_json = json_encode($projects);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Διαχειριστή | LP Technotherm</title>
     <meta name="description" content="Πίνακας ελέγχου διαχειριστή - LP Technotherm">
+    <meta name="csrf-token" content="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js -->
@@ -477,6 +499,8 @@ $projects_json = json_encode($projects);
         window.__DB_EMPLOYEES__ = <?= $employees_json ?>;
         // Passes real DB projects to admin.js
         window.__DB_PROJECTS__ = <?= $projects_json ?>;
+        // Passes real DB overtime requests to admin.js
+        window.__DB_OVERTIME__ = <?= $overtime_json ?>;
         <?php if ($active_tab === 'projects'): ?>
             // Start on projects tab — trigger first render after admin.js loads
             document.addEventListener('DOMContentLoaded', function () {

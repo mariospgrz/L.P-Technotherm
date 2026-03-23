@@ -777,51 +777,79 @@ body {
 
 .ot-card {
     background: var(--card-bg);
-    padding: 18px;
+    padding: 10px 18px;
     border-radius: var(--radius);
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.ot-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .ot-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
+    display: contents;
 }
 
 .ot-header strong {
     font-size: 0.92rem;
 }
 
-.ot-card p {
+.ot-card p:not(.ot-status) {
     font-size: 0.83rem;
     color: var(--text-muted);
+}
+
+.ot-status {
+    font-size: 0.83rem;
+    font-weight: 600;
+    margin: 4px 0 0;
+}
+
+.ot-status--pending {
+    color: #d97706;
+}
+
+.ot-status--approved {
+    color: var(--success);
+}
+
+.ot-status--rejected {
+    color: var(--danger);
+}
+
+.ot-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-approve,
+.btn-reject {
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-align: center;
+    border: none;
 }
 
 .btn-approve {
     background: var(--success);
     color: white;
-    border: none;
-    padding: 7px 16px;
-    border-radius: 7px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 0.82rem;
-    font-weight: 600;
 }
 
 .btn-reject {
-    background: white;
-    color: var(--danger);
-    border: 1px solid var(--danger);
-    padding: 7px 16px;
-    border-radius: 7px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 0.82rem;
-    font-weight: 600;
-    margin-right: 6px;
+    background: var(--danger);
+    color: white;
 }
 
 /* ===== MODALS ===== */
