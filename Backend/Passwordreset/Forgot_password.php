@@ -11,12 +11,12 @@ use PHPMailer\PHPMailer\Exception;
 // ─── Load config ──────────────────────────────────────────────────────────────
 $cfg = require __DIR__ . '/../config.php';
 
-define('BASE_URL',    $cfg['base_url']);
-define('GMAIL_USER',  $cfg['gmail_user']);
-define('GMAIL_PASS',  $cfg['gmail_pass']);
-define('FROM_EMAIL',  $cfg['from_email']);
-define('FROM_NAME',   $cfg['from_name']);
-define('DEBUG_MODE',  $cfg['debug_mode']);
+define('BASE_URL', $cfg['base_url']);
+define('GMAIL_USER', $cfg['gmail_user']);
+define('GMAIL_PASS', $cfg['gmail_pass']);
+define('FROM_EMAIL', $cfg['from_email']);
+define('FROM_NAME', $cfg['from_name']);
+define('DEBUG_MODE', $cfg['debug_mode']);
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -56,16 +56,34 @@ if (DEBUG_MODE) {
     ?>
     <!DOCTYPE html>
     <html lang="el">
+
     <head>
         <meta charset="UTF-8">
         <title>Debug – Reset Link | Technotherm</title>
         <style>
-            body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
-            .debug-box { background: #fff7ed; border: 1px solid #fb923c; border-radius: 8px; padding: 16px; margin: 16px 0; word-break: break-all; }
-            a { color: #2563eb; }
+            body {
+                font-family: sans-serif;
+                max-width: 600px;
+                margin: 40px auto;
+                padding: 0 20px;
+            }
+
+            .debug-box {
+                background: #fff7ed;
+                border: 1px solid #fb923c;
+                border-radius: 8px;
+                padding: 16px;
+                margin: 16px 0;
+                word-break: break-all;
+            }
+
+            a {
+                color: #2563eb;
+            }
         </style>
-    <link rel="icon" type="image/jpeg" href="/frontend/images/images.jpg">
+        <link rel="icon" type="image/jpeg" href="/frontend/images/images.jpg">
     </head>
+
     <body>
         <h2>🛠️ Debug Mode — Email not sent</h2>
         <div class="debug-box">
@@ -74,6 +92,7 @@ if (DEBUG_MODE) {
         </div>
         <a href="/frontend/forgot_password.html">← Δοκιμάστε άλλο email</a>
     </body>
+
     </html>
     <?php
     exit();
@@ -84,12 +103,12 @@ $mail = new PHPMailer(true);
 
 try {
     $mail->isSMTP();
-    $mail->Host       = 'smtp.gmail.com';
-    $mail->SMTPAuth   = true;
-    $mail->Username   = GMAIL_USER;
-    $mail->Password   = GMAIL_PASS;
+    $mail->Host = 'smtp.gmail.com';
+    $mail->SMTPAuth = true;
+    $mail->Username = GMAIL_USER;
+    $mail->Password = GMAIL_PASS;
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-    $mail->Port       = 587;
+    $mail->Port = 587;
 
     $mail->setFrom(FROM_EMAIL, FROM_NAME);
     $mail->addAddress($email);

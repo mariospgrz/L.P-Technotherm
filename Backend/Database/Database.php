@@ -1,10 +1,18 @@
 <?php
 // Backend/Database/Database.php
 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "l.p technotherm";
+// Attempt to load configuration
+$configFile = __DIR__ . '/../config.php';
+if (!file_exists($configFile)) {
+    die(json_encode(["error" => "Configuration file missing. Please copy config.example.php to config.php and configure it."]));
+}
+
+$config = require $configFile;
+
+$servername = $config['db_host'] ?? 'localhost';
+$username = $config['db_user'] ?? 'root';
+$password = $config['db_pass'] ?? '';
+$dbname = $config['db_name'] ?? 'l.p technotherm';
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);

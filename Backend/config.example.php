@@ -6,6 +6,12 @@
  */
 
 return [
+    // Database Configuration
+    'db_host'     => 'localhost',
+    'db_user'     => 'root',
+    'db_pass'     => '',
+    'db_name'     => 'l.p technotherm',
+
     'gmail_user' => 'your-gmail@gmail.com',
     'gmail_pass' => 'xxxx xxxx xxxx xxxx',   // 16-char Google App Password
     'from_email'  => 'your-gmail@gmail.com',
