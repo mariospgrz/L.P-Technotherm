@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = new FormData(this);
             data.append('csrf_token', getCsrf());
 
-            fetch('/dashboards/actions/submit_invoice.php', {
+            fetch('/Backend/upload_invoice.php', {
                 method: 'POST',
                 body: data,
             })

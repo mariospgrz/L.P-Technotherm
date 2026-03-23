@@ -395,7 +395,7 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                     </div>
                 </div>
 
-                <form id="invoice-form" action="actions/submit_invoice.php" method="POST" enctype="multipart/form-data">
+                <form id="invoice-form" action="/Backend/upload_invoice.php" method="POST" enctype="multipart/form-data">
                     <div class="form-group">
                         <label for="inv-project">Έργο <span class="req">*</span></label>
                         <select id="inv-project" name="project_id" required>
