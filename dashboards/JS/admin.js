@@ -292,7 +292,17 @@ function renderOvertime(filter) {
     const pending = appState.overtimeRequests.filter(r => r.status === 'pending').length;
     const approved = appState.overtimeRequests.filter(r => r.status === 'approved').length;
     const rejected = appState.overtimeRequests.filter(r => r.status === 'rejected').length;
+
+    // Calculate days remaining in current month
+    const now = new Date();
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    const daysRemaining = lastDay.getDate() - now.getDate();
+
     main.innerHTML = `
+        <div class="ot-month-timer" style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 16px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;font-size:0.85rem;color:#0369a1;">
+            <i class="fas fa-hourglass-half" style="font-size:1rem;"></i>
+            <span>Απομένουν <strong>${daysRemaining}</strong> ${daysRemaining === 1 ? 'ημέρα' : 'ημέρες'} μέχρι το τέλος του μήνα. Μετά το κλείσιμο του μήνα, οι ενέργειες κλειδώνουν.</span>
+        </div>
         <div class="sub-tabs">
             <button class="sub-tab ${filter === 'all' ? 'active' : ''}" onclick="renderOvertime('all')">Όλα (${appState.overtimeRequests.length})</button>
             <button class="sub-tab ${filter === 'pending' ? 'active' : ''}" onclick="renderOvertime('pending')">Σε Αναμονή (${pending})</button>
@@ -303,24 +313,66 @@ function renderOvertime(filter) {
     `;
     const list = document.getElementById('overtimeList');
     const filtered = appState.overtimeRequests.filter(r => filter === 'all' || r.status === filter);
+
+    if (filtered.length === 0) {
+        list.innerHTML = '<div class="no-data" style="padding:30px;text-align:center;color:var(--text-muted);"><i class="fas fa-check-circle" style="font-size:1.5rem;margin-bottom:8px;display:block;"></i>Δεν υπάρχουν αιτήσεις σε αυτή την κατηγορία.</div>';
+        return;
+    }
+
     filtered.forEach(r => {
+        // Check if the overtime's month has passed (lock if not in current month)
+        const isLocked = isOvertimeMonthPassed(r.date);
+
         const card = document.createElement('div');
         card.className = 'ot-card';
+        if (isLocked) card.style.opacity = '0.7';
+
+        let actionsHtml = '';
+        if (isLocked) {
+            actionsHtml = `<span style="font-size:0.78rem;color:var(--text-muted);display:flex;align-items:center;gap:5px;"><i class="fas fa-lock"></i> Κλειδωμένο</span>`;
+        } else if (r.status === 'pending') {
+            actionsHtml = `
+                <button class="btn-reject"  onclick="updateOvertimeStatus(${r.id},'rejected')">Απόρριψη</button>
+                <button class="btn-approve" onclick="updateOvertimeStatus(${r.id},'approved')">Έγκριση</button>
+            `;
+        } else {
+            actionsHtml = `<button class="btn btn-outline" onclick="updateOvertimeStatus(${r.id},'pending')">Αναίρεση</button>`;
+        }
+
         card.innerHTML = `
             <div class="ot-card-info">
                 <strong>${r.name}</strong>
                 <p class="ot-status ${r.status === 'pending' ? 'ot-status--pending' : r.status === 'approved' ? 'ot-status--approved' : 'ot-status--rejected'}">${r.status === 'pending' ? 'Σε αναμονή' : r.status === 'approved' ? 'Εγκρίθηκε' : 'Απορρίφθηκε'}</p>
-                <p>Ώρες: <strong>${r.hours}h</strong> &nbsp;|&nbsp; Αιτιολογία: ${r.reason}</p>
+                <p><i class="fas fa-building" style="color:var(--primary);margin-right:4px;font-size:0.78rem;"></i> <strong>${r.project || '—'}</strong></p>
+                <p>Ώρες: <strong>${r.hours}h</strong> &nbsp;|&nbsp; Ημ/νία: <strong>${r.date || '—'}</strong> &nbsp;|&nbsp; Αιτιολογία: ${r.reason}</p>
             </div>
             <div class="ot-actions">
-                ${r.status === 'pending' ? `
-                    <button class="btn-reject"  onclick="updateOvertimeStatus(${r.id},'rejected')">Απόρριψη</button>
-                    <button class="btn-approve" onclick="updateOvertimeStatus(${r.id},'approved')">Έγκριση</button>
-                ` : `<button class="btn btn-outline" onclick="updateOvertimeStatus(${r.id},'pending')">Αναίρεση</button>`}
+                ${actionsHtml}
             </div>
         `;
         list.appendChild(card);
     });
+}
+
+// Check if the overtime date's month has passed
+function isOvertimeMonthPassed(dateStr) {
+    if (!dateStr) return false;
+    const now = new Date();
+    const curYear = now.getFullYear();
+    const curMonth = now.getMonth(); // 0-indexed
+    // dateStr can be in YYYY-MM-DD or DD/MM/YYYY format
+    let otDate;
+    if (dateStr.includes('-')) {
+        otDate = new Date(dateStr);
+    } else if (dateStr.includes('/')) {
+        const parts = dateStr.split('/');
+        otDate = new Date(parts[2], parts[1] - 1, parts[0]);
+    } else {
+        return false;
+    }
+    if (isNaN(otDate.getTime())) return false;
+    // Locked if the overtime month is before the current month
+    return (otDate.getFullYear() < curYear) || (otDate.getFullYear() === curYear && otDate.getMonth() < curMonth);
 }
 
 function updateOvertimeStatus(id, newStatus) {

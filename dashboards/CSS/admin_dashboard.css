@@ -273,6 +273,7 @@ body {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 18px;
+    align-items: start;
 }
 
 @media (max-width: 860px) {

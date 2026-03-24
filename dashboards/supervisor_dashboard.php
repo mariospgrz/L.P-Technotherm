@@ -568,27 +568,39 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                                 </span>
                             </div>
 
-                            <div class="helpers-multi-select" style="max-height: none;">
-                                <?php foreach ($helpers as $h): ?>
-                                    <div class="helper-card">
-                                        <input type="checkbox" id="h-<?= $h['id'] ?>" name="helper_ids[]"
-                                            value="<?= $h['id'] ?>" class="helper-checkbox" onchange="updateSelectedCount()">
-                                        <div class="helper-card-inner">
-                                            <div class="helper-avatar">
-                                                <i class="fas fa-user-plus icon-unselected"></i>
-                                                <i class="fas fa-check-circle icon-selected"></i>
-                                            </div>
-                                            <div class="helper-info-col">
-                                                <span class="helper-name"><?= htmlspecialchars($h['name']) ?></span>
-                                                <span class="helper-role">Βοηθός</span>
-                                            </div>
-                                            <div class="helper-badge-col">
-                                                <label class="helper-selected-badge" for="h-<?= $h['id'] ?>"
-                                                    id="h-badge-<?= $h['id'] ?>">Επίλεξε</label>
-                                            </div>
-                                        </div>
+                            <div class="custom-dropdown" id="helpers-dropdown">
+                                <div class="dropdown-header" onclick="toggleHelperDropdown(event)">
+                                    <span id="dropdown-title">Επιλέξτε Βοηθούς...</span>
+                                    <i class="fas fa-chevron-down dropdown-icon"></i>
+                                </div>
+                                <div class="dropdown-body" id="helpers-dropdown-body">
+                                    <div class="dropdown-search">
+                                        <i class="fas fa-search"></i>
+                                        <input type="text" id="helper-search" placeholder="Αναζήτηση βοηθού..." oninput="filterHelpers()">
                                     </div>
-                                <?php endforeach; ?>
+                                    <div class="helpers-multi-select" style="max-height: 300px; overflow-y: auto;">
+                                        <?php foreach ($helpers as $h): ?>
+                                            <div class="helper-card" data-name="<?= htmlspecialchars(mb_strtolower($h['name'], 'UTF-8')) ?>">
+                                                <input type="checkbox" id="h-<?= $h['id'] ?>" name="helper_ids[]"
+                                                    value="<?= $h['id'] ?>" class="helper-checkbox" onchange="updateSelectedCount()">
+                                                <div class="helper-card-inner">
+                                                    <div class="helper-avatar">
+                                                        <i class="fas fa-user-plus icon-unselected"></i>
+                                                        <i class="fas fa-check-circle icon-selected"></i>
+                                                    </div>
+                                                    <div class="helper-info-col">
+                                                        <span class="helper-name"><?= htmlspecialchars($h['name']) ?></span>
+                                                        <span class="helper-role">Βοηθός</span>
+                                                    </div>
+                                                    <div class="helper-badge-col">
+                                                        <label class="helper-selected-badge" for="h-<?= $h['id'] ?>"
+                                                            id="h-badge-<?= $h['id'] ?>">Επίλεξε</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     <?php else: ?>

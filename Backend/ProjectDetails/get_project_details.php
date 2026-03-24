@@ -55,6 +55,21 @@ $stmt->execute();
 $labor_cost = (float) $stmt->get_result()->fetch_assoc()['labor_cost'];
 $stmt->close();
 
+// 2b. Overtime cost: SUM( approved_overtime.hours * hourly_rate )
+$stmt = $conn->prepare(
+    "SELECT COALESCE(SUM(o.hours * u.hourly_rate), 0) AS overtime_cost
+     FROM overtime_requests o
+     JOIN users u ON o.user_id = u.id
+     WHERE o.project_id = ? AND o.status = 'approved'"
+);
+if ($stmt) {
+    $stmt->bind_param('i', $project_id);
+    $stmt->execute();
+    $overtime_cost = (float) $stmt->get_result()->fetch_assoc()['overtime_cost'];
+    $stmt->close();
+    $labor_cost += $overtime_cost;
+}
+
 // 3. Material cost: SUM(invoices.amount)
 $stmt = $conn->prepare(
     'SELECT COALESCE(SUM(amount), 0) AS material_cost FROM invoices WHERE project_id = ?'
@@ -181,6 +196,24 @@ while ($row = $res->fetch_assoc()) {
 }
 $stmt->close();
 
+// 11. Approved Overtime Requests
+$stmt = $conn->prepare(
+    "SELECT o.id, o.user_id, u.name as user_name, u.role as user_role,
+            o.project_id, o.hours, o.date, o.description, o.status
+     FROM overtime_requests o
+     JOIN users u ON o.user_id = u.id
+     WHERE o.project_id = ? AND o.status = 'approved'
+     ORDER BY o.date DESC"
+);
+$stmt->bind_param('i', $project_id);
+$stmt->execute();
+$res = $stmt->get_result();
+$approved_overtime = [];
+while ($row = $res->fetch_assoc()) {
+    $approved_overtime[] = $row;
+}
+$stmt->close();
+
 // Υπολογισμοί
 $total_budget    = (float) $project['budget'];
 $original_budget = $total_budget - $sum_adjustments;
@@ -210,4 +243,5 @@ echo json_encode([
     'time_logs'          => $time_logs,
     'invoices'           => $invoices,
     'team'               => $team,
+    'approved_overtime'  => $approved_overtime,
 ]);

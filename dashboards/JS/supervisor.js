@@ -404,6 +404,17 @@ document.addEventListener('click', e => {
         if (nameEl) nameEl.textContent = 'Επιλέξτε ένα έργο για να ξεκινήσετε την καταγραφή';
         if (btn) btn.disabled = true;
     }
+
+    // Close helper dropdown if clicked outside
+    const dropdown = document.getElementById('helpers-dropdown');
+    if (dropdown && !dropdown.contains(e.target)) {
+        const header = document.querySelector('.dropdown-header');
+        const body = document.getElementById('helpers-dropdown-body');
+        if (header && body) {
+            header.classList.remove('active');
+            body.classList.remove('show');
+        }
+    }
 });
 
 /* ── Logout ─────────────────────────────────────────────── */
@@ -440,8 +451,23 @@ function showToast(msg, type = 'success') {
 function updateSelectedCount() {
     const checkedBoxes = document.querySelectorAll('.helper-checkbox:checked');
     const label = document.getElementById('helpers-count-label');
+    const title = document.getElementById('dropdown-title');
+    const count = checkedBoxes.length;
+
     if (label) {
-        label.textContent = `(${checkedBoxes.length} επιλεγμένοι)`;
+        label.textContent = `(${count} επιλεγμένοι)`;
+    }
+
+    if (title) {
+        if (count === 0) {
+            title.textContent = 'Επιλέξτε Βοηθούς...';
+        } else if (count === 1) {
+            const firstCheckedId = checkedBoxes[0].id.replace('h-', '');
+            const hFound = window.__HELPERS__?.find(h => String(h.id) === String(firstCheckedId));
+            title.textContent = hFound ? hFound.name : '1 βοηθός';
+        } else {
+            title.textContent = `${count} βοηθοί επιλέχθηκαν`;
+        }
     }
 
     // Update individual helper badges
@@ -450,6 +476,32 @@ function updateSelectedCount() {
         const badge = document.getElementById(badgeId);
         if (badge) {
             badge.textContent = cb.checked ? 'Αφαίρεση' : 'Επίλεξε';
+        }
+    });
+}
+
+function toggleHelperDropdown(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    const header = document.querySelector('.dropdown-header');
+    const body = document.getElementById('helpers-dropdown-body');
+    if (header && body) {
+        header.classList.toggle('active');
+        body.classList.toggle('show');
+    }
+}
+
+function filterHelpers() {
+    const query = document.getElementById('helper-search').value.toLowerCase();
+    const cards = document.querySelectorAll('.helpers-multi-select .helper-card');
+    cards.forEach(card => {
+        const name = card.getAttribute('data-name') || '';
+        if (name.includes(query)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
         }
     });
 }

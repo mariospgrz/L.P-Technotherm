@@ -49,7 +49,10 @@ $proj_res = $conn->query(
     "SELECT p.id, p.name, p.status, p.location, p.start_date, p.budget,
         (SELECT COALESCE(SUM(TIMESTAMPDIFF(MINUTE, te.clock_in, te.clock_out) / 60.0 * u.hourly_rate), 0) 
          FROM time_entries te JOIN users u ON te.user_id = u.id 
-         WHERE te.project_id = p.id AND te.clock_out IS NOT NULL) AS costLabor,
+         WHERE te.project_id = p.id AND te.clock_out IS NOT NULL) 
+        + (SELECT COALESCE(SUM(o.hours * u2.hourly_rate), 0)
+         FROM overtime_requests o JOIN users u2 ON o.user_id = u2.id
+         WHERE o.project_id = p.id AND o.status = 'approved') AS costLabor,
         (SELECT COALESCE(SUM(amount), 0) FROM invoices WHERE project_id = p.id) AS costMaterials,
         (SELECT COALESCE(SUM(amount), 0) FROM payments WHERE project_id = p.id) AS paid
      FROM projects p
@@ -184,9 +187,9 @@ $overtime_json = json_encode($overtime_requests, JSON_UNESCAPED_UNICODE);
                                     autocomplete="off">
                             </div>
                             <div class="form-group">
-                                <label for="cu_password">Κωδικός * (min. 6)</label>
+                                <label for="cu_password">Κωδικός * (min. 8)</label>
                                 <input type="password" id="cu_password" name="password"
-                                    placeholder="Τουλάχιστον 6 χαρακτήρες" minlength="6" required>
+                                    placeholder="Τουλάχιστον 8 χαρακτήρες" minlength="6" required>
                             </div>
                         </div>
                         <div class="form-group">

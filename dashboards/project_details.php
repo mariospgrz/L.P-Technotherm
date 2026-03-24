@@ -526,6 +526,316 @@ if (!$project_id) {
         .pd-invoice-thumb:hover {
             opacity: 0.8;
         }
+
+        /* ===== TIME LOG FILTERS ===== */
+        .tl-filters {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tl-filters-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tl-filters-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .tl-filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 150px;
+        }
+
+        .tl-filter-group label {
+            font-size: 0.73rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .tl-filter-group input[type="text"],
+        .tl-filter-group select {
+            padding: 9px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-family: inherit;
+            color: var(--text-main);
+            background: #fff;
+            transition: border-color 0.18s;
+            outline: none;
+            width: 120px;
+        }
+
+        .tl-filter-group input[type="text"]:focus,
+        .tl-filter-group select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+
+        /* Employee multi-select dropdown */
+        .tl-emp-dropdown {
+            position: relative;
+            min-width: 200px;
+        }
+
+        .tl-emp-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            background: #fff;
+            transition: all 0.18s;
+            user-select: none;
+            gap: 8px;
+        }
+
+        .tl-emp-header:hover {
+            border-color: var(--primary);
+        }
+
+        .tl-emp-header.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .tl-emp-header .tl-dd-icon {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            transition: transform 0.2s;
+        }
+
+        .tl-emp-header.active .tl-dd-icon {
+            transform: rotate(180deg);
+        }
+
+        .tl-emp-body {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid var(--primary);
+            border-top: none;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            z-index: 60;
+            display: none;
+            flex-direction: column;
+        }
+
+        .tl-emp-body.show {
+            display: flex;
+        }
+
+        .tl-emp-search {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f9fafb;
+        }
+
+        .tl-emp-search i {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .tl-emp-search input {
+            border: none;
+            background: transparent;
+            flex: 1;
+            font-size: 0.82rem;
+            outline: none;
+            color: var(--text-main);
+            font-family: inherit;
+        }
+
+        .tl-emp-list {
+            max-height: 180px;
+            overflow-y: auto;
+            padding: 6px;
+        }
+
+        .tl-emp-list label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.83rem;
+            color: var(--text-main);
+            transition: background 0.15s;
+            text-transform: none;
+            letter-spacing: normal;
+            font-weight: 500;
+        }
+
+        .tl-emp-list label:hover {
+            background: #f0f4ff;
+        }
+
+        .tl-emp-list input[type="checkbox"] {
+            accent-color: var(--primary);
+            width: 15px;
+            height: 15px;
+        }
+
+        .tl-emp-list .tl-emp-role {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-left: auto;
+        }
+
+        /* Filter action buttons */
+        .tl-filter-actions {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+            margin-left: auto;
+        }
+
+        .tl-btn-apply {
+            padding: 9px 18px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.18s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tl-btn-apply:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .tl-btn-clear {
+            padding: 9px 14px;
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.18s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tl-btn-clear:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .tl-results-info {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            padding: 0 4px;
+        }
+
+        @media (max-width: 768px) {
+            .tl-filters-row {
+                flex-direction: column;
+            }
+            .tl-filter-group {
+                width: 100%;
+            }
+            .tl-filter-actions {
+                margin-left: 0;
+                width: 100%;
+            }
+            .tl-btn-apply, .tl-btn-clear {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+
+        /* Overtime badge */
+        .overtime-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            background: #eff6ff;
+            color: #2563eb;
+        }
+        .normal-badge {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        /* Sortable table headers */
+        .pd-table th.sortable {
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            padding-right: 22px;
+            transition: color 0.15s;
+        }
+        .pd-table th.sortable:hover {
+            color: #2563eb;
+        }
+        .pd-table th.sortable .sort-icon {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.65rem;
+            opacity: 0.35;
+        }
+        .pd-table th.sortable.sort-active .sort-icon {
+            opacity: 1;
+            color: #2563eb;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            background: #f0fdf4;
+            color: #16a34a;
+        }
     </style>
     <link rel="icon" type="image/jpeg" href="/frontend/images/images.jpg">
 </head>
@@ -712,15 +1022,89 @@ if (!$project_id) {
 
             <!-- Tab: Time Logs -->
             <div id="tab-time" class="pd-tab-content">
+
+                <!-- Filter Bar -->
+                <div class="tl-filters">
+                    <div class="tl-filters-title"><i class="fas fa-filter"></i> Φίλτρα</div>
+                    <div class="tl-filters-row">
+
+                        <!-- Date From -->
+                        <div class="tl-filter-group">
+                            <label for="tlFilterDateFrom">Από</label>
+                            <input type="text" id="tlFilterDateFrom" placeholder="ηη/μμ/εεεε" maxlength="10">
+                        </div>
+
+                        <!-- Date To -->
+                        <div class="tl-filter-group">
+                            <label for="tlFilterDateTo">Έως</label>
+                            <input type="text" id="tlFilterDateTo" placeholder="ηη/μμ/εεεε" maxlength="10">
+                        </div>
+
+                        <!-- Employee Multi-Select -->
+                        <div class="tl-filter-group">
+                            <label>Υπάλληλοι</label>
+                            <div class="tl-emp-dropdown" id="tlEmpDropdown">
+                                <div class="tl-emp-header" id="tlEmpHeader">
+                                    <span id="tlEmpHeaderText">Όλοι οι υπάλληλοι</span>
+                                    <i class="fas fa-chevron-down tl-dd-icon"></i>
+                                </div>
+                                <div class="tl-emp-body" id="tlEmpBody">
+                                    <div class="tl-emp-search">
+                                        <i class="fas fa-search"></i>
+                                        <input type="text" id="tlEmpSearch" placeholder="Αναζήτηση υπαλλήλου…">
+                                    </div>
+                                    <div class="tl-emp-list" id="tlEmpList">
+                                        <!-- Populated dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Role Filter -->
+                        <div class="tl-filter-group">
+                            <label for="tlFilterRole">Ρόλος</label>
+                            <select id="tlFilterRole">
+                                <option value="">Όλοι</option>
+                                <option value="supervisor">Μάστορας</option>
+                                <option value="helper">Βοηθός</option>
+                            </select>
+                        </div>
+
+                        <!-- Type Filter (Normal / Overtime) -->
+                        <div class="tl-filter-group">
+                            <label for="tlFilterType">Τύπος</label>
+                            <select id="tlFilterType">
+                                <option value="">Όλα</option>
+                                <option value="normal">Κανονική Εργασία</option>
+                                <option value="overtime">Υπερωρία</option>
+                            </select>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="tl-filter-actions">
+                            <button type="button" class="tl-btn-apply" onclick="applyTimeFilters()">
+                                <i class="fas fa-search"></i> Εφαρμογή
+                            </button>
+                            <button type="button" class="tl-btn-clear" onclick="clearTimeFilters()">
+                                <i class="fas fa-times"></i> Καθαρισμός
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results info -->
+                <div id="tlResultsInfo" class="tl-results-info" style="display:none;"></div>
+
                 <div class="pd-table-container">
                     <table class="pd-table">
                         <thead>
                             <tr>
-                                <th>Ημερομηνία</th>
-                                <th>Εργαζόμενος</th>
-                                <th>Ρόλος</th>
+                                <th class="sortable sort-active" data-sort="date" onclick="sortTimeLogs('date')">Ημερομηνία <i class="fas fa-sort-down sort-icon"></i></th>
+                                <th class="sortable" data-sort="employee" onclick="sortTimeLogs('employee')">Εργαζόμενος <i class="fas fa-sort sort-icon"></i></th>
+                                <th class="sortable" data-sort="role" onclick="sortTimeLogs('role')">Ρόλος <i class="fas fa-sort sort-icon"></i></th>
                                 <th>Είσοδος - Έξοδος</th>
-                                <th>Διάρκεια</th>
+                                <th class="sortable" data-sort="duration" onclick="sortTimeLogs('duration')">Διάρκεια <i class="fas fa-sort sort-icon"></i></th>
+                                <th class="sortable" data-sort="type" onclick="sortTimeLogs('type')">Τύπος <i class="fas fa-sort sort-icon"></i></th>
                             </tr>
                         </thead>
                         <tbody id="timeLogsList">
@@ -773,6 +1157,7 @@ if (!$project_id) {
 
     <script>
         const PROJECT_ID = <?= $project_id ?>;
+        let allTimeLogs = [];
 
         // Tab switching
         document.querySelectorAll('.pd-tab').forEach(tab => {
@@ -887,7 +1272,21 @@ if (!$project_id) {
             document.getElementById('cc-total').textContent = formatEuro(fin.total_cost);
 
             // Populate Additional Tabs
-            renderTimeLogs(data.time_logs);
+            // Merge normal time logs + approved overtime into one array
+            const normalLogs = (data.time_logs || []).map(log => ({ ...log, entry_type: 'normal' }));
+            const overtimeLogs = (data.approved_overtime || []).map(ot => ({
+                date: ot.date,
+                user_name: ot.user_name,
+                user_role: ot.user_role,
+                clock_in: null,
+                clock_out: null,
+                overtime_hours: parseFloat(ot.hours),
+                description: ot.description,
+                entry_type: 'overtime'
+            }));
+            allTimeLogs = [...normalLogs, ...overtimeLogs];
+            applyTimeFilters();
+            populateEmployeeDropdown(allTimeLogs);
             renderInvoices(data.invoices);
             renderTeam(data.team);
         }
@@ -939,35 +1338,54 @@ if (!$project_id) {
         function renderTimeLogs(logs) {
             const tbody = document.getElementById('timeLogsList');
             if (!logs || logs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="pd-empty">Δεν υπάρχουν καταγεγραμμένες ώρες.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="pd-empty">Δεν υπάρχουν καταγεγραμμένες ώρες.</td></tr>';
                 return;
             }
             tbody.innerHTML = logs.map(log => {
-                const clockIn = log.clock_in ? new Date(log.clock_in) : null;
-                const clockOut = log.clock_out ? new Date(log.clock_out) : null;
+                const isOvertime = log.entry_type === 'overtime';
+                const rowClass = isOvertime ? 'overtime-row' : '';
 
                 let duration = '—';
-                if (clockIn && clockOut) {
-                    const diffMs = clockOut - clockIn;
-                    const hrs = Math.floor(diffMs / 3600000);
-                    const mins = Math.round((diffMs % 3600000) / 60000);
-                    duration = `${hrs}ω ${mins}λ`;
-                }
+                let timeIn = '—';
+                let timeOut = '—';
 
-                const timeIn = clockIn ? clockIn.toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' }) : '—';
-                const timeOut = clockOut ? clockOut.toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' }) : '—';
+                if (isOvertime) {
+                    const hrs = Math.floor(log.overtime_hours);
+                    const mins = Math.round((log.overtime_hours - hrs) * 60);
+                    duration = `${hrs}ω ${mins}λ`;
+                    timeIn = 'Υπερωρία';
+                    timeOut = '';
+                } else {
+                    const clockIn = log.clock_in ? new Date(log.clock_in) : null;
+                    const clockOut = log.clock_out ? new Date(log.clock_out) : null;
+                    if (clockIn && clockOut) {
+                        const diffMs = clockOut - clockIn;
+                        const hrs = Math.floor(diffMs / 3600000);
+                        const mins = Math.round((diffMs % 3600000) / 60000);
+                        duration = `${hrs}ω ${mins}λ`;
+                    }
+                    timeIn = clockIn ? clockIn.toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' }) : '—';
+                    timeOut = clockOut ? clockOut.toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' }) : '—';
+                }
 
                 let roleName = log.user_role;
                 if (roleName === 'helper') roleName = 'Βοηθός';
                 if (roleName === 'supervisor') roleName = 'Μάστορας';
 
+                const typeBadge = isOvertime
+                    ? '<span class="overtime-badge">Υπερωρία</span>'
+                    : '<span class="normal-badge">Κανονική</span>';
+
+                const timeDisplay = isOvertime ? 'Υπερωρία' : `${timeIn} - ${timeOut}`;
+
                 return `
-                    <tr>
+                    <tr class="${rowClass}">
                         <td>${formatDate(log.date)}</td>
                         <td style="font-weight:600;">${log.user_name || '—'}</td>
                         <td>${roleName}</td>
-                        <td>${timeIn} - ${timeOut}</td>
+                        <td>${timeDisplay}</td>
                         <td><strong>${duration}</strong></td>
+                        <td>${typeBadge}</td>
                     </tr>
                 `;
             }).join('');
@@ -1072,6 +1490,203 @@ if (!$project_id) {
                 btn.innerHTML = '<i class="fas fa-sync-alt"></i> Ενημέρωση Προϋπολογισμού';
             }
         }
+
+        // ── Time Log Filters ──────────────────────────────────────────────────
+        let currentSort = { field: 'date', direction: 'desc' };
+
+        function sortTimeLogs(field) {
+            if (currentSort.field === field) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.field = field;
+                currentSort.direction = 'asc';
+            }
+
+            // Update UI headers
+            document.querySelectorAll('.pd-table th.sortable').forEach(th => {
+                const icon = th.querySelector('.sort-icon');
+                th.classList.remove('sort-active');
+                icon.className = 'fas fa-sort sort-icon';
+                
+                if (th.dataset.sort === field) {
+                    th.classList.add('sort-active');
+                    icon.className = `fas fa-sort-${currentSort.direction === 'asc' ? 'up' : 'down'} sort-icon`;
+                }
+            });
+
+            applyTimeFilters();
+        }
+
+        function populateEmployeeDropdown(logs) {
+            const listEl = document.getElementById('tlEmpList');
+            const seen = new Map();
+            logs.forEach(log => {
+                if (log.user_name && !seen.has(log.user_name)) {
+                    seen.set(log.user_name, log.user_role);
+                }
+            });
+            listEl.innerHTML = '';
+            seen.forEach((role, name) => {
+                let roleLabel = role === 'supervisor' ? 'Μάστορας' : 'Βοηθός';
+                const lbl = document.createElement('label');
+                lbl.innerHTML = `<input type="checkbox" value="${name}"> ${name} <span class="tl-emp-role">${roleLabel}</span>`;
+                listEl.appendChild(lbl);
+            });
+        }
+
+        // Parse dd/mm/yyyy to yyyy-mm-dd for comparison
+        function parseDDMMYYYY(str) {
+            if (!str) return null;
+            const parts = str.split('/');
+            if (parts.length !== 3) return null;
+            const d = parts[0].padStart(2, '0');
+            const m = parts[1].padStart(2, '0');
+            const y = parts[2];
+            if (y.length !== 4 || isNaN(+d) || isNaN(+m) || isNaN(+y)) return null;
+            return `${y}-${m}-${d}`;
+        }
+
+        // Auto-format date input: add / after dd and mm
+        function autoFormatDate(input) {
+            input.addEventListener('input', function () {
+                let v = this.value.replace(/[^0-9]/g, '');
+                if (v.length > 2) v = v.substring(0, 2) + '/' + v.substring(2);
+                if (v.length > 5) v = v.substring(0, 5) + '/' + v.substring(5);
+                if (v.length > 10) v = v.substring(0, 10);
+                this.value = v;
+            });
+        }
+        autoFormatDate(document.getElementById('tlFilterDateFrom'));
+        autoFormatDate(document.getElementById('tlFilterDateTo'));
+
+        function applyTimeFilters() {
+            const dateFromRaw = document.getElementById('tlFilterDateFrom').value;
+            const dateToRaw = document.getElementById('tlFilterDateTo').value;
+            const dateFrom = parseDDMMYYYY(dateFromRaw);
+            const dateTo = parseDDMMYYYY(dateToRaw);
+            const role = document.getElementById('tlFilterRole').value;
+            const entryType = document.getElementById('tlFilterType').value;
+            const selectedEmps = Array.from(document.querySelectorAll('#tlEmpList input[type=checkbox]:checked')).map(cb => cb.value);
+
+            let filtered = allTimeLogs.filter(log => {
+                // Date range
+                if (dateFrom && log.date < dateFrom) return false;
+                if (dateTo && log.date > dateTo) return false;
+                // Role
+                if (role && log.user_role !== role) return false;
+                // Type
+                if (entryType && log.entry_type !== entryType) return false;
+                // Employee
+                if (selectedEmps.length > 0 && !selectedEmps.includes(log.user_name)) return false;
+                return true;
+            });
+
+            // Apply sorting
+            filtered.sort((a, b) => {
+                let valA, valB;
+                
+                if (currentSort.field === 'date') {
+                    valA = a.date;
+                    valB = b.date;
+                } else if (currentSort.field === 'employee') {
+                    valA = a.user_name || '';
+                    valB = b.user_name || '';
+                } else if (currentSort.field === 'role') {
+                    valA = a.user_role || '';
+                    valB = b.user_role || '';
+                } else if (currentSort.field === 'type') {
+                    valA = a.entry_type || '';
+                    valB = b.entry_type || '';
+                } else if (currentSort.field === 'duration') {
+                    valA = a.entry_type === 'overtime' ? a.overtime_hours : 0;
+                    if (a.entry_type === 'normal' && a.clock_in && a.clock_out) {
+                        valA = (new Date(a.clock_out) - new Date(a.clock_in)) / 3600000;
+                    }
+                    valB = b.entry_type === 'overtime' ? b.overtime_hours : 0;
+                    if (b.entry_type === 'normal' && b.clock_in && b.clock_out) {
+                        valB = (new Date(b.clock_out) - new Date(b.clock_in)) / 3600000;
+                    }
+                }
+
+                if (valA < valB) return currentSort.direction === 'asc' ? -1 : 1;
+                if (valA > valB) return currentSort.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            renderTimeLogs(filtered);
+
+            // Results info
+            const info = document.getElementById('tlResultsInfo');
+            if (dateFrom || dateTo || role || entryType || selectedEmps.length > 0) {
+                info.style.display = 'block';
+                info.innerHTML = '<i class="fas fa-info-circle"></i> Εμφανίζονται <strong>' + filtered.length + '</strong> από <strong>' + allTimeLogs.length + '</strong> εγγραφές';
+            } else {
+                info.style.display = 'none';
+            }
+        }
+
+        function clearTimeFilters() {
+            document.getElementById('tlFilterDateFrom').value = '';
+            document.getElementById('tlFilterDateTo').value = '';
+            document.getElementById('tlFilterRole').value = '';
+            document.getElementById('tlFilterType').value = '';
+            document.querySelectorAll('#tlEmpList input[type=checkbox]').forEach(cb => cb.checked = false);
+            document.getElementById('tlEmpHeaderText').textContent = 'Όλοι οι υπάλληλοι';
+            document.getElementById('tlResultsInfo').style.display = 'none';
+            
+            // Reset sorting
+            currentSort = { field: 'date', direction: 'desc' };
+            document.querySelectorAll('.pd-table th.sortable').forEach(th => {
+                const icon = th.querySelector('.sort-icon');
+                th.classList.remove('sort-active');
+                icon.className = 'fas fa-sort sort-icon';
+                if (th.dataset.sort === 'date') {
+                    th.classList.add('sort-active');
+                    icon.className = 'fas fa-sort-down sort-icon';
+                }
+            });
+
+            applyTimeFilters();
+        }
+
+        // Employee dropdown toggle
+        document.getElementById('tlEmpHeader').addEventListener('click', () => {
+            const header = document.getElementById('tlEmpHeader');
+            const body = document.getElementById('tlEmpBody');
+            header.classList.toggle('active');
+            body.classList.toggle('show');
+        });
+
+        // Employee search
+        document.getElementById('tlEmpSearch').addEventListener('input', function () {
+            const q = this.value.toLowerCase();
+            document.querySelectorAll('#tlEmpList label').forEach(label => {
+                const name = label.textContent.toLowerCase();
+                label.style.display = name.includes(q) ? '' : 'none';
+            });
+        });
+
+        // Update header text on checkbox change
+        document.getElementById('tlEmpList').addEventListener('change', () => {
+            const checked = document.querySelectorAll('#tlEmpList input[type=checkbox]:checked');
+            const headerText = document.getElementById('tlEmpHeaderText');
+            if (checked.length === 0) {
+                headerText.textContent = 'Όλοι οι υπάλληλοι';
+            } else if (checked.length === 1) {
+                headerText.textContent = checked[0].value;
+            } else {
+                headerText.textContent = checked.length + ' υπάλληλοι επιλεγμένοι';
+            }
+        });
+
+        // Close dropdown on outside click
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('tlEmpDropdown');
+            if (!dropdown.contains(e.target)) {
+                document.getElementById('tlEmpHeader').classList.remove('active');
+                document.getElementById('tlEmpBody').classList.remove('show');
+            }
+        });
 
         // ── Init ──────────────────────────────────────────────────────────────
         loadProjectDetails();
