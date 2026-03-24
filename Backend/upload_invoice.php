@@ -15,8 +15,8 @@
  *   { success: false, message: "..." }
  */
 
-require_once __DIR__ . '/../supervisor_session.php';
-require_once __DIR__ . '/../Database/Database.php';
+require_once __DIR__ . '/supervisor_session.php';
+require_once __DIR__ . '/Database/Database.php';
 
 header('Content-Type: application/json');
 
@@ -131,7 +131,7 @@ $check->close();
 
 // ── Save file to disk (optional) ─────────────────────────────────────────────
 if ($file !== null && $safe_ext !== null) {
-    $upload_dir = __DIR__ . '/../../uploads/invoices/';
+    $upload_dir = __DIR__ . '/../uploads/invoices/';
     if (!is_dir($upload_dir)) {
         mkdir($upload_dir, 0755, true);
     }

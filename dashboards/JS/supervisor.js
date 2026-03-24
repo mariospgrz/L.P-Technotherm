@@ -302,8 +302,18 @@ function filterInvoices() {
     renderMyInvoices(q);
 }
 
-function deleteInvoice(id) {
-    if (!confirm('Διαγραφή τιμολογίου;')) return;
+async function deleteInvoice(id) {
+    const result = await Swal.fire({
+        title: 'Είστε σίγουροι;',
+        text: 'Το τιμολόγιο θα διαγραφεί οριστικά.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#aaa',
+        confirmButtonText: 'Ναι, Διαγραφή',
+        cancelButtonText: 'Ακύρωση'
+    });
+    if (!result.isConfirmed) return;
     fetch('/dashboards/actions/delete_invoice.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

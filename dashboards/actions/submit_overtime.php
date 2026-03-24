@@ -41,10 +41,10 @@ if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
 }
 
 $stmt = $conn->prepare(
-    "INSERT INTO overtime_requests (user_id, project_id, hours, date, status, created_at)
-         VALUES (?, ?, ?, ?, 'pending', NOW())"
+    "INSERT INTO overtime_requests (user_id, project_id, hours, date, description, status, created_at)
+         VALUES (?, ?, ?, ?, ?, 'pending', NOW())"
 );
-$stmt->bind_param('iids', $user_id, $project_id, $hours, $date);
+$stmt->bind_param('iidss', $user_id, $project_id, $hours, $date, $reason);
 
 if ($stmt->execute()) {
     echo json_encode(['success' => true]);

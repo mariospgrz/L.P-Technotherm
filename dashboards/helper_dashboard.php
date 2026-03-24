@@ -76,7 +76,7 @@ if ($resW) {
 // ── Overtime requests ──────────────────────────────────────────────────────────
 $overtime = [];
 $resO = $conn->prepare(
-    'SELECT o.id, p.name AS project, o.hours, o.date, o.status,
+    'SELECT o.id, p.name AS project, o.hours, o.date, o.description AS reason, o.status,
             DATE_FORMAT(o.created_at, \'%d %b %Y, %H:%i\') AS submitted
        FROM overtime_requests o
        JOIN projects p ON o.project_id = p.id
@@ -113,6 +113,8 @@ $js_overtime = json_encode($overtime, JSON_UNESCAPED_UNICODE);
     <meta name="description" content="Πίνακας ελέγχου βοηθού - LP Technotherm">
     <meta name="csrf-token" content="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="CSS/helper.css">
     <link rel="icon" type="image/jpeg" href="/frontend/images/images.jpg">
 </head>

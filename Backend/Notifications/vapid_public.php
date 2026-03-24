@@ -2,12 +2,8 @@
 // Backend/Notifications/vapid_public.php
 header('Content-Type: application/json; charset=utf-8');
 
-$vapidFile = __DIR__ . '/vapid.json';
-if (!file_exists($vapidFile)) {
-    http_response_code(500);
-    echo json_encode(['error' => 'VAPID keys not generated yet']);
-    exit;
-}
+$vapid = [
+    'publicKey' => 'BBP41vPUp4vGZA0bRmje_Z2tvby4zutgpaaK4sqCKgZxdMGWYwPrcP_mJirhhwtBx4JmrpRo4d-9svg9DGEpWD0'
+];
 
-$vapid = json_decode(file_get_contents($vapidFile), true);
 echo json_encode(['publicKey' => $vapid['publicKey']]);

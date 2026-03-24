@@ -5,14 +5,14 @@ require_once __DIR__ . '/../Database/Database.php';
 use Minishlink\WebPush\WebPush;
 use Minishlink\WebPush\Subscription;
 
-$vapidFile = __DIR__ . '/vapid.json';
 $subsFile = __DIR__ . '/subscriptions.json';
 $warningsFile = __DIR__ . '/warnings.json';
 
-if (!file_exists($vapidFile)) {
-    die("VAPID keys not found.\n");
-}
-$vapid = json_decode(file_get_contents($vapidFile), true);
+// Hardcoded VAPID keys to prevent encoding/BOM issues on Windows
+$vapid = [
+    'publicKey' => 'BBP41vPUp4vGZA0bRmje_Z2tvby4zutgpaaK4sqCKgZxdMGWYwPrcP_mJirhhwtBx4JmrpRo4d-9svg9DGEpWD0',
+    'privateKey' => 'NWMcg8BSqiuSh8POP8GZHOt5VzJgRNNbhddprxe0KKU'
+];
 $subscriptions = file_exists($subsFile) ? json_decode(file_get_contents($subsFile), true) : [];
 $warnings = file_exists($warningsFile) ? json_decode(file_get_contents($warningsFile), true) : [];
 
