@@ -73,7 +73,7 @@ $overtime_requests = [];
 $ot_res = $conn->query(
     "SELECT o.id, u.name, o.hours, o.date, o.status,
             p.name AS project,
-            COALESCE(o.reason, '') AS reason,
+            COALESCE(o.description, '') AS reason,
             DATE_FORMAT(o.created_at, '%d/%m/%Y %H:%i') AS submitted
        FROM overtime_requests o
        JOIN users u    ON o.user_id    = u.id
