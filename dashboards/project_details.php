@@ -828,13 +828,172 @@ if (!$project_id) {
         .pd-table th.sortable.sort-active .sort-icon {
             opacity: 1;
             color: #2563eb;
-            gap: 4px;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 0.72rem;
+        }
+
+        /* ===== Invoice action buttons ===== */
+        .inv-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: nowrap;
+        }
+        .btn-inv-edit {
+            padding: 5px 10px;
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            font-size: 0.75rem;
             font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .btn-inv-edit:hover { background: #dbeafe; }
+        .btn-inv-delete {
+            padding: 5px 10px;
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .btn-inv-delete:hover { background: #fee2e2; }
+        .btn-inv-view {
+            padding: 5px 10px;
             background: #f0fdf4;
             color: #16a34a;
+            border: 1px solid #bbf7d0;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .btn-inv-view:hover { background: #dcfce7; }
+
+        /* ===== Image Viewer Modal ===== */
+        .img-viewer-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .img-viewer-overlay.show {
+            display: flex;
+        }
+        .img-viewer-overlay img {
+            max-width: 90vw;
+            max-height: 82vh;
+            border-radius: 10px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+            object-fit: contain;
+        }
+        .img-viewer-close {
+            position: absolute;
+            top: 18px;
+            right: 24px;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: #fff;
+            font-size: 1.6rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.18s;
+        }
+        .img-viewer-close:hover { background: rgba(255,255,255,0.28); }
+
+        /* ===== Edit Invoice Modal ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 8888;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-box {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 28px 28px 24px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .modal-box h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .modal-close {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+        .modal-close:hover { color: var(--text-main); }
+        .modal-field {
+            margin-bottom: 16px;
+        }
+        .modal-field label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+        }
+        .modal-field input {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            color: var(--text-main);
+            background: #fff;
+            transition: border-color 0.18s;
+            outline: none;
+            box-sizing: border-box;
+        }
+        .modal-field input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
         }
     </style>
     <link rel="icon" type="image/jpeg" href="/frontend/images/images.jpg">
@@ -1125,6 +1284,7 @@ if (!$project_id) {
                                 <th>Προμηθευτής</th>
                                 <th>Καταχωρήθηκε από</th>
                                 <th>Ποσό</th>
+                                <th>Ενέργειες</th>
                             </tr>
                         </thead>
                         <tbody id="invoicesList">
@@ -1132,6 +1292,40 @@ if (!$project_id) {
                         </tbody>
                     </table>
                 </div>
+
+            <!-- ===== Edit Invoice Modal ===== -->
+            <div class="modal-overlay" id="editInvoiceModal">
+                <div class="modal-box">
+                    <button class="modal-close" onclick="closeEditInvoiceModal()"><i class="fas fa-times"></i></button>
+                    <h3><i class="fas fa-file-invoice" style="color:var(--primary);"></i> Επεξεργασία Τιμολογίου</h3>
+                    <div class="form-msg" id="edit-invoice-msg"></div>
+                    <form id="editInvoiceForm" onsubmit="submitEditInvoice(event)" novalidate>
+                        <input type="hidden" id="editInvId">
+                        <div class="modal-field">
+                            <label for="editInvSupplier">Προμηθευτής</label>
+                            <input type="text" id="editInvSupplier" placeholder="π.χ. ΤΕΧΝΙΚΗ ΑΕ" required>
+                        </div>
+                        <div class="modal-field">
+                            <label for="editInvAmount">Ποσό (€)</label>
+                            <input type="number" id="editInvAmount" placeholder="0.00" min="0.01" step="0.01" required>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="btn btn-outline" onclick="closeEditInvoiceModal()">
+                                Ακύρωση
+                            </button>
+                            <button type="submit" class="btn btn-blue" id="editInvSubmitBtn">
+                                <i class="fas fa-save"></i> Αποθήκευση
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ===== Image Viewer Modal ===== -->
+            <div class="img-viewer-overlay" id="imgViewerOverlay" onclick="closeImageViewer(event)">
+                <button class="img-viewer-close" onclick="closeImageViewer()"><i class="fas fa-times"></i></button>
+                <img id="imgViewerImg" src="" alt="Τιμολόγιο">
+            </div>
             </div>
 
             <!-- Tab: Team -->
@@ -1394,21 +1588,39 @@ if (!$project_id) {
         function renderInvoices(invoices) {
             const tbody = document.getElementById('invoicesList');
             if (!invoices || invoices.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="pd-empty">Δεν υπάρχουν τιμολόγια έργου.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="pd-empty">Δεν υπάρχουν τιμολόγια έργου.</td></tr>';
                 return;
             }
             tbody.innerHTML = invoices.map(inv => {
-                const photoPath = inv.photo_path || inv.file_path || inv.image_path;
-                const img = photoPath
-                    ? `<img src="/${photoPath}" class="pd-invoice-thumb" onclick="window.open('/${photoPath}', '_blank')" title="Προβολή">`
-                    : '<div style="width:50px;height:50px;background:#eee;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#aaa;"><i class="fas fa-image"></i></div>';
+                const photoUrl = inv.photo_url || inv.photo_path || inv.file_path || inv.image_path;
+                const isImage = photoUrl && /\.(jpe?g|png|webp|gif)$/i.test(photoUrl);
+                const isPdf   = photoUrl && /\.pdf$/i.test(photoUrl);
+
+                let thumbCell;
+                if (photoUrl) {
+                    thumbCell = `<img src="/${photoUrl}" class="pd-invoice-thumb" onclick="openImageViewer(event, '${photoUrl}', ${isPdf ? 'true' : 'false'})" title="Προβολή">`;
+                } else {
+                    thumbCell = '<div style="width:50px;height:50px;background:#eee;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#aaa;"><i class="fas fa-image"></i></div>';
+                }
+
+                const supplier = (inv.supplier_name || '').replace(/'/g, "\\'");
+                const amount   = parseFloat(inv.amount);
+                const invId    = inv.id;
+
                 return `
                     <tr>
-                        <td>${img}</td>
+                        <td>${thumbCell}</td>
                         <td>${formatDate(inv.date || inv.created_at)}</td>
                         <td style="font-weight:600;">${inv.supplier_name || '—'}</td>
                         <td>${inv.uploaded_by_name || '—'}</td>
-                        <td style="color:#ef4444;font-weight:700;">${formatEuro(parseFloat(inv.amount))}</td>
+                        <td style="color:#ef4444;font-weight:700;">${formatEuro(amount)}</td>
+                        <td>
+                            <div class="inv-actions">
+                                ${photoUrl ? `<button class="btn-inv-view" onclick="openImageViewer(event, '${photoUrl}', ${isPdf ? 'true' : 'false'})"><i class="fas fa-eye"></i> Εικόνα</button>` : ''}
+                                <button class="btn-inv-edit" onclick="adminEditInvoice(${invId}, '${supplier}', ${amount})"><i class="fas fa-edit"></i> Επεξεργασία</button>
+                                <button class="btn-inv-delete" onclick="adminDeleteInvoice(${invId})"><i class="fas fa-trash"></i> Διαγραφή</button>
+                            </div>
+                        </td>
                     </tr>
                 `;
             }).join('');
@@ -1490,6 +1702,120 @@ if (!$project_id) {
                 btn.innerHTML = '<i class="fas fa-sync-alt"></i> Ενημέρωση Προϋπολογισμού';
             }
         }
+
+        // ── CSRF helper ───────────────────────────────────────────────────────
+        function getCsrf() {
+            return '<?= $_SESSION["csrf_token"] ?? "" ?>';
+        }
+
+        // ── Invoice Admin Actions ─────────────────────────────────────────────
+        function adminEditInvoice(id, supplier, amount) {
+            document.getElementById('editInvId').value     = id;
+            document.getElementById('editInvSupplier').value = supplier;
+            document.getElementById('editInvAmount').value = amount;
+            document.getElementById('editInvoiceModal').classList.add('show');
+        }
+
+        function closeEditInvoiceModal() {
+            document.getElementById('editInvoiceModal').classList.remove('show');
+            document.getElementById('edit-invoice-msg').className = 'form-msg';
+        }
+
+        async function submitEditInvoice(e) {
+            e.preventDefault();
+            const id       = parseInt(document.getElementById('editInvId').value);
+            const supplier = document.getElementById('editInvSupplier').value.trim();
+            const amount   = parseFloat(document.getElementById('editInvAmount').value);
+            const btn      = document.getElementById('editInvSubmitBtn');
+
+            if (!supplier || !amount || amount <= 0) {
+                showMsg('edit-invoice-msg', 'Συμπληρώστε προμηθευτή και έγκυρο ποσό.', true);
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Αποθήκευση…';
+
+            try {
+                const res  = await fetch('actions/admin_edit_invoice.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, vendor: supplier, amount, csrf_token: getCsrf() })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    closeEditInvoiceModal();
+                    await refreshData();
+                } else {
+                    showMsg('edit-invoice-msg', data.message || 'Σφάλμα.', true);
+                }
+            } catch {
+                showMsg('edit-invoice-msg', 'Σφάλμα σύνδεσης.', true);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Αποθήκευση';
+            }
+        }
+
+        async function adminDeleteInvoice(id) {
+            const result = await Swal.fire({
+                title: 'Διαγραφή τιμολογίου;',
+                text: 'Η ενέργεια αυτή δεν μπορεί να αναιρεθεί.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ναι, διαγραφή',
+                cancelButtonText: 'Ακύρωση'
+            });
+            if (!result.isConfirmed) return;
+
+            try {
+                const res  = await fetch('actions/admin_delete_invoice.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, csrf_token: getCsrf() })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    await Swal.fire({ icon: 'success', title: 'Διαγράφηκε!', timer: 1500, showConfirmButton: false });
+                    await refreshData();
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Σφάλμα', text: data.message || 'Αποτυχία διαγραφής.' });
+                }
+            } catch {
+                Swal.fire({ icon: 'error', title: 'Σφάλμα', text: 'Σφάλμα σύνδεσης.' });
+            }
+        }
+
+        // ── Image Viewer Modal ────────────────────────────────────────────────
+        function openImageViewer(event, photoUrl, isPdf) {
+            event.stopPropagation();
+            if (isPdf) {
+                window.open('/' + photoUrl, '_blank');
+                return;
+            }
+            const overlay = document.getElementById('imgViewerOverlay');
+            document.getElementById('imgViewerImg').src = '/' + photoUrl;
+            overlay.classList.add('show');
+        }
+
+        function closeImageViewer(event) {
+            if (event && event.target !== document.getElementById('imgViewerOverlay') && event.target.closest('.img-viewer-close') === null) {
+                if (event.target.tagName === 'IMG') return; // don't close on img click
+                return;
+            }
+            document.getElementById('imgViewerOverlay').classList.remove('show');
+            document.getElementById('imgViewerImg').src = '';
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                document.getElementById('imgViewerOverlay').classList.remove('show');
+                document.getElementById('imgViewerImg').src = '';
+                closeEditInvoiceModal();
+            }
+        });
 
         // ── Time Log Filters ──────────────────────────────────────────────────
         let currentSort = { field: 'date', direction: 'desc' };

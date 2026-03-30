@@ -34,7 +34,7 @@ if ($res) {
 // ── Fetch my invoices ──────────────────────────────────────────────────────────
 $invoices = [];
 $res2 = $conn->prepare(
-    'SELECT i.id, i.description, i.amount, i.date, p.name AS project
+    'SELECT i.id, i.description, i.amount, i.date, i.photo_url, p.name AS project
        FROM invoices i
        JOIN projects p ON i.project_id = p.id
       WHERE i.uploaded_by = ?
@@ -148,11 +148,12 @@ if ($resW) {
 // ── JSON for JS ───────────────────────────────────────────────────────────────
 $js_projects = json_encode($projects, JSON_UNESCAPED_UNICODE);
 $js_invoices = json_encode(array_map(fn($i) => [
-    'id' => (int) $i['id'],
+    'id'          => (int) $i['id'],
     'description' => $i['description'],
-    'project' => $i['project'],
-    'amount' => (float) $i['amount'],
-    'date' => $i['date'],
+    'project'     => $i['project'],
+    'amount'      => (float) $i['amount'],
+    'date'        => $i['date'],
+    'photo_url'   => $i['photo_url'] ?? null,
 ], $invoices), JSON_UNESCAPED_UNICODE);
 $js_helpers = json_encode($helpers, JSON_UNESCAPED_UNICODE);
 $js_overtime = json_encode(array_map(fn($o) => [
@@ -184,15 +185,140 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
     <link rel="stylesheet" href="CSS/responsive.css">
     <style>
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(6px)
-            }
+            from { opacity: 0; transform: translateY(6px) }
+            to   { opacity: 1; transform: none }
+        }
 
-            to {
-                opacity: 1;
-                transform: none
-            }
+        /* ===== Invoice photo thumbnail ===== */
+        .inv-thumb {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: opacity 0.15s;
+        }
+        .inv-thumb:hover { opacity: 0.8; }
+        .btn-inv-view-sup {
+            padding: 5px 10px;
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .btn-inv-view-sup:hover { background: #dcfce7; }
+
+        /* ===== Image Viewer Modal ===== */
+        .sup-img-viewer {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.88);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        .sup-img-viewer.show { display: flex; }
+        .sup-img-viewer img {
+            max-width: 90vw;
+            max-height: 85vh;
+            border-radius: 10px;
+            object-fit: contain;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+        }
+        .sup-img-close {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sup-img-close:hover { background: rgba(255,255,255,0.28); }
+
+        /* ===== Edit Invoice Modal ===== */
+        .sup-edit-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 8888;
+            align-items: center;
+            justify-content: center;
+        }
+        .sup-edit-modal.show { display: flex; }
+        .sup-edit-box {
+            background: #fff;
+            border-radius: 12px;
+            padding: 26px 26px 22px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .sup-edit-box h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sup-edit-close {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: #6b7280;
+            cursor: pointer;
+        }
+        .sup-edit-field { margin-bottom: 14px; }
+        .sup-edit-field label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 5px;
+        }
+        .sup-edit-field input {
+            width: 100%;
+            padding: 9px 11px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            outline: none;
+            box-sizing: border-box;
+        }
+        .sup-edit-field input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+        .sup-edit-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 18px;
         }
     </style>
     <link rel="icon" type="image/jpeg" href="/frontend/images/images.jpg">
@@ -462,24 +588,26 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                 <?php else: ?>
                     <?php foreach ($invoices as $inv): ?>
                         <div class="invoice-item" id="inv-<?= $inv['id'] ?>">
-                            <div class="invoice-icon-box"><i class="fas fa-file-alt"></i></div>
+                            <?php if (!empty($inv['photo_url']) && preg_match('/\.(jpe?g|png|webp|gif)$/i', $inv['photo_url'])): ?>
+                                <img src="/<?= htmlspecialchars($inv['photo_url']) ?>" class="inv-thumb"
+                                     onclick="supOpenImage('/<?= htmlspecialchars($inv['photo_url']) ?>')" title="Προβολή">
+                            <?php else: ?>
+                                <div class="invoice-icon-box"><i class="fas fa-file-alt"></i></div>
+                            <?php endif; ?>
                             <div class="invoice-info">
-                                <strong>
-                                    <?= htmlspecialchars($inv['description']) ?>
-                                </strong>
-                                <small><i class="fas fa-building"></i>
-                                    <?= htmlspecialchars($inv['project']) ?>
-                                </small>
+                                <strong><?= htmlspecialchars($inv['description']) ?></strong>
+                                <small><i class="fas fa-building"></i> <?= htmlspecialchars($inv['project']) ?></small>
                             </div>
                             <div class="invoice-amount">
-                                <strong>€
-                                    <?= number_format((float) $inv['amount'], 2, ',', '.') ?>
-                                </strong>
-                                <small>
-                                    <?= date('Y-m-d', strtotime($inv['date'])) ?>
-                                </small>
+                                <strong>€<?= number_format((float) $inv['amount'], 2, ',', '.') ?></strong>
+                                <small><?= date('Y-m-d', strtotime($inv['date'])) ?></small>
                             </div>
                             <div class="invoice-actions">
+                                <?php if (!empty($inv['photo_url'])): ?>
+                                    <button class="btn-inv-view-sup" onclick="supOpenImage('/<?= htmlspecialchars($inv['photo_url']) ?>')" title="Εικόνα">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                <?php endif; ?>
                                 <button class="icon-btn" title="Επεξεργασία" onclick="editInvoice(<?= $inv['id'] ?>)">
                                     <i class="fas fa-pencil-alt"></i>
                                 </button>
@@ -733,6 +861,36 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
 
     </div><!-- /content-area -->
 
+
+    <!-- ════════════════ MODAL: Edit Invoice ════════════════ -->
+    <div class="sup-edit-modal" id="supEditInvModal">
+        <div class="sup-edit-box">
+            <button class="sup-edit-close" onclick="supCloseEditModal()"><i class="fas fa-times"></i></button>
+            <h3><i class="fas fa-file-invoice" style="color:var(--primary);"></i> Επεξεργασία Τιμολογίου</h3>
+            <div id="sup-edit-msg" style="display:none;padding:8px 12px;border-radius:6px;font-size:0.82rem;font-weight:500;margin-bottom:12px;"></div>
+            <form id="supEditInvForm" onsubmit="supSubmitEditInvoice(event)" novalidate>
+                <input type="hidden" id="supEditInvId">
+                <div class="sup-edit-field">
+                    <label for="supEditInvSupplier">Προμηθευτής</label>
+                    <input type="text" id="supEditInvSupplier" placeholder="π.χ. ΤΕΧΝΙΚΗ ΑΕ" required>
+                </div>
+                <div class="sup-edit-field">
+                    <label for="supEditInvAmount">Ποσό (€)</label>
+                    <input type="number" id="supEditInvAmount" placeholder="0.00" min="0.01" step="0.01" required>
+                </div>
+                <div class="sup-edit-actions">
+                    <button type="button" class="btn btn-outline" onclick="supCloseEditModal()">Ακύρωση</button>
+                    <button type="submit" class="btn btn-primary" id="supEditInvBtn"><i class="fas fa-save"></i> Αποθήκευση</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ════════════════ MODAL: Image Viewer ════════════════ -->
+    <div class="sup-img-viewer" id="supImgViewer" onclick="supCloseImage(event)">
+        <button class="sup-img-close" onclick="supCloseImage()"><i class="fas fa-times"></i></button>
+        <img id="supImgViewerImg" src="" alt="Τιμολόγιο">
+    </div>
 
     <!-- ════════════════ MODAL: Overtime Request ════════════════ -->
     <div id="overtime-modal" class="modal-overlay">

@@ -165,10 +165,10 @@ $stmt->close();
 
 // 9. Invoices (Τιμολόγια)
 $stmt = $conn->prepare(
-    'SELECT i.*, u.name as uploaded_by_name 
-     FROM invoices i 
-     LEFT JOIN users u ON i.uploaded_by = u.id 
-     WHERE i.project_id = ? 
+    'SELECT i.*, u.name as uploaded_by_name, i.description as supplier_name
+     FROM invoices i
+     LEFT JOIN users u ON i.uploaded_by = u.id
+     WHERE i.project_id = ?
      ORDER BY i.date DESC, i.created_at DESC'
 );
 $stmt->bind_param('i', $project_id);
@@ -215,33 +215,33 @@ while ($row = $res->fetch_assoc()) {
 $stmt->close();
 
 // Υπολογισμοί
-$total_budget    = (float) $project['budget'];
+$total_budget = (float) $project['budget'];
 $original_budget = $total_budget - $sum_adjustments;
-$total_cost      = $labor_cost + $material_cost;
-$profit          = $total_budget - $total_cost;
-$client_debt     = $total_budget - $total_collected;
+$total_cost = $labor_cost + $material_cost;
+$profit = $total_budget - $total_cost;
+$client_debt = $total_budget - $total_collected;
 
 echo json_encode([
     'success' => true,
     'project' => $project,
     'financial_overview' => [
-        'total_budget'    => round($total_budget, 2),
+        'total_budget' => round($total_budget, 2),
         'original_budget' => round($original_budget, 2),
-        'labor_cost'      => round($labor_cost, 2),
-        'material_cost'   => round($material_cost, 2),
-        'total_cost'      => round($total_cost, 2),
-        'profit'          => round($profit, 2),
-        'client_debt'     => round($client_debt, 2),
+        'labor_cost' => round($labor_cost, 2),
+        'material_cost' => round($material_cost, 2),
+        'total_cost' => round($total_cost, 2),
+        'profit' => round($profit, 2),
+        'client_debt' => round($client_debt, 2),
     ],
     'payments_summary' => [
-        'total_invoiced'  => round($total_budget, 2),
+        'total_invoiced' => round($total_budget, 2),
         'total_collected' => round($total_collected, 2),
-        'remaining'       => round($client_debt, 2),
+        'remaining' => round($client_debt, 2),
     ],
-    'recent_payments'    => $recent_payments,
+    'recent_payments' => $recent_payments,
     'budget_adjustments' => $budget_adjustments,
-    'time_logs'          => $time_logs,
-    'invoices'           => $invoices,
-    'team'               => $team,
-    'approved_overtime'  => $approved_overtime,
+    'time_logs' => $time_logs,
+    'invoices' => $invoices,
+    'team' => $team,
+    'approved_overtime' => $approved_overtime,
 ]);

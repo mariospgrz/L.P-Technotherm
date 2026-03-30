@@ -275,9 +275,24 @@ function renderMyInvoices(query = '') {
         return;
     }
 
-    container.innerHTML = list.map(inv => `
+    container.innerHTML = list.map(inv => {
+        const photoUrl = inv.photo_url || '';
+        const isImage  = photoUrl && /\.(jpe?g|png|webp|gif)$/i.test(photoUrl);
+        const isPdf    = photoUrl && /\.pdf$/i.test(photoUrl);
+
+        const thumbHtml = isImage
+            ? `<img src="/${photoUrl}" class="inv-thumb" onclick="supOpenImage('/${photoUrl}')" title="Προβολή">`
+            : `<div class="invoice-icon-box"><i class="fas fa-file-alt"></i></div>`;
+
+        const viewBtn = photoUrl
+            ? `<button class="btn-inv-view-sup" onclick="supOpenImage('/${photoUrl}')" title="Εικόνα"><i class="fas fa-eye"></i></button>`
+            : '';
+
+        const supplierEsc = (inv.description || '').replace(/'/g, "\\'");
+
+        return `
         <div class="invoice-item" id="inv-${inv.id}">
-            <div class="invoice-icon-box"><i class="fas fa-file-alt"></i></div>
+            ${thumbHtml}
             <div class="invoice-info">
                 <strong>${esc(inv.description)}</strong>
                 <small><i class="fas fa-building"></i> ${esc(inv.project)}</small>
@@ -287,14 +302,16 @@ function renderMyInvoices(query = '') {
                 <small>${inv.date}</small>
             </div>
             <div class="invoice-actions">
-                <button class="icon-btn" title="Επεξεργασία" onclick="editInvoice(${inv.id})">
+                ${viewBtn}
+                <button class="icon-btn" title="Επεξεργασία" onclick="editInvoice(${inv.id}, '${supplierEsc}', ${inv.amount})">
                     <i class="fas fa-pencil-alt"></i>
                 </button>
                 <button class="icon-btn danger" title="Διαγραφή" onclick="deleteInvoice(${inv.id})">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
-        </div>`).join('');
+        </div>`;
+    }).join('');
 }
 
 function filterInvoices() {
@@ -331,10 +348,82 @@ async function deleteInvoice(id) {
         });
 }
 
-function editInvoice(id) {
-    // Open edit modal (simplified: redirect for now)
-    window.location.href = `/dashboards/actions/edit_invoice.php?id=${id}`;
+function editInvoice(id, supplier, amount) {
+    document.getElementById('supEditInvId').value       = id;
+    document.getElementById('supEditInvSupplier').value = supplier;
+    document.getElementById('supEditInvAmount').value   = amount;
+    const msgEl = document.getElementById('sup-edit-msg');
+    if (msgEl) { msgEl.style.display = 'none'; msgEl.textContent = ''; }
+    document.getElementById('supEditInvModal').classList.add('show');
 }
+
+function supCloseEditModal() {
+    document.getElementById('supEditInvModal').classList.remove('show');
+}
+
+async function supSubmitEditInvoice(e) {
+    e.preventDefault();
+    const id       = parseInt(document.getElementById('supEditInvId').value);
+    const supplier = document.getElementById('supEditInvSupplier').value.trim();
+    const amount   = parseFloat(document.getElementById('supEditInvAmount').value);
+    const btn      = document.getElementById('supEditInvBtn');
+    const msgEl    = document.getElementById('sup-edit-msg');
+
+    if (!supplier || !amount || amount <= 0) {
+        msgEl.textContent = 'Συμπληρώστε προμηθευτή και έγκυρο ποσό.';
+        msgEl.style.cssText = 'display:block;padding:8px 12px;border-radius:6px;font-size:0.82rem;font-weight:500;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;margin-bottom:12px;';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Αποθήκευση…';
+
+    try {
+        const res2 = await fetch('/dashboards/actions/supervisor_edit_invoice.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, vendor: supplier, amount, csrf_token: getCsrf() })
+        });
+        const data = await res2.json();
+        if (data.success) {
+            // Update local state
+            const inv = state.invoices.find(i => i.id === id);
+            if (inv) { inv.description = supplier; inv.amount = amount; }
+            supCloseEditModal();
+            renderMyInvoices();
+            showToast('Τιμολόγιο ενημερώθηκε!', 'success');
+        } else {
+            msgEl.textContent = data.message || 'Σφάλμα ενημέρωσης.';
+            msgEl.style.cssText = 'display:block;padding:8px 12px;border-radius:6px;font-size:0.82rem;font-weight:500;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;margin-bottom:12px;';
+        }
+    } catch {
+        msgEl.textContent = 'Σφάλμα σύνδεσης.';
+        msgEl.style.cssText = 'display:block;padding:8px 12px;border-radius:6px;font-size:0.82rem;font-weight:500;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;margin-bottom:12px;';
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Αποθήκευση';
+    }
+}
+
+/* ── Image Viewer ────────────────────────────────────────── */
+function supOpenImage(url) {
+    if (/\.pdf$/i.test(url)) { window.open(url, '_blank'); return; }
+    document.getElementById('supImgViewerImg').src = url;
+    document.getElementById('supImgViewer').classList.add('show');
+}
+
+function supCloseImage(event) {
+    if (event && event.target !== document.getElementById('supImgViewer')) return;
+    document.getElementById('supImgViewer').classList.remove('show');
+    document.getElementById('supImgViewerImg').src = '';
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        document.getElementById('supImgViewer')?.classList.remove('show');
+        document.getElementById('supEditInvModal')?.classList.remove('show');
+    }
+});
 
 /* ── Render Overtime list ───────────────────────────────── */
 function renderOvertimeList() {
