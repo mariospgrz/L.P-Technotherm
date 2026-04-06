@@ -16,9 +16,11 @@ $active_tab = (isset($_GET['tab']) && $_GET['tab'] === 'users') ? 'users' : 'pro
 // ── Fetch all users for User Management tab ───────────────────────────────────
 $users = [];
 $res = $conn->query(
-    'SELECT id, username, name, role, email, `Phone number` AS phone, hourly_rate, created_at
-       FROM users
-      ORDER BY created_at DESC'
+    "SELECT u.id, u.username, u.name, u.role, u.email, u.`Phone number` AS phone, u.hourly_rate, u.created_at,
+            (SELECT COALESCE(SUM(TIMESTAMPDIFF(MINUTE, te.clock_in, te.clock_out) / 60.0), 0) FROM time_entries te WHERE te.user_id = u.id AND te.clock_out IS NOT NULL) AS normal_hours,
+            (SELECT COALESCE(SUM(orq.hours), 0) FROM overtime_requests orq WHERE orq.user_id = u.id AND orq.status = 'approved') AS overtime_hours
+       FROM users u
+      ORDER BY u.created_at DESC"
 );
 if ($res) {
     while ($row = $res->fetch_assoc()) {
@@ -40,7 +42,8 @@ $employees_json = json_encode(array_map(fn($u) => [
     'name' => $u['name'] ?? '',
     'role' => $u['role'] ?? '',
     'rate' => (float) ($u['hourly_rate'] ?? 0),
-    'hours' => 0,
+    'hours' => (float) ($u['normal_hours'] ?? 0),
+    'overtime' => (float) ($u['overtime_hours'] ?? 0)
 ], $users));
 
 // ── Fetch all projects for Projects tab ───────────────────────────────────────
@@ -174,116 +177,55 @@ $overtime_json = json_encode($overtime_requests, JSON_UNESCAPED_UNICODE);
         <!-- ===================================================== -->
         <div id="panel-users" style="display:<?= $active_tab === 'users' ? 'block' : 'none' ?>;">
 
-            <div class="users-grid">
-
-                <!-- CREATE USER -->
-                <div class="panel-box">
-                    <h3><i class="fas fa-user-plus icon-primary"></i> Δημιουργία Νέου Χρήστη</h3>
-                    <form class="panel-form" action="/Backend/CreateUser/create_user.php" method="POST">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="cu_username">Username *</label>
-                                <input type="text" id="cu_username" name="username" placeholder="π.χ. nikos123" required
-                                    autocomplete="off">
-                            </div>
-                            <div class="form-group">
-                                <label for="cu_password">Κωδικός * (min. 8)</label>
-                                <input type="password" id="cu_password" name="password"
-                                    placeholder="Τουλάχιστον 8 χαρακτήρες" minlength="6" required>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="cu_full_name">Ονοματεπώνυμο *</label>
-                            <input type="text" id="cu_full_name" name="full_name" placeholder="π.χ. Νίκος Παπαδόπουλος"
-                                required autocomplete="off">
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="cu_role">Ρόλος *</label>
-                                <select id="cu_role" name="role" required>
-                                    <option value="" disabled selected>Επιλογή ρόλου</option>
-                                    <option value="administrator">Διαχειριστής</option>
-                                    <option value="supervisor">Υπεύθυνος</option>
-                                    <option value="helper">Βοηθός</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="cu_hourly_rate">Ωρομίσθιο (€)</label>
-                                <input type="number" id="cu_hourly_rate" name="hourly_rate" placeholder="π.χ. 15.00"
-                                    min="0" step="0.01">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="cu_phone">Τηλέφωνο *</label>
-                                <input type="text" id="cu_phone" name="phone" placeholder="π.χ. 6912345678" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="cu_email">Email *</label>
-                                <input type="email" id="cu_email" name="email" placeholder="π.χ. nikos@gmail.com"
-                                    required>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn-panel btn-panel-primary">
-                            <i class="fas fa-plus"></i> Δημιουργία Χρήστη
-                        </button>
-                    </form>
-                </div>
-
-                <!-- DELETE USER -->
-                <div class="panel-box danger-box">
-                    <h3><i class="fas fa-user-minus icon-primary"></i> Διαγραφή Χρήστη</h3>
-                    <form class="panel-form" action="/Backend/DeleteUser/delete_user.php" method="POST">
-                        <div class="form-group">
-                            <label for="du_username">Χρήστης προς διαγραφή *</label>
-                            <select id="du_username" name="username" required>
-                                <option value="" disabled selected>Επιλέξτε χρήστη…</option>
-                                <?php foreach ($users as $u): ?>
-                                    <?php if ((int) $u['id'] !== $logged_in_id): ?>
-                                        <option value="<?= htmlspecialchars($u['username']) ?>">
-                                            <?= htmlspecialchars(($u['name'] ?: $u['username']) . ' (@' . $u['username'] . ')') ?>
-                                        </option>
-                                    <?php endif; ?>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="confirm-row">
-                            <input type="checkbox" id="du_confirm" name="confirm" required>
-                            <label for="du_confirm">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                Επιβεβαιώνω ότι θέλω να διαγράψω <strong>οριστικά</strong> αυτόν τον χρήστη.
-                            </label>
-                        </div>
-                        <button type="submit" class="btn-panel btn-panel-danger">
-                            <i class="fas fa-trash-alt"></i> Οριστική Διαγραφή
-                        </button>
-                    </form>
-                </div>
-
-            </div><!-- /users-grid -->
+            <div class="users-action-bar" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn-panel btn-panel-primary" style="width: auto; padding: 10px 20px; font-weight: 500;" onclick="toggleModal('modalCreateUser')">
+                    <i class="fas fa-user-plus"></i> Νέος Χρήστης
+                </button>
+                <button class="btn-panel" style="width: auto; padding: 10px 20px; font-weight: 500; background: var(--warning); color: #fff; border: none; cursor: pointer;" onclick="toggleModal('modalEditUser')">
+                    <i class="fas fa-user-edit"></i> Επεξεργασία Χρήστη
+                </button>
+                <button class="btn-panel btn-panel-danger" style="width: auto; padding: 10px 20px; font-weight: 500;" onclick="toggleModal('modalDeleteUser')">
+                    <i class="fas fa-user-minus"></i> Διαγραφή Χρήστη
+                </button>
+            </div>
 
             <!-- USERS TABLE -->
-            <div class="section-heading">
-                <i class="fas fa-list-ul"></i> Κατάλογος Χρηστών
-                <span class="count-pill">
-                    <?= count($users) ?> χρήστες
-                </span>
+            <div class="section-heading" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div>
+                    <i class="fas fa-list-ul"></i> Κατάλογος Χρηστών
+                    <span class="count-pill" id="usersCountPill">
+                        <?= count($users) ?> χρήστες
+                    </span>
+                </div>
+                <!-- USERS TABLE CONTROLS -->
+                <div class="users-table-controls" style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <div class="search-container" style="flex:1; position:relative;">
+                        <i class="fas fa-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#6b7280; pointer-events:none;"></i>
+                        <input type="text" id="userSearchInput" placeholder="Αναζήτηση..." style="padding:8px 8px 8px 35px !important; border-radius:6px; border:1px solid var(--border-color); width:100%; box-sizing:border-box; font-family:inherit;">
+                    </div>
+                    <select id="userRoleFilter" style="padding:8px; border-radius:6px; border:1px solid var(--border-color); background:#fff; min-width:140px;">
+                        <option value="">Όλοι οι Ρόλοι</option>
+                        <option value="administrator">Διαχειριστής</option>
+                        <option value="supervisor">Υπεύθυνος</option>
+                        <option value="helper">Βοηθός</option>
+                    </select>
+                </div>
             </div>
             <div class="overflow-x">
                 <?php if (empty($users)): ?>
                     <div class="no-data"><i class="fas fa-users-slash"></i> Δεν βρέθηκαν χρήστες.</div>
                 <?php else: ?>
-                    <table class="data-table">
+                    <table class="data-table" id="usersTable">
                         <thead>
                             <tr>
-                                <th>#</th>
-                                <th>Ονοματεπώνυμο</th>
-                                <th>Username</th>
-                                <th>Ρόλος</th>
-                                <th>Email</th>
-                                <th>Τηλέφωνο</th>
-                                <th>Ωρομίσθιο</th>
-                                <th>Εγγραφή</th>
+                                <th style="cursor:pointer;" data-sort-type="number" data-col="0"># <i class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
+                                <th style="cursor:pointer;" data-sort-type="string" data-col="1">Ονοματεπώνυμο <i class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
+                                <th style="cursor:pointer;" data-sort-type="string" data-col="2">Username <i class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
+                                <th style="cursor:pointer;" data-sort-type="string" data-col="3">Ρόλος <i class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
+                                <th style="cursor:pointer;" data-sort-type="string" data-col="4">Email <i class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
+                                <th style="cursor:pointer;" data-sort-type="string" data-col="5">Τηλέφωνο <i class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
+                                <th style="cursor:pointer;" data-sort-type="currency" data-col="6">Ωρομίσθιο <i class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
+                                <th style="cursor:pointer;" data-sort-type="date" data-col="7">Εγγραφή <i class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -387,6 +329,169 @@ $overtime_json = json_encode($overtime_requests, JSON_UNESCAPED_UNICODE);
 
 
         <!-- ========== MODALS ========== -->
+
+        <!-- Modal: Δημιουργία Χρήστη -->
+        <div id="modalCreateUser" class="modal-overlay">
+            <div class="modal-container" style="max-width:480px;">
+                <div class="modal-header">
+                    <h3><i class="fas fa-user-plus icon-primary"></i> Δημιουργία Νέου Χρήστη</h3>
+                    <button class="close-modal" aria-label="Close" onclick="toggleModal('modalCreateUser')">&times;</button>
+                </div>
+                <div class="modal-body" style="padding: 20px;">
+                    <form class="panel-form" action="/Backend/CreateUser/create_user.php" method="POST">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cu_username">Username *</label>
+                                <input type="text" id="cu_username" name="username" placeholder="π.χ. nikos123" required autocomplete="off">
+                            </div>
+                            <div class="form-group">
+                                <label for="cu_password">Κωδικός * (min. 8)</label>
+                                <input type="password" id="cu_password" name="password" placeholder="Τουλάχιστον 8 χαρακτήρες" minlength="6" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="cu_full_name">Ονοματεπώνυμο *</label>
+                            <input type="text" id="cu_full_name" name="full_name" placeholder="π.χ. Νίκος Παπαδόπουλος" required autocomplete="off">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cu_role">Ρόλος *</label>
+                                <select id="cu_role" name="role" required>
+                                    <option value="" disabled selected>Επιλογή ρόλου</option>
+                                    <option value="administrator">Διαχειριστής</option>
+                                    <option value="supervisor">Υπεύθυνος</option>
+                                    <option value="helper">Βοηθός</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="cu_hourly_rate">Ωρομίσθιο (€)</label>
+                                <input type="number" id="cu_hourly_rate" name="hourly_rate" placeholder="π.χ. 15.00" min="0" step="0.01">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cu_phone">Τηλέφωνο *</label>
+                                <input type="text" id="cu_phone" name="phone" placeholder="π.χ. 6912345678" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="cu_email">Email *</label>
+                                <input type="email" id="cu_email" name="email" placeholder="π.χ. nikos@gmail.com" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-blue" style="width:100%; margin-top:10px;">
+                            <i class="fas fa-plus"></i> Δημιουργία Χρήστη
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Επεξεργασία Χρήστη -->
+        <div id="modalEditUser" class="modal-overlay">
+            <div class="modal-container" style="max-width:480px;">
+                <div class="modal-header">
+                    <h3><i class="fas fa-user-edit icon-primary" style="color:var(--warning);"></i> Επεξεργασία Χρήστη</h3>
+                    <button class="close-modal" aria-label="Close" onclick="toggleModal('modalEditUser')">&times;</button>
+                </div>
+                <div class="modal-body" style="padding: 20px;">
+                    <form class="panel-form" action="/Backend/EditUser/edit_user.php" method="POST">
+                        <div class="form-group">
+                            <label for="eu_user_select">Επιλογή Χρήστη *</label>
+                            <select id="eu_user_select" name="user_id" required onchange="populateEditForm(this.value)">
+                                <option value="" disabled selected>Επιλέξτε χρήστη…</option>
+                                <?php foreach ($users as $u): ?>
+                                    <option value="<?= (int) $u['id'] ?>">
+                                        <?= htmlspecialchars(($u['name'] ?: $u['username']) . ' (@' . $u['username'] . ')') ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="eu_full_name">Ονοματεπώνυμο *</label>
+                                <input type="text" id="eu_full_name" name="full_name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="eu_role">Ρόλος *</label>
+                                <select id="eu_role" name="role" required>
+                                    <option value="administrator">Διαχειριστής</option>
+                                    <option value="supervisor">Υπεύθυνος</option>
+                                    <option value="helper">Βοηθός</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="eu_phone">Τηλέφωνο *</label>
+                                <input type="text" id="eu_phone" name="phone" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="eu_email">Email *</label>
+                                <input type="email" id="eu_email" name="email" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="eu_hourly_rate">Ωρομίσθιο (€)</label>
+                            <input type="number" id="eu_hourly_rate" name="hourly_rate" min="0" step="0.01">
+                        </div>
+                        <button type="submit" class="btn" style="width:100%; margin-top:10px; background:var(--warning); color:#fff; border:none;">
+                            <i class="fas fa-save"></i> Αποθήκευση Αλλαγών
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Διαγραφή Χρήστη -->
+        <div id="modalDeleteUser" class="modal-overlay">
+            <div class="modal-container" style="max-width:480px;">
+                <div class="modal-header">
+                    <h3><i class="fas fa-user-minus" style="color:var(--danger); margin-right:8px;"></i> Διαγραφή Χρήστη</h3>
+                    <button class="close-modal" aria-label="Close" onclick="toggleModal('modalDeleteUser')">&times;</button>
+                </div>
+                <div class="modal-body" style="padding: 20px;">
+                    <form class="panel-form" action="/Backend/DeleteUser/delete_user.php" method="POST">
+                        <div class="form-group">
+                            <label for="du_username">Χρήστης προς διαγραφή *</label>
+                            <select id="du_username" name="username" required>
+                                <option value="" disabled selected>Επιλέξτε χρήστη…</option>
+                                <?php foreach ($users as $u): ?>
+                                    <?php if ((int) $u['id'] !== $logged_in_id): ?>
+                                        <option value="<?= htmlspecialchars($u['username']) ?>">
+                                            <?= htmlspecialchars(($u['name'] ?: $u['username']) . ' (@' . $u['username'] . ')') ?>
+                                        </option>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="confirm-row" style="margin-bottom:15px; margin-top:15px;">
+                            <input type="checkbox" id="du_confirm" name="confirm" required style="width:auto; margin-right:8px;" onchange="
+                                const btn = document.getElementById('btnDeleteSubmit');
+                                if (this.checked) {
+                                    btn.disabled = false;
+                                    btn.style.backgroundColor = 'var(--danger)';
+                                    btn.style.color = '#ffffff';
+                                    btn.style.cursor = 'pointer';
+                                    btn.style.opacity = '1';
+                                } else {
+                                    btn.disabled = true;
+                                    btn.style.backgroundColor = '#e5e7eb';
+                                    btn.style.color = '#9ca3af';
+                                    btn.style.cursor = 'not-allowed';
+                                    btn.style.opacity = '0.7';
+                                }
+                            ">
+                            <label for="du_confirm" style="display:inline; font-weight:normal; cursor:pointer;">
+                                Επιβεβαιώνω ότι θέλω να διαγράψω <strong>οριστικά</strong> αυτόν τον χρήστη.
+                            </label>
+                        </div>
+                        <button type="submit" id="btnDeleteSubmit" class="btn" style="width:100%; border:none; background-color:#e5e7eb; color:#9ca3af; cursor:not-allowed; opacity:0.7; transition:all 0.3s ease;" disabled>
+                            <i class="fas fa-trash-alt"></i> Οριστική Διαγραφή
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
 
         <!-- Modal: Νέο Έργο -->
         <div id="projectModal" class="modal-overlay">
@@ -500,6 +605,8 @@ $overtime_json = json_encode($overtime_requests, JSON_UNESCAPED_UNICODE);
     <script>
         // Passes real DB users to admin.js so the Employees tab shows live data
         window.__DB_EMPLOYEES__ = <?= $employees_json ?>;
+        // Also pass full user DB array for editing populator
+        window.__DB_USERS_FULL__ = <?= json_encode($users, JSON_UNESCAPED_UNICODE) ?>;
         // Passes real DB projects to admin.js
         window.__DB_PROJECTS__ = <?= $projects_json ?>;
         // Passes real DB overtime requests to admin.js

@@ -242,7 +242,8 @@ function renderEmployees() {
                     <th>Ονοματεπώνυμο</th>
                     <th>Ρόλος</th>
                     <th>Ωρομίσθιο</th>
-                    <th>Συνολικές Ώρες</th>
+                    <th>Κανονικές Ώρες</th>
+                    <th>Υπερωρίες (Εγκεκριμένες)</th>
                     <th>Συνολικό Κόστος</th>
                 </tr>
             </thead>
@@ -251,30 +252,34 @@ function renderEmployees() {
                 <tr>
                     <td colspan="3"><strong>Σύνολο</strong></td>
                     <td><strong id="totalHours">0h</strong></td>
+                    <td><strong id="totalOvertime">0h</strong></td>
                     <td><strong id="totalCost">€0</strong></td>
                 </tr>
             </tfoot>
         </table>
     `;
     const body = document.getElementById('empTableBody');
-    let totalH = 0, totalC = 0;
+    let totalH = 0, totalO = 0, totalC = 0;
     appState.employees
         .filter(emp => emp.role === 'supervisor' || emp.role === 'helper')
         .forEach(emp => {
-        const cost = emp.rate * emp.hours;
+        const cost = emp.rate * (emp.hours + emp.overtime);
         totalH += emp.hours;
+        totalO += emp.overtime;
         totalC += cost;
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${emp.name}</td>
             <td><span class="badge badge-${emp.role}">${roleLabel[emp.role] || emp.role}</span></td>
             <td>€${emp.rate}/h</td>
-            <td>${emp.hours}h</td>
+            <td>${emp.hours.toFixed(1)}h</td>
+            <td>${emp.overtime.toFixed(1)}h</td>
             <td>€${cost.toFixed(2)}</td>
         `;
         body.appendChild(row);
     });
     document.getElementById('totalHours').textContent = `${totalH.toFixed(1)}h`;
+    document.getElementById('totalOvertime').textContent = `${totalO.toFixed(1)}h`;
     document.getElementById('totalCost').textContent = `€${totalC.toFixed(2)}`;
 }
 
@@ -591,5 +596,140 @@ function toggleProjectDetails(element) {
         details.style.display = 'none';
         icon.className = 'fas fa-chevron-down';
         text.textContent = 'Περισσότερα';
+    }
+}
+
+// ==================== USERS TABLE SEARCH & SORT ====================
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('userSearchInput');
+    const roleFilter = document.getElementById('userRoleFilter');
+    const usersTable = document.getElementById('usersTable');
+    
+    if (searchInput && roleFilter && usersTable) {
+        const tbody = usersTable.querySelector('tbody');
+        const countPill = document.getElementById('usersCountPill');
+        const roleMap = { "administrator": "Διαχειριστής", "supervisor": "Υπεύθυνος", "helper": "Βοηθός" };
+
+        function filterUsers() {
+            const term = searchInput.value.toLowerCase();
+            const roleKey = roleFilter.value;
+            const targetRole = roleKey ? roleMap[roleKey] : '';
+            
+            let visibleCount = 0;
+            const rows = tbody.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                if(row.children.length < 8) return; 
+                
+                const textContent = (
+                    row.children[1].textContent + ' ' + 
+                    row.children[2].textContent + ' ' + 
+                    row.children[4].textContent + ' ' + 
+                    row.children[5].textContent
+                ).toLowerCase();
+                
+                const roleText = row.children[3].textContent.trim();
+                
+                const matchesTerm = textContent.includes(term);
+                const matchesRole = targetRole === '' || roleText === targetRole;
+                
+                if (matchesTerm && matchesRole) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            if (countPill) {
+                countPill.textContent = `${visibleCount} χρήστες`;
+            }
+        }
+
+        searchInput.addEventListener('input', filterUsers);
+        roleFilter.addEventListener('change', filterUsers);
+
+        // Sorting
+        let currentSortCol = -1;
+        let isAsc = true;
+        const headers = usersTable.querySelectorAll('th[data-sort-type]');
+        
+        headers.forEach(th => {
+            th.addEventListener('click', () => {
+                const col = parseInt(th.getAttribute('data-col'));
+                const type = th.getAttribute('data-sort-type');
+                
+                if (currentSortCol === col) {
+                    isAsc = !isAsc;
+                } else {
+                    currentSortCol = col;
+                    isAsc = true;
+                }
+                
+                // reset icons
+                headers.forEach(h => {
+                    const icon = h.querySelector('i');
+                    if(icon) {
+                        icon.className = 'fas fa-sort float-right';
+                        icon.style.color = '#9ca3af';
+                    }
+                });
+                const icon = th.querySelector('i');
+                if(icon) {
+                    icon.className = isAsc ? 'fas fa-sort-up float-right' : 'fas fa-sort-down float-right';
+                    icon.style.color = '#3b82f6';
+                }
+
+                const rows = Array.from(tbody.querySelectorAll('tr')).filter(r => r.children.length >= 8);
+                
+                rows.sort((a, b) => {
+                    let valA = a.children[col].textContent.replace('Εσείς', '').trim();
+                    let valB = b.children[col].textContent.replace('Εσείς', '').trim();
+                    
+                    if (type === 'number') {
+                        return isAsc ? (parseFloat(valA) - parseFloat(valB)) : (parseFloat(valB) - parseFloat(valA));
+                    } 
+                    else if (type === 'currency') {
+                        valA = valA.replace('€', '').trim();
+                        valB = valB.replace('€', '').trim();
+                        valA = valA === '—' ? 0 : parseFloat(valA);
+                        valB = valB === '—' ? 0 : parseFloat(valB);
+                        return isAsc ? (valA - valB) : (valB - valA);
+                    }
+                    else if (type === 'date') {
+                        if(valA === '—') return isAsc ? 1 : -1;
+                        if(valB === '—') return isAsc ? -1 : 1;
+                        const [dA, mA, yA] = valA.split('/');
+                        const [dB, mB, yB] = valB.split('/');
+                        const dateA = new Date(yA, mA - 1, dA).getTime();
+                        const dateB = new Date(yB, mB - 1, dB).getTime();
+                        return isAsc ? (dateA - dateB) : (dateB - dateA);
+                    }
+                    else {
+                        valA = valA.toLowerCase();
+                        valB = valB.toLowerCase();
+                        if (valA < valB) return isAsc ? -1 : 1;
+                        if (valA > valB) return isAsc ? 1 : -1;
+                        return 0;
+                    }
+                });
+                
+                // re-append
+                rows.forEach(r => tbody.appendChild(r));
+            });
+        });
+    }
+});
+
+// ==================== EDIT USER POPULATOR ====================
+function populateEditForm(userId) {
+    if (!window.__DB_USERS_FULL__) return;
+    const user = window.__DB_USERS_FULL__.find(u => u.id == userId);
+    if (user) {
+        document.getElementById('eu_full_name').value = user.name || '';
+        document.getElementById('eu_role').value = user.role || '';
+        document.getElementById('eu_phone').value = user.phone || '';
+        document.getElementById('eu_email').value = user.email || '';
+        document.getElementById('eu_hourly_rate').value = user.hourly_rate || '';
     }
 }

@@ -1275,15 +1275,39 @@ if (!$project_id) {
 
             <!-- Tab: Invoices -->
             <div id="tab-invoices" class="pd-tab-content">
+                
+                <!-- Filter Bar -->
+                <div class="tl-filters">
+                    <div class="tl-filters-title"><i class="fas fa-filter"></i> Φίλτρα Τιμολογίων</div>
+                    <div class="tl-filters-row">
+                        <!-- Global Search -->
+                        <div class="tl-filter-group" style="flex: 2;">
+                            <label for="invFilterSearch">Αναζήτηση (Προμηθευτής, Χρήστης)</label>
+                            <input type="text" id="invFilterSearch" placeholder="π.χ. Υλικά ΟΕ" style="width:100%;" onkeyup="applyInvoiceFilters()">
+                        </div>
+                        
+                        <!-- Date Period -->
+                        <div class="tl-filter-group">
+                            <label for="invFilterPeriod">Χρονική Περίοδος</label>
+                            <select id="invFilterPeriod" onchange="applyInvoiceFilters()" style="width:160px;">
+                                <option value="all">Όλα τα τιμολόγια</option>
+                                <option value="30">Έως 30 μέρες πριν</option>
+                                <option value="90">Τελευταίο 3μηνο</option>
+                                <option value="180">Τελευταίο 6μηνο</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="pd-table-container">
                     <table class="pd-table">
                         <thead>
                             <tr>
                                 <th>Φωτογραφία</th>
-                                <th>Ημερομηνία</th>
-                                <th>Προμηθευτής</th>
-                                <th>Καταχωρήθηκε από</th>
-                                <th>Ποσό</th>
+                                <th class="sortable sort-active" data-sort="date" onclick="sortInvoices('date')">Ημερομηνία <i class="fas fa-sort-down sort-icon"></i></th>
+                                <th class="sortable" data-sort="supplier" onclick="sortInvoices('supplier')">Προμηθευτής <i class="fas fa-sort sort-icon"></i></th>
+                                <th class="sortable" data-sort="user" onclick="sortInvoices('user')">Καταχωρήθηκε από <i class="fas fa-sort sort-icon"></i></th>
+                                <th class="sortable" data-sort="amount" onclick="sortInvoices('amount')">Ποσό <i class="fas fa-sort sort-icon"></i></th>
                                 <th>Ενέργειες</th>
                             </tr>
                         </thead>
@@ -1352,6 +1376,9 @@ if (!$project_id) {
     <script>
         const PROJECT_ID = <?= $project_id ?>;
         let allTimeLogs = [];
+        let allInvoices = [];
+        let currentInvSortCol = 'date';
+        let currentInvSortAsc = false;
 
         // Tab switching
         document.querySelectorAll('.pd-tab').forEach(tab => {
@@ -1481,7 +1508,8 @@ if (!$project_id) {
             allTimeLogs = [...normalLogs, ...overtimeLogs];
             applyTimeFilters();
             populateEmployeeDropdown(allTimeLogs);
-            renderInvoices(data.invoices);
+            allInvoices = data.invoices || [];
+            applyInvoiceFilters();
             renderTeam(data.team);
         }
 
@@ -1624,6 +1652,97 @@ if (!$project_id) {
                     </tr>
                 `;
             }).join('');
+        }
+
+        // ── Invoice Filtering & Sorting ───────────────────────────────────────
+        function applyInvoiceFilters() {
+            let filtered = [...allInvoices];
+            
+            const searchStr = (document.getElementById('invFilterSearch').value || '').toLowerCase();
+            const periodStr = document.getElementById('invFilterPeriod').value;
+
+            // Date filtering
+            if (periodStr !== 'all') {
+                const daysLimit = parseInt(periodStr);
+                const cutoff = new Date();
+                cutoff.setDate(cutoff.getDate() - daysLimit);
+                
+                filtered = filtered.filter(inv => {
+                    const invDate = new Date(inv.date || inv.created_at);
+                    return invDate >= cutoff;
+                });
+            }
+
+            // Search filtering
+            if (searchStr) {
+                filtered = filtered.filter(inv => {
+                    const supplier = (inv.supplier_name || '').toLowerCase();
+                    const user = (inv.uploaded_by_name || '').toLowerCase();
+                    return supplier.includes(searchStr) || user.includes(searchStr);
+                });
+            }
+
+            // Apply Sort
+            filtered.sort((a, b) => {
+                let valA, valB;
+                let isNumeric = false;
+
+                if (currentInvSortCol === 'date') {
+                    valA = new Date(a.date || a.created_at || 0).getTime();
+                    valB = new Date(b.date || b.created_at || 0).getTime();
+                    isNumeric = true;
+                } else if (currentInvSortCol === 'amount') {
+                    valA = parseFloat(a.amount || 0);
+                    valB = parseFloat(b.amount || 0);
+                    isNumeric = true;
+                } else if (currentInvSortCol === 'supplier') {
+                    valA = (a.supplier_name || '').toLowerCase();
+                    valB = (b.supplier_name || '').toLowerCase();
+                } else if (currentInvSortCol === 'user') {
+                    valA = (a.uploaded_by_name || '').toLowerCase();
+                    valB = (b.uploaded_by_name || '').toLowerCase();
+                }
+
+                if (isNumeric) {
+                    return currentInvSortAsc ? valA - valB : valB - valA;
+                } else {
+                    if (valA < valB) return currentInvSortAsc ? -1 : 1;
+                    if (valA > valB) return currentInvSortAsc ? 1 : -1;
+                    return 0;
+                }
+            });
+
+            renderInvoices(filtered);
+            updateInvoiceSortUI();
+        }
+
+        function sortInvoices(col) {
+            if (currentInvSortCol === col) {
+                currentInvSortAsc = !currentInvSortAsc; // toggle
+            } else {
+                currentInvSortCol = col;
+                currentInvSortAsc = (col !== 'date' && col !== 'amount'); // Default asc for text, desc for dates/amount
+            }
+            applyInvoiceFilters();
+        }
+
+        function updateInvoiceSortUI() {
+            // Remove active classes
+            const ths = document.querySelectorAll('#tab-invoices th.sortable');
+            ths.forEach(th => {
+                th.classList.remove('sort-active');
+                const i = th.querySelector('.sort-icon');
+                if(i) i.className = 'fas fa-sort sort-icon';
+            });
+            // Add active to current
+            const activeTh = document.querySelector(`#tab-invoices th[data-sort="${currentInvSortCol}"]`);
+            if (activeTh) {
+                activeTh.classList.add('sort-active');
+                const i = activeTh.querySelector('.sort-icon');
+                if (i) {
+                    i.className = currentInvSortAsc ? 'fas fa-sort-up sort-icon' : 'fas fa-sort-down sort-icon';
+                }
+            }
         }
 
         function renderTeam(team) {
