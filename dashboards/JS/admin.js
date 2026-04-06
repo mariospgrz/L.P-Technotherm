@@ -105,7 +105,7 @@ function renderProjects(status) {
                 </div>
                 <div class="project-card-meta">
                     <p><i class="fas fa-map-marker-alt"></i> ${p.location}</p>
-                    <p><i class="fas fa-calendar-alt"></i> ${p.date}</p>
+                    <p><i class="fas fa-calendar-alt"></i> ${p.date}${p.completedAt ? ` - ${p.completedAt}` : ''}</p>
                 </div>
                 <div class="toggle-indicator" style="text-align: center; color: var(--text-light); padding-bottom: 10px; font-size: 0.85rem; transition: color 0.2s;">
                     <i class="fas fa-chevron-down"></i> <span class="toggle-text">Περισσότερα</span>
@@ -159,11 +159,55 @@ function renderProjects(status) {
     main.appendChild(grid);
 }
 
+let currentConfirmCallback = null;
+
+function showConfirm(title, message, onConfirm) {
+    document.getElementById('confirmModalTitle').textContent = title;
+    document.getElementById('confirmModalMessage').textContent = message;
+    currentConfirmCallback = onConfirm;
+    
+    const modal = document.getElementById('confirmModal');
+    modal.style.display = 'block';
+    
+    // Add event listener to the action button (one-time)
+    const actionBtn = document.getElementById('confirmModalActionBtn');
+    const newActionBtn = actionBtn.cloneNode(true);
+    actionBtn.parentNode.replaceChild(newActionBtn, actionBtn);
+    
+    newActionBtn.addEventListener('click', () => {
+        if (currentConfirmCallback) currentConfirmCallback();
+        toggleModal('confirmModal');
+    });
+}
+
 function changeStatus(projectId, newStatus) {
     const project = appState.projects.find(p => p.id === projectId);
     if (project) {
-        project.status = newStatus;
-        renderView(appState.currentView);
+        const title = newStatus === 'completed' ? 'Ολοκλήρωση Έργου' : 'Επανενεργοποίηση Έργου';
+        const message = newStatus === 'completed' 
+            ? `Είστε σίγουροι ότι θέλετε να επισημάνετε το έργο "${project.name}" ως ολοκληρωμένο;` 
+            : `Είστε σίγουροι ότι θέλετε να επαναφέρετε το έργο "${project.name}" σε ενεργό;`;
+
+        showConfirm(title, message, () => {
+            fetch('/Backend/ProjectDetails/toggle_project_status.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ project_id: projectId, csrf_token: getCsrf() })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    project.status = newStatus;
+                    project.completedAt = newStatus === 'completed' 
+                        ? new Date().toLocaleDateString('el-GR') 
+                        : null;
+                    renderView(appState.currentView);
+                } else {
+                    alert(res.message || 'Σφάλμα ενημέρωσης');
+                }
+            })
+            .catch(() => alert('Σφάλμα δικτύου'));
+        });
     }
 }
 
@@ -222,10 +266,10 @@ function editInvoice(id) {
 }
 
 function deleteInvoice(id) {
-    if (confirm('Διαγραφή αυτού του τιμολογίου;')) {
+    showConfirm('Διαγραφή Τιμολογίου', 'Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το τιμολόγιο;', () => {
         appState.invoices = appState.invoices.filter(i => i.id !== id);
         renderInvoices();
-    }
+    });
 }
 
 // ==================== EMPLOYEES ====================
@@ -284,10 +328,10 @@ function renderEmployees() {
 }
 
 function deleteEmp(index) {
-    if (confirm('Διαγραφή υπαλλήλου;')) {
+    showConfirm('Διαγραφή Υπαλλήλου', 'Είστε σίγουροι ότι θέλετε να διαγράψετε αυτόν τον υπάλληλο;', () => {
         appState.employees.splice(index, 1);
         renderEmployees();
-    }
+    });
 }
 
 // ==================== OVERTIME ====================
@@ -454,6 +498,13 @@ function openReportFor(projectId) {
         document.getElementById('rep-cost').textContent = `€${totalCost.toLocaleString()}`;
         document.getElementById('rep-profit').textContent = `${profit >= 0 ? '+' : ''}€${profit.toLocaleString()}`;
         document.getElementById('rep-pct').textContent = `${profit >= 0 ? '+' : ''}${pct}%`;
+        
+        // Update report subtitle with dates if completed
+        if (proj.completedAt) {
+            document.getElementById('reportProjName').innerHTML = `${proj.name} <br><span style="font-size:0.85rem; font-weight:normal; color:var(--text-muted);"><i class="fas fa-calendar-alt"></i> ${proj.date} - ${proj.completedAt}</span>`;
+        } else {
+            document.getElementById('reportProjName').innerHTML = `${proj.name} <br><span style="font-size:0.85rem; font-weight:normal; color:var(--text-muted);"><i class="fas fa-calendar-alt"></i> Έναρξη: ${proj.date}</span>`;
+        }
     }
 
     // Staff table

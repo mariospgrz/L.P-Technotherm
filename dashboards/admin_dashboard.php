@@ -49,7 +49,7 @@ $employees_json = json_encode(array_map(fn($u) => [
 // ── Fetch all projects for Projects tab ───────────────────────────────────────
 $projects = [];
 $proj_res = $conn->query(
-    "SELECT p.id, p.name, p.status, p.location, p.start_date, p.budget,
+    "SELECT p.id, p.name, p.status, p.location, p.start_date, p.completed_at, p.budget,
         (SELECT COALESCE(SUM(TIMESTAMPDIFF(MINUTE, te.clock_in, te.clock_out) / 60.0 * u.hourly_rate), 0) 
          FROM time_entries te JOIN users u ON te.user_id = u.id 
          WHERE te.project_id = p.id AND te.clock_out IS NOT NULL) 
@@ -64,6 +64,7 @@ $proj_res = $conn->query(
 if ($proj_res) {
     while ($row = $proj_res->fetch_assoc()) {
         $row['date'] = date('d/m/Y', strtotime($row['start_date']));
+        $row['completedAt'] = $row['completed_at'] ? date('d/m/Y', strtotime($row['completed_at'])) : null;
         $row['budget'] = (float) $row['budget'];
         $row['costLabor'] = (float) $row['costLabor'];
         $row['costMaterials'] = (float) $row['costMaterials'];
@@ -595,6 +596,30 @@ $overtime_json = json_encode($overtime_requests, JSON_UNESCAPED_UNICODE);
                         </thead>
                         <tbody id="staffTableBody"></tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Επιβεβαίωση Ενέργειας -->
+        <div id="confirmModal" class="modal-overlay">
+            <div class="modal-container" style="max-width:400px; transform: translateY(20px); transition: transform 0.3s ease-out;">
+                <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
+                    <h3 id="confirmModalTitle" style="font-size: 1.15rem; color: var(--text-main);">Επιβεβαίωση</h3>
+                    <button class="close-modal" onclick="toggleModal('confirmModal')">&times;</button>
+                </div>
+                <div class="modal-body" style="padding: 20px 24px 28px; text-align: center;">
+                    <div class="confirm-icon" style="width: 56px; height: 56px; background: #fff7ed; color: #f97316; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; font-size: 1.5rem;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <p id="confirmModalMessage" style="margin-bottom: 28px; font-size: 0.95rem; color: var(--text-muted); line-height: 1.6;"></p>
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <button class="btn" onclick="toggleModal('confirmModal')" style="flex: 1; background: #fff; color: #374151; border: 1px solid #d1d5db; justify-content: center;">
+                            Ακύρωση
+                        </button>
+                        <button id="confirmModalActionBtn" class="btn btn-blue" style="flex: 1; justify-content: center; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);">
+                            Επιβεβαίωση
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
