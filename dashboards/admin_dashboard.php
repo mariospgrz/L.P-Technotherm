@@ -134,6 +134,42 @@ $overtime_json = json_encode($overtime_requests, JSON_UNESCAPED_UNICODE);
         }
         .report-card-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
         .report-card-value { font-size: 1.1rem; font-weight: 600; color: var(--text-main); }
+
+        /* Payroll Archive Tabs/Accordion */
+        .archive-controls { background: #fff; border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; margin-bottom: 25px; box-shadow: var(--shadow-sm); }
+        .archive-year-row { margin-bottom: 10px; }
+        .archive-year-row:last-child { margin-bottom: 0; }
+        .year-header { 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 10px 15px; background: #f8fafc; border-radius: 8px; cursor: pointer;
+            transition: all 0.2s; border: 1px solid transparent;
+        }
+        .year-header:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .year-header.active { background: #eff6ff; border-color: #bfdbfe; color: var(--primary); }
+        .year-header strong { font-size: 1rem; }
+        .year-header i { transition: transform 0.3s; color: #94a3b8; }
+        .year-header.active i { transform: rotate(180deg); color: var(--primary); }
+
+        .month-grid { 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; 
+            padding: 15px 10px 5px 10px; display: none; 
+        }
+        .month-grid.active { display: grid; }
+        .month-pill {
+            padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; text-align: center;
+            font-size: 0.85rem; cursor: pointer; transition: all 0.2s; background: #fff;
+            color: #475569; font-weight: 500;
+        }
+        .month-pill:hover { background: #f8fafc; border-color: #94a3b8; color: var(--text-main); }
+        .month-pill.selected { background: var(--primary); border-color: var(--primary); color: #fff; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2); }
+        
+        .archive-empty { padding: 30px; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
+        .archive-stats-dropdown { grid-column: 1 / -1; width: 100%; margin: 10px 0 20px 0; animation: slideDown 0.3s ease-out; }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 

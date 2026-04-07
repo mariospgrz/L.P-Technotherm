@@ -272,66 +272,183 @@ function deleteInvoice(id) {
     });
 }
 
-// ==================== EMPLOYEES ====================
-function renderEmployees() {
+// ==================== EMPLOYEES (MONTHLY ARCHIVE) ====================
+async function renderEmployees() {
     const main = document.getElementById('mainContent');
-    const roleLabel = {
-        administrator: 'Διαχειριστής', supervisor: 'Υπεύθυνος', helper: 'Βοηθός',
-        admin: 'Admin', foreman: 'Επιβλέπων'
-    };
+    const monthNames = ["Ιανουάριος", "Φεβρουάριος", "Μάρτιος", "Απρίλιος", "Μάιος", "Ιούνιος", "Ιούλιος", "Αύγουστος", "Σεπτέμβριος", "Οκτώβριος", "Νοέμβριος", "Δεκέμβριος"];
+    const now = new Date();
+    const currM = now.getMonth() + 1;
+    const currY = now.getFullYear();
+
+    // Initial UI structure with separate sections
     main.innerHTML = `
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Ονοματεπώνυμο</th>
-                    <th>Ρόλος</th>
-                    <th>Ωρομίσθιο</th>
-                    <th>Κανονικές Ώρες</th>
-                    <th>Υπερωρίες (Εγκεκριμένες)</th>
-                    <th>Συνολικό Κόστος</th>
-                </tr>
-            </thead>
-            <tbody id="empTableBody"></tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="3"><strong>Σύνολο</strong></td>
-                    <td><strong id="totalHours">0h</strong></td>
-                    <td><strong id="totalOvertime">0h</strong></td>
-                    <td><strong id="totalCost">€0</strong></td>
-                </tr>
-            </tfoot>
-        </table>
+        <div id="currentMonthContainer">
+            <div style="text-align:center; padding:30px; color:var(--text-muted);">
+                <i class="fas fa-spinner fa-spin"></i> Φόρτωση τρέχοντος μήνα...
+            </div>
+        </div>
+        
+        <div class="section-divider" style="margin: 30px 0 20px; border-bottom: 2px solid #f1f5f9; position:relative;">
+            <span style="background:#fff; padding:0 15px; color:#94a3b8; font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);">
+                Ιστορικό Μισθοδοσίας
+            </span>
+        </div>
+
+        <div class="archive-controls" id="payrollArchive">
+            <div style="text-align:center; padding:10px; color:var(--text-muted);">
+                <i class="fas fa-spinner fa-spin"></i> Φόρτωση αρχείου...
+            </div>
+        </div>
     `;
-    const body = document.getElementById('empTableBody');
-    let totalH = 0, totalO = 0, totalC = 0;
-    appState.employees
-        .filter(emp => emp.role === 'supervisor' || emp.role === 'helper')
-        .forEach(emp => {
-            const cost = emp.rate * (emp.hours + emp.overtime);
-            totalH += emp.hours;
-            totalO += emp.overtime;
-            totalC += cost;
-            const row = document.createElement('tr');
-            row.innerHTML = `
-            <td>${emp.name}</td>
-            <td><span class="badge badge-${emp.role}">${roleLabel[emp.role] || emp.role}</span></td>
-            <td>€${emp.rate}/h</td>
-            <td>${emp.hours.toFixed(1)}h</td>
-            <td>${emp.overtime.toFixed(1)}h</td>
-            <td>€${cost.toFixed(2)}</td>
-        `;
-            body.appendChild(row);
+
+    // 1. Fetch Current Month Stats immediately
+    fetchMonthlyStats(currM, currY, 'currentMonthContainer', true);
+
+    // 2. Fetch/Render Archive
+    if (!appState.availableMonths) {
+        try {
+            const resp = await fetch('../Backend/get_employees_monthly_stats.php?action=get_months');
+            const data = await resp.json();
+            if (data.success) {
+                appState.availableMonths = data.available;
+            } else {
+                document.getElementById('payrollArchive').innerHTML = `<div class="archive-empty">Σφάλμα φόρτωσης αρχείου.</div>`;
+            }
+        } catch (e) {
+            document.getElementById('payrollArchive').innerHTML = `<div class="archive-empty">Σφάλμα δικτύου.</div>`;
+        }
+    }
+
+    if (appState.availableMonths && appState.availableMonths.length > 0) {
+        const byYear = {};
+        // Filter out current month from archive if you want, or just show everything
+        appState.availableMonths.forEach(m => {
+            if (!byYear[m.year]) byYear[m.year] = [];
+            byYear[m.year].push(m.month);
         });
-    document.getElementById('totalHours').textContent = `${totalH.toFixed(1)}h`;
-    document.getElementById('totalOvertime').textContent = `${totalO.toFixed(1)}h`;
-    document.getElementById('totalCost').textContent = `€${totalC.toFixed(2)}`;
+
+        const archiveBox = document.getElementById('payrollArchive');
+        archiveBox.innerHTML = Object.keys(byYear).sort((a, b) => b - a).map(year => `
+            <div class="archive-year-row">
+                <div class="year-header" id="yh-${year}" onclick="toggleYearArchive(${year})">
+                    <strong><i class="fas fa-folder-open" style="margin-right:8px; color:#64748b;"></i> Έτος ${year}</strong>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="month-grid" id="mg-${year}">
+                    ${byYear[year].sort((a, b) => b - a).map(m => `
+                        <div class="month-pill" id="mp-${year}-${m}" onclick="toggleArchiveMonth(${m}, ${year})">
+                            ${monthNames[m-1]}
+                        </div>
+                        <div id="stats-${year}-${m}" class="archive-stats-dropdown" style="display:none;"></div>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+    } else {
+        document.getElementById('payrollArchive').innerHTML = `<div class="archive-empty">Δεν βρέθηκαν παλαιότερες εγγραφές.</div>`;
+    }
 }
 
-function deleteEmp(index) {
-    showConfirm('Διαγραφή Υπαλλήλου', 'Είστε σίγουροι ότι θέλετε να διαγράψετε αυτόν τον υπάλληλο;', () => {
-        appState.employees.splice(index, 1);
-        renderEmployees();
-    });
+function toggleYearArchive(year) {
+    const header = document.getElementById(`yh-${year}`);
+    const grid = document.getElementById(`mg-${year}`);
+    if (header && grid) {
+        header.classList.toggle('active');
+        grid.classList.toggle('active');
+    }
+}
+
+async function toggleArchiveMonth(month, year) {
+    const pill = document.getElementById(`mp-${year}-${month}`);
+    const statsDiv = document.getElementById(`stats-${year}-${month}`);
+    
+    if (statsDiv.style.display === 'block') {
+        statsDiv.style.display = 'none';
+        pill.classList.remove('selected');
+    } else {
+        // Close others in the same grid? (Optional)
+        // document.querySelectorAll('.archive-stats-dropdown').forEach(d => d.style.display = 'none');
+        
+        statsDiv.style.display = 'block';
+        pill.classList.add('selected');
+        
+        if (statsDiv.innerHTML === '') {
+            fetchMonthlyStats(month, year, statsDiv.id, false);
+        }
+    }
+}
+
+async function fetchMonthlyStats(month, year, containerId, isCurrent) {
+    const container = document.getElementById(containerId);
+    const monthNames = ["Ιανουάριος", "Φεβρουάριος", "Μάρτιος", "Απρίλιος", "Μάιος", "Ιούνιος", "Ιούλιος", "Αύγουστος", "Σεπτέμβριος", "Οκτώβριος", "Νοέμβριος", "Δεκέμβριος"];
+    
+    if (!isCurrent) {
+        container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Φόρτωση...</div>`;
+    }
+
+    try {
+        const resp = await fetch(`../Backend/get_employees_monthly_stats.php?action=get_stats&month=${month}&year=${year}`);
+        const data = await resp.json();
+        
+        if (!data.success || !data.stats || data.stats.length === 0) {
+            container.innerHTML = `<div class="no-data">Δεν υπάρχουν εγγραφές για τον ${monthNames[month-1]} ${year}.</div>`;
+            return;
+        }
+
+        const roleLabel = { administrator: 'Διαχειριστής', supervisor: 'Υπεύθυνος', helper: 'Βοηθός' };
+        let totalH = 0, totalO = 0, totalC = 0;
+        
+        const rows = data.stats.map(s => {
+            totalH += s.normal_hours;
+            totalO += s.overtime_hours;
+            totalC += s.total_cost;
+            return `
+                <tr>
+                    <td><strong>${escHtml(s.name)}</strong></td>
+                    <td><span class="badge badge-${s.role}">${roleLabel[s.role] || s.role}</span></td>
+                    <td>€${s.rate.toFixed(2)}/h</td>
+                    <td>${s.normal_hours}h</td>
+                    <td>${s.overtime_hours}h</td>
+                    <td style="color:var(--text-main); font-weight:600;">€${s.total_cost.toLocaleString('el-GR', {minimumFractionDigits:2})}</td>
+                </tr>
+            `;
+        }).join('');
+
+        const headerColor = isCurrent ? '#f8fafc' : '#ffffff';
+        const titleText = isCurrent ? `Τρέχων Μήνας: ${monthNames[month-1]} ${year}` : `Αρχείο: ${monthNames[month-1]} ${year}`;
+
+        container.innerHTML = `
+            <div class="section-heading" style="margin-top:0; background:${headerColor}; color:var(--text-main); border:1px solid var(--border-color); border-bottom:none; border-radius:12px 12px 0 0; padding:15px 20px; font-weight:600;">
+                <i class="fas fa-file-invoice-dollar" style="color:var(--primary); margin-right:8px;"></i> 
+                ${titleText}
+            </div>
+            <div class="overflow-x" style="border:1px solid var(--border-color); border-radius:0 0 12px 12px; margin-bottom:10px;">
+                <table class="data-table" style="border:none; margin-bottom:0;">
+                    <thead>
+                        <tr>
+                            <th>Ονοματεπώνυμο</th>
+                            <th>Ρόλος</th>
+                            <th>Ωρομίσθιο</th>
+                            <th>Κανονικές Ώρες</th>
+                            <th>Υπερωρίες</th>
+                            <th>Συνολικό Κόστος</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                    <tfoot style="background:#f8fafc; font-weight:bold; border-top:2px solid var(--border-color);">
+                        <tr>
+                            <td colspan="3" style="text-align:right; padding-right:30px;">Σύνολο Μήνα</td>
+                            <td>${totalH.toFixed(1)}h</td>
+                            <td>${totalO.toFixed(1)}h</td>
+                            <td style="font-size:1.1rem; color:var(--primary);">€${totalC.toLocaleString('el-GR', {minimumFractionDigits:2})}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        `;
+    } catch (e) {
+        container.innerHTML = `<div class="no-data">Σφάλμα κατά την ανάκτηση των δεδομένων.</div>`;
+    }
 }
 
 // ==================== OVERTIME ====================
