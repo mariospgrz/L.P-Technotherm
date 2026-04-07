@@ -148,7 +148,7 @@ $stmt->close();
 
 // 8. Time Logs (Ώρες Εργασίας)
 $stmt = $conn->prepare(
-    'SELECT te.*, u.name as user_name, u.role as user_role 
+    'SELECT te.*, u.name as user_name, u.role as user_role, u.hourly_rate 
      FROM time_entries te 
      JOIN users u ON te.user_id = u.id 
      WHERE te.project_id = ? 
@@ -198,7 +198,7 @@ $stmt->close();
 
 // 11. Approved Overtime Requests
 $stmt = $conn->prepare(
-    "SELECT o.id, o.user_id, u.name as user_name, u.role as user_role,
+    "SELECT o.id, o.user_id, u.name as user_name, u.role as user_role, u.hourly_rate,
             o.project_id, o.hours, o.date, o.description, o.status
      FROM overtime_requests o
      JOIN users u ON o.user_id = u.id

@@ -113,7 +113,28 @@ $overtime_json = json_encode($overtime_requests, JSON_UNESCAPED_UNICODE);
     <link rel="stylesheet" href="CSS/admin_dashboard.css">
     <link rel="stylesheet" href="/frontend/CSS/logout_button.css">
     <link rel="stylesheet" href="CSS/responsive.css">
-  <link rel="icon" type="image/jpeg" href="/frontend/images/images.jpg">
+    <link rel="icon" type="image/jpeg" href="/frontend/images/images.jpg">
+    <style>
+        /* Modern Report Grid Styles */
+        .report-cards-row { display: grid; gap: 15px; width: 100%; margin-bottom: 20px; }
+        .report-cards-6 { grid-template-columns: repeat(3, 1fr); }
+        .report-cards-4 { grid-template-columns: repeat(4, 1fr); }
+        .report-cards-3 { grid-template-columns: repeat(3, 1fr); }
+        .report-cards-2 { grid-template-columns: repeat(2, 1fr); }
+        .report-cards-1 { grid-template-columns: 1fr; }
+        
+        .report-info-card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .report-card-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+        .report-card-value { font-size: 1.1rem; font-weight: 600; color: var(--text-main); }
+    </style>
 </head>
 
 <body>
@@ -552,50 +573,131 @@ $overtime_json = json_encode($overtime_requests, JSON_UNESCAPED_UNICODE);
 
         <!-- Modal: Αναφορά Έργου -->
         <div id="reportModal" class="modal-overlay">
-            <div class="modal-container report-container">
-                <div class="modal-header">
+            <div class="modal-container report-container" style="max-width:960px; max-height:92vh; overflow-y:auto;">
+                <div class="modal-header" style="position:sticky; top:0; background:#fff; z-index:10; border-bottom:1px solid var(--border-color); padding:18px 24px; display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <h2>Αναφορά Έργου</h2>
-                        <p id="reportProjName"></p>
+                        <h2 style="font-size:1.2rem; margin-bottom:2px;">Αναφορά Έργου</h2>
+                        <p id="reportProjName" style="color:var(--text-muted); font-size:0.9rem;"></p>
                     </div>
-                    <button class="close-modal" onclick="closeReport()">&times;</button>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <button class="btn btn-blue" onclick="exportReportPDF()" style="font-size:0.82rem; padding:7px 14px;">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                        <button class="btn" onclick="exportReportExcel()" style="font-size:0.82rem; padding:7px 14px; background:#10b981; color:#fff; border:none;">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </button>
+                        <button class="close-modal" onclick="closeReport()" style="margin-left:4px;">&times;</button>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
-                        <div class="kpi-card"><span>Προϋπολογισμός</span>
-                            <h3 id="rep-budget"></h3>
-                        </div>
-                        <div class="kpi-card"><span>Συνολικό Κόστος</span>
-                            <h3 id="rep-cost"></h3>
-                        </div>
-                        <div class="kpi-card"><span>Κέρδος/Ζημία</span>
-                            <h3 id="rep-profit"></h3>
-                        </div>
-                        <div class="kpi-card"><span>Ποσοστό</span>
-                            <h3 id="rep-pct"></h3>
-                        </div>
+                <div class="modal-body" id="reportPrintArea" style="padding:20px 24px;">
+                    <!-- Loading -->
+                    <div id="reportLoading" style="text-align:center; padding:40px; color:var(--text-muted);">
+                        <i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i>
+                        <p style="margin-top:10px;">Φόρτωση αναφοράς...</p>
                     </div>
-                    <div class="analytics-grid">
-                        <div class="chart-box">
-                            <h4>Κατανομή Κόστους</h4>
-                            <canvas id="costPieChart" style="max-height:200px;"></canvas>
+                    <!-- Content (hidden until loaded) -->
+                    <div id="reportContent" style="display:none;">
+                        <!-- Official Report Header -->
+                        <div class="report-official-header">
+                            <div class="roh-left">
+                                <img src="../frontend/images/images.jpg" alt="LP Technotherm" class="roh-logo">
+                                <div class="roh-company">
+                                    <h3>LP TECHNOTHERM</h3>
+                                    <p>Συστήματα Κλιματισμού & Θέρμανσης</p>
+                                </div>
+                            </div>
+                            <div class="roh-right">
+                                <div class="roh-info-item">
+                                    <span class="roh-label">ΕΡΓΟ:</span>
+                                    <strong id="roh-proj-name" class="roh-value"></strong>
+                                </div>
+                                <div class="roh-info-item">
+                                    <span class="roh-label">ΤΟΠΟΘΕΣΙΑ:</span>
+                                    <span id="roh-proj-loc" class="roh-value"></span>
+                                </div>
+                                <div class="roh-info-item">
+                                    <span class="roh-label">ΔΙΑΡΚΕΙΑ:</span>
+                                    <span id="roh-proj-dates" class="roh-value"></span>
+                                </div>
+                                <div class="roh-info-item">
+                                    <span class="roh-label">ΚΑΤΑΣΤΑΣΗ:</span>
+                                    <span id="roh-proj-status" class="roh-value"></span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="chart-box">
-                            <h4>Εργατοώρες ανά Άτομο</h4>
-                            <canvas id="laborBarChart" style="max-height:200px;"></canvas>
+
+                        <!-- Section: Οικονομική Επισκόπηση -->
+                        <div class="report-section">
+                            <h4 class="report-section-title">Οικονομική Επισκόπηση</h4>
+                            <div class="report-cards-row report-cards-6">
+                                <div class="report-info-card"><span class="report-card-label">Προϋπολογισμός</span><strong class="report-card-value" id="rep-budget"></strong></div>
+                                <div class="report-info-card"><span class="report-card-label">Εργατικά</span><strong class="report-card-value" id="reportLaborCost"></strong></div>
+                                <div class="report-info-card"><span class="report-card-label">Υλικά</span><strong class="report-card-value" id="reportMaterialCost"></strong></div>
+                                <div class="report-info-card"><span class="report-card-label">Συνολικό Κόστος</span><strong class="report-card-value" id="reportTotalCost"></strong></div>
+                                <div class="report-info-card"><span class="report-card-label">Κέρδος/Ζημία</span><strong class="report-card-value" id="reportProfit"></strong></div>
+                                <div class="report-info-card"><span class="report-card-label">Ποσοστό (%)</span><strong class="report-card-value" id="rep-pct"></strong></div>
+                            </div>
                         </div>
+
+                        <div class="report-section">
+                            <div class="report-cards-row report-cards-1">
+                                <div class="chart-box" style="margin-bottom: 20px;">
+                                    <h4 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--text-muted);">ΚΑΤΑΝΟΜΗ ΚΟΣΤΟΥΣ (%)</h4>
+                                    <div style="position:relative; height:220px;"><canvas id="costPieChart"></canvas></div>
+                                </div>
+                                <div class="chart-box">
+                                    <h4 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--text-muted);">ΩΡΕΣ ΑΝΑ ΑΤΟΜΟ</h4>
+                                    <div id="laborChartContainer" style="position:relative; min-height:200px;"><canvas id="laborBarChart"></canvas></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section: Πληρωμές -->
+                        <div class="report-section">
+                            <h4 class="report-section-title">Πληρωμές Πελάτη</h4>
+                            <div class="report-cards-row report-cards-3" id="reportPaymentSummary"></div>
+                            <div class="report-table-wrap">
+                                <table class="data-table" id="reportPaymentsTable">
+                                    <thead><tr><th>Ημερομηνία</th><th>Ποσό</th><th>Σημείωση</th></tr></thead>
+                                    <tbody id="reportPaymentsBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Section: Προσωπικό -->
+                        <div class="report-section">
+                            <h4 class="report-section-title">Ομάδα & Εργατοώρες</h4>
+                            <div class="report-table-wrap">
+                                <table class="data-table">
+                                    <thead><tr><th>Όνομα</th><th>Ρόλος</th><th>Ώρες</th><th>Κόστος</th></tr></thead>
+                                    <tbody id="staffTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Section: Υπερωρίες -->
+                        <div id="reportOvertimeSection" class="report-section" style="display:none;">
+                            <h4 class="report-section-title">Εγκεκριμένες Υπερωρίες</h4>
+                            <div class="report-table-wrap">
+                                <table class="data-table">
+                                    <thead><tr><th>Όνομα</th><th>Ημερομηνία</th><th>Ώρες</th><th>Περιγραφή</th></tr></thead>
+                                    <tbody id="reportOvertimeBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Section: Τιμολόγια -->
+                        <div class="report-section">
+                            <h4 class="report-section-title">Τιμολόγια Υλικών</h4>
+                            <div class="report-table-wrap">
+                                <table class="data-table">
+                                    <thead><tr><th>Ημερομηνία</th><th>Προμηθευτής</th><th>Ποσό</th></tr></thead>
+                                    <tbody id="reportInvoicesBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
                     </div>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Όνομα</th>
-                                <th>Ρόλος</th>
-                                <th>Ώρες</th>
-                                <th>Κόστος</th>
-                            </tr>
-                        </thead>
-                        <tbody id="staffTableBody"></tbody>
-                    </table>
                 </div>
             </div>
         </div>
@@ -644,6 +746,178 @@ $overtime_json = json_encode($overtime_requests, JSON_UNESCAPED_UNICODE);
         <?php endif; ?>
     </script>
 
+    <!-- SheetJS for Excel export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Print styles for PDF export -->
+    <style>
+        @media print {
+            @page { size: A4; margin: 10mm; }
+
+            /* Hide everything */
+            body, body * { visibility: hidden !important; margin: 0 !important; padding: 0 !important; }
+
+            /* Show only report content */
+            #reportModal,
+            #reportModal *,
+            #reportPrintArea,
+            #reportPrintArea *,
+            #reportContent,
+            #reportContent * { visibility: visible !important; }
+
+            /* Reset modal to fill page */
+            #reportModal {
+                position: absolute !important;
+                inset: 0 !important;
+                background: #fff !important;
+                display: block !important;
+                overflow: visible !important;
+                width: 100% !important;
+            }
+            #reportModal .modal-overlay { background: none !important; }
+            #reportModal .modal-container {
+                position: relative !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                max-height: none !important;
+                overflow: visible !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            #reportModal .modal-header { display: none !important; }
+            #reportModal .modal-body { padding: 5mm 0 !important; width: 100% !important; }
+            #reportContent { width: 100% !important; }
+
+            /* Grids - scale down for A4 */
+            .report-cards-row { display: grid !important; gap: 8px !important; width: 100% !important; margin-bottom: 15px !important; }
+            .report-cards-6 { grid-template-columns: repeat(3, 1fr) !important; }
+            .report-cards-4 { grid-template-columns: repeat(4, 1fr) !important; }
+            .report-cards-3 { grid-template-columns: repeat(3, 1fr) !important; }
+            .report-cards-2 { grid-template-columns: repeat(2, 1fr) !important; }
+
+            .report-info-card {
+                background: #f9fafb !important;
+                border: 1px solid #ddd !important;
+                padding: 6px 8px !important;
+            }
+            .report-card-label { font-size: 7pt !important; }
+            .report-card-value { font-size: 9pt !important; }
+            /* Page break rules — keep sections together */
+            .report-section {
+                margin-bottom: 25px !important;
+                page-break-inside: auto;
+                break-inside: auto;
+            }
+            .report-section-title {
+                font-size: 10pt !important;
+                margin-bottom: 8px !important;
+                padding: 0 0 0 8px !important;
+                border-left: 3pt solid #2563eb !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.5pt !important;
+                page-break-after: avoid;
+                break-after: avoid;
+            }
+
+            /* Charts — separate each chart and keep as unit */
+            .chart-box {
+                padding: 10px 0 !important;
+                margin-bottom: 20px !important;
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            #reportModal canvas { width: 100% !important; height: auto !important; }
+
+            /* Tables — full width, compact, smart page breaks */
+            .report-table-wrap {
+                overflow: visible !important;
+                width: 100% !important;
+            }
+            .data-table {
+                width: 100% !important;
+                font-size: 8pt !important;
+                page-break-inside: auto;
+            }
+            .data-table thead {
+                display: table-header-group;
+            }
+            .data-table th { padding: 4px 6px !important; font-size: 7.5pt !important; }
+            .data-table td { padding: 4px 6px !important; }
+            .data-table tr {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            .data-table tfoot {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            /* Cards grids — keep together */
+            .report-cards-row {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            /* KPI cards in finance section */
+            .kpi-grid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 6px !important; page-break-inside: avoid; break-inside: avoid; }
+            .kpi-card { padding: 8px 10px !important; }
+            .kpi-card span { font-size: 7pt !important; }
+            .kpi-card h3 { font-size: 10pt !important; }
+
+            /* Official Header Print */
+            .report-official-header {
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                border-bottom: 2pt solid #2563eb !important;
+                padding-bottom: 10pt !important;
+                margin-bottom: 15pt !important;
+            }
+            .roh-logo { height: 45pt !important; }
+            .roh-company h3 { font-size: 14pt !important; color: #2563eb !important; margin: 0 !important; }
+            .roh-company p { font-size: 8pt !important; margin: 0 !important; }
+            .roh-info-item { margin-bottom: 2pt !important; }
+            .roh-label { font-size: 7pt !important; width: 60pt !important; display: inline-block !important; }
+            .roh-value { font-size: 9pt !important; }
+
+            /* Hide non-report UI */
+            .main-header, .main-tab-bar, .flash-banner, #panel-users, #panel-projects,
+            #confirmModal, #projectModal, #modalCreateUser, #modalEditUser, #modalDeleteUser { display: none !important; }
+        }
+
+        /* Section Titles Style */
+        .report-section-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 15px;
+            padding-left: 12px;
+            border-left: 4px solid var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Official Header Desktop */
+        .report-official-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+        .roh-left { display: flex; align-items: center; gap: 15px; }
+        .roh-logo { height: 60px; object-fit: contain; }
+        .roh-company h3 { margin: 0; color: var(--primary); font-size: 1.4rem; letter-spacing: 0.5px; }
+        .roh-company p { margin: 0; font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+        .roh-right { text-align: right; }
+        .roh-info-item { margin-bottom: 4px; display: flex; justify-content: flex-end; align-items: baseline; gap: 8px; }
+        .roh-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); opacity: 0.8; }
+        .roh-value { font-size: 0.95rem; color: var(--text-main); font-weight: 600; }
+    </style>
     <!-- Admin JS -->
     <script src="JS/admin.js"></script>
 
