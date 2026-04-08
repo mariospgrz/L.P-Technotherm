@@ -226,7 +226,8 @@ function renderInvoices() {
     const term = document.getElementById('invoiceSearch').value.toLowerCase();
     const list = document.getElementById('invoiceList');
     const filtered = appState.invoices.filter(i =>
-        i.vendor.toLowerCase().includes(term) || i.project.toLowerCase().includes(term)
+        (i.vendor || '').toLowerCase().includes(term) ||
+        (i.project || '').toLowerCase().includes(term)
     );
 
     if (filtered.length === 0) {
@@ -240,12 +241,12 @@ function renderInvoices() {
         item.innerHTML = `
             <div class="inv-icon"><i class="fas fa-file-invoice"></i></div>
             <div class="inv-info">
-                <div class="inv-vendor">${inv.vendor || '—'}</div>
-                <div class="inv-project"><i class="fas fa-building"></i> ${inv.project || '—'}</div>
+                <div class="inv-vendor">${inv.vendor}</div>
+                <div class="inv-project"><i class="fas fa-building"></i> ${inv.project}</div>
             </div>
             <div class="inv-right">
-                <div class="inv-amount">€${Number(inv.amount).toLocaleString('el-GR', { minimumFractionDigits: 2 })}</div>
-                <div class="inv-date">${inv.date || ''}</div>
+                <div class="inv-amount">€${inv.amount.toLocaleString()}</div>
+                <div class="inv-date">${inv.date}</div>
             </div>
             <div class="inv-actions">
                 <button title="Επεξεργασία" onclick="editInvoice(${inv.id})"><i class="fas fa-pencil-alt"></i></button>
@@ -308,48 +309,34 @@ async function editInvoice(id) {
     }
 }
 
-async function deleteInvoice(id) {
-    const result = await Swal.fire({
-        title: 'Διαγραφή Τιμολογίου;',
-        text: 'Η ενέργεια αυτή δεν μπορεί να αναιρεθεί.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#dc2626',
-        cancelButtonColor: '#6b7280',
-        confirmButtonText: 'Ναι, διαγραφή',
-        cancelButtonText: 'Ακύρωση'
-    });
-    if (!result.isConfirmed) return;
-
-    try {
-        const res = await fetch('/dashboards/actions/admin_delete_invoice.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id, csrf_token: getCsrf() })
-        });
-        const data = await res.json();
-        if (data.success) {
-            appState.invoices = appState.invoices.filter(i => i.id !== id);
-            renderInvoices();
-            Swal.fire({ icon: 'success', title: 'Διαγράφηκε!', timer: 1400, showConfirmButton: false });
-        } else {
-            Swal.fire({ icon: 'error', title: 'Σφάλμα', text: data.message || 'Αποτυχία διαγραφής.' });
+function deleteInvoice(id) {
+    showConfirm('Διαγραφή Τιμολογίου', 'Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το τιμολόγιο; Η ενέργεια δεν αναιρείται.', async () => {
+        try {
+            const res = await fetch('/dashboards/actions/admin_delete_invoice.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, csrf_token: getCsrf() })
+            });
+            const data = await res.json();
+            if (data.success) {
+                appState.invoices = appState.invoices.filter(i => i.id !== id);
+                renderInvoices();
+            } else {
+                alert(data.message || 'Αποτυχία διαγραφής.');
+            }
+        } catch {
+            alert('Σφάλμα σύνδεσης.');
         }
-    } catch {
-        Swal.fire({ icon: 'error', title: 'Σφάλμα', text: 'Σφάλμα σύνδεσης.' });
-    }
+    });
 }
 
-
-// ==================== EMPLOYEES (MONTHLY ARCHIVE) ====================
-async function renderEmployees() {
+// ==================== EMPLOYEES ====================
+function renderEmployees() {
     const main = document.getElementById('mainContent');
-    const monthNames = ["Ιανουάριος", "Φεβρουάριος", "Μάρτιος", "Απρίλιος", "Μάιος", "Ιούνιος", "Ιούλιος", "Αύγουστος", "Σεπτέμβριος", "Οκτώβριος", "Νοέμβριος", "Δεκέμβριος"];
-    const now = new Date();
-    const currM = now.getMonth() + 1;
-    const currY = now.getFullYear();
-
-    // Initial UI structure with separate sections
+    const roleLabel = {
+        administrator: 'Διαχειριστής', supervisor: 'Υπεύθυνος', helper: 'Βοηθός',
+        admin: 'Admin', foreman: 'Επιβλέπων'
+    };
     main.innerHTML = `
         <table class="data-table">
             <thead>
@@ -357,7 +344,8 @@ async function renderEmployees() {
                     <th>Ονοματεπώνυμο</th>
                     <th>Ρόλος</th>
                     <th>Ωρομίσθιο</th>
-                    <th>Συνολικές Ώρες</th>
+                    <th>Κανονικές Ώρες</th>
+                    <th>Υπερωρίες (Εγκεκριμένες)</th>
                     <th>Συνολικό Κόστος</th>
                 </tr>
             </thead>
@@ -366,38 +354,42 @@ async function renderEmployees() {
                 <tr>
                     <td colspan="3"><strong>Σύνολο</strong></td>
                     <td><strong id="totalHours">0h</strong></td>
+                    <td><strong id="totalOvertime">0h</strong></td>
                     <td><strong id="totalCost">€0</strong></td>
                 </tr>
             </tfoot>
         </table>
     `;
     const body = document.getElementById('empTableBody');
-    let totalH = 0, totalC = 0;
+    let totalH = 0, totalO = 0, totalC = 0;
     appState.employees
         .filter(emp => emp.role === 'supervisor' || emp.role === 'helper')
         .forEach(emp => {
-            const cost = emp.rate * emp.hours;
+            const cost = emp.rate * (emp.hours + emp.overtime);
             totalH += emp.hours;
+            totalO += emp.overtime;
             totalC += cost;
             const row = document.createElement('tr');
             row.innerHTML = `
             <td>${emp.name}</td>
             <td><span class="badge badge-${emp.role}">${roleLabel[emp.role] || emp.role}</span></td>
             <td>€${emp.rate}/h</td>
-            <td>${emp.hours}h</td>
+            <td>${emp.hours.toFixed(1)}h</td>
+            <td>${emp.overtime.toFixed(1)}h</td>
             <td>€${cost.toFixed(2)}</td>
         `;
             body.appendChild(row);
         });
     document.getElementById('totalHours').textContent = `${totalH.toFixed(1)}h`;
+    document.getElementById('totalOvertime').textContent = `${totalO.toFixed(1)}h`;
     document.getElementById('totalCost').textContent = `€${totalC.toFixed(2)}`;
 }
 
 function deleteEmp(index) {
-    if (confirm('Διαγραφή υπαλλήλου;')) {
+    showConfirm('Διαγραφή Υπαλλήλου', 'Είστε σίγουροι ότι θέλετε να διαγράψετε αυτόν τον υπάλληλο;', () => {
         appState.employees.splice(index, 1);
         renderEmployees();
-    }
+    });
 }
 
 // ==================== OVERTIME ====================
@@ -628,22 +620,130 @@ function populateReport(data) {
         paymentsBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Δεν υπάρχουν πληρωμές.</td></tr>';
     }
 
-    // Staff table
-    const tbody = document.getElementById('staffTableBody');
-    if (tbody) {
-        const roleLabel = {
-            administrator: 'Διαχειριστής', supervisor: 'Υπεύθυνος', helper: 'Βοηθός',
-            admin: 'Admin', foreman: 'Επιβλέπων'
-        };
-        tbody.innerHTML = appState.employees
-            .filter(e => e.hours > 0)
-            .map(e => `<tr>
-                <td>${e.name}</td>
-                <td>${roleLabel[e.role] || e.role}</td>
-                <td>${e.hours}h</td>
-                <td>€${(e.rate * e.hours).toFixed(2)}</td>
-            </tr>`).join('') ||
-            '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);">Δεν υπάρχουν εγγραφές ωρών.</td></tr>';
+    // Staff table — aggregate hours per user from time_logs
+    const staffMap = {};
+    if (data.time_logs) {
+        data.time_logs.forEach(log => {
+            if (!log.clock_out) return;
+            const uid = log.user_id;
+            if (!staffMap[uid]) {
+                staffMap[uid] = { name: log.user_name, role: log.user_role, minutes: 0, rate: parseFloat(log.hourly_rate || 0) };
+            }
+            const clockIn = new Date(log.clock_in);
+            const clockOut = new Date(log.clock_out);
+            staffMap[uid].minutes += (clockOut - clockIn) / 60000;
+        });
+    }
+    // Add overtime hours
+    if (data.approved_overtime) {
+        data.approved_overtime.forEach(ot => {
+            const uid = ot.user_id;
+            if (!staffMap[uid]) {
+                staffMap[uid] = { name: ot.user_name, role: ot.user_role, minutes: 0, rate: parseFloat(ot.hourly_rate || 0) };
+            }
+            staffMap[uid].minutes += parseFloat(ot.hours) * 60;
+        });
+    }
+
+    const staffArr = Object.values(staffMap).map(s => ({
+        name: s.name,
+        role: s.role,
+        hours: (s.minutes / 60).toFixed(1),
+        rate: s.rate
+    }));
+
+    // Get hourly rates from team data
+    if (data.team) {
+        const rateMap = {};
+        // We don't have rate in team data directly, compute cost from fin
+        // Use time_logs to compute per-user cost
+    }
+
+    const staffBody = document.getElementById('staffTableBody');
+    let totalCalculatedLaborCost = 0;
+
+    if (staffArr.length > 0) {
+        staffBody.innerHTML = staffArr.map(s => {
+            const cost = parseFloat((parseFloat(s.hours) * s.rate).toFixed(2));
+            totalCalculatedLaborCost += cost;
+            return `<tr>
+                <td>${escHtml(s.name)}</td>
+                <td>${roleLabel[s.role] || s.role}</td>
+                <td>${s.hours} ώρες</td>
+                <td>€${cost.toLocaleString('el-GR', { minimumFractionDigits: 2 })}</td>
+            </tr>`;
+        }).join('');
+
+        // Add totals row using the calculated total
+        const totalHours = staffArr.reduce((sum, s) => sum + parseFloat(s.hours), 0).toFixed(1);
+        staffBody.innerHTML += `<tr style="background:#fafafa; border-top:2px solid var(--border-color);">
+            <td colspan="2"><strong>Σύνολο</strong></td>
+            <td><strong>${totalHours} ώρες</strong></td>
+            <td><strong>€${totalCalculatedLaborCost.toLocaleString('el-GR', { minimumFractionDigits: 2 })}</strong></td>
+        </tr>`;
+    } else {
+        staffBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Δεν υπάρχουν εγγραφές ωρών.</td></tr>';
+    }
+
+    // Update the Financial Overview card to use the calculated total
+    const laborCostEl = document.querySelector('.kpi-card h3:nth-of-type(1)');
+    // Wait, I need a better selector for the labor cost card. Let's use IDs if possible.
+    document.getElementById('reportLaborCost').textContent = `€${totalCalculatedLaborCost.toLocaleString('el-GR', { minimumFractionDigits: 2 })}`;
+
+    // Also update total cost card
+    const materialCost = parseFloat(fin.material_cost || 0);
+    document.getElementById('reportMaterialCost').textContent = `€${materialCost.toLocaleString('el-GR', { minimumFractionDigits: 2 })}`;
+
+    const finalTotalCost = totalCalculatedLaborCost + materialCost;
+    document.getElementById('reportTotalCost').textContent = `€${finalTotalCost.toLocaleString('el-GR', { minimumFractionDigits: 2 })}`;
+
+    // Update profit card
+    const totalBudget = parseFloat(fin.total_budget || 0);
+    const finalProfit = totalBudget - finalTotalCost;
+    const profitEl = document.getElementById('reportProfit');
+    if (profitEl) {
+        profitEl.textContent = `€${finalProfit.toLocaleString('el-GR', { minimumFractionDigits: 2 })}`;
+        profitEl.style.color = finalProfit >= 0 ? '#10b981' : '#ef4444';
+    }
+
+    // Update Percentage (%)
+    const pctEl = document.getElementById('rep-pct');
+    if (pctEl && totalBudget > 0) {
+        const marginPct = ((finalProfit / totalBudget) * 100).toFixed(1);
+        pctEl.textContent = `${marginPct}%`;
+        pctEl.style.color = marginPct >= 0 ? '#10b981' : '#ef4444';
+    }
+
+    // Overtime section
+    const otSection = document.getElementById('reportOvertimeSection');
+    const otBody = document.getElementById('reportOvertimeBody');
+    if (data.approved_overtime && data.approved_overtime.length > 0) {
+        otSection.style.display = 'block';
+        otBody.innerHTML = data.approved_overtime.map(ot => `<tr>
+            <td>${escHtml(ot.user_name)}</td>
+            <td>${ot.date ? formatDate(ot.date) : '—'}</td>
+            <td>${parseFloat(ot.hours).toFixed(1)} ώρες</td>
+            <td>${escHtml(ot.description || '—')}</td>
+        </tr>`).join('');
+    } else {
+        otSection.style.display = 'none';
+    }
+
+    // Invoices table
+    const invBody = document.getElementById('reportInvoicesBody');
+    if (data.invoices && data.invoices.length > 0) {
+        invBody.innerHTML = data.invoices.map(inv => `<tr>
+            <td>${inv.date ? formatDate(inv.date) : '—'}</td>
+            <td>${escHtml(inv.supplier_name || inv.description || '—')}</td>
+            <td>€${parseFloat(inv.amount).toLocaleString('el-GR', { minimumFractionDigits: 2 })}</td>
+        </tr>`).join('');
+        // Totals
+        invBody.innerHTML += `<tr style="background:#fafafa; border-top:2px solid var(--border-color);">
+            <td colspan="2"><strong>Σύνολο Υλικών</strong></td>
+            <td><strong>€${fin.material_cost.toLocaleString('el-GR', { minimumFractionDigits: 2 })}</strong></td>
+        </tr>`;
+    } else {
+        invBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Δεν υπάρχουν τιμολόγια.</td></tr>';
     }
 
     // Charts — destroy old ones first
@@ -716,7 +816,129 @@ function populateReport(data) {
     }, 150);
 }
 
-function closeReport() { document.getElementById('reportModal').style.display = 'none'; }
+function closeReport() {
+    document.getElementById('reportModal').style.display = 'none';
+    if (reportChartPie) { reportChartPie.destroy(); reportChartPie = null; }
+    if (reportChartBar) { reportChartBar.destroy(); reportChartBar = null; }
+}
+
+// ==================== EXPORT PDF ====================
+function exportReportPDF() {
+    if (!currentReportData) return;
+    window.print();
+}
+
+// ==================== EXPORT EXCEL ====================
+function exportReportExcel() {
+    if (!currentReportData) return;
+    const data = currentReportData;
+    const proj = data.project;
+    const fin = data.financial_overview;
+    const wb = XLSX.utils.book_new();
+
+    // Sheet 1: Overview
+    const overviewData = [
+        ['Αναφορά Έργου', proj.name],
+        [''],
+        ['Τοποθεσία', proj.location],
+        ['Ημ. Έναρξης', formatDate(proj.start_date)],
+        ['Ημ. Λήξης', proj.completed_at ? formatDate(proj.completed_at) : 'Σε εξέλιξη'],
+        ['Κατάσταση', proj.status === 'active' ? 'Ενεργό' : 'Ολοκληρωμένο'],
+        [''],
+        ['Οικονομική Επισκόπηση'],
+        ['Προϋπολογισμός', parseFloat(fin.total_budget)],
+        ['Κόστος Εργατοωρών', parseFloat(fin.labor_cost)],
+        ['Κόστος Υλικών', parseFloat(fin.material_cost)],
+        ['Συνολικό Κόστος', parseFloat(fin.total_cost)],
+        ['Κέρδος/Ζημία', parseFloat(fin.profit)],
+        [''],
+        ['Πληρωμές Πελάτη'],
+        ['Τιμολογήθηκε', parseFloat(data.payments_summary.total_invoiced)],
+        ['Εισπράχθηκε', parseFloat(data.payments_summary.total_collected)],
+        ['Υπόλοιπο', parseFloat(data.payments_summary.remaining)],
+    ];
+    const ws1 = XLSX.utils.aoa_to_sheet(overviewData);
+    ws1['!cols'] = [{ wch: 22 }, { wch: 35 }];
+    XLSX.utils.book_append_sheet(wb, ws1, 'Επισκόπηση');
+
+    // Sheet 2: Time Logs (Staff)
+    if (data.time_logs && data.time_logs.length > 0) {
+        const staffHeaders = ['Όνομα', 'Ρόλος', 'Ημερομηνία', 'Ώρα Εισόδου', 'Ώρα Εξόδου'];
+        const staffRows = data.time_logs.map(log => [
+            log.user_name,
+            log.user_role,
+            log.date ? formatDate(log.date) : '',
+            log.clock_in || '',
+            log.clock_out || ''
+        ]);
+        const ws2 = XLSX.utils.aoa_to_sheet([staffHeaders, ...staffRows]);
+        ws2['!cols'] = [{ wch: 20 }, { wch: 15 }, { wch: 12 }, { wch: 18 }, { wch: 18 }];
+        XLSX.utils.book_append_sheet(wb, ws2, 'Εργατοώρες');
+    }
+
+    // Sheet 3: Invoices
+    if (data.invoices && data.invoices.length > 0) {
+        const invHeaders = ['Ημερομηνία', 'Προμηθευτής', 'Ποσό'];
+        const invRows = data.invoices.map(inv => [
+            inv.date ? formatDate(inv.date) : '',
+            inv.supplier_name || inv.description || '',
+            parseFloat(inv.amount)
+        ]);
+        // Add total row
+        invRows.push(['', 'ΣΥΝΟΛΟ', parseFloat(fin.material_cost)]);
+
+        const ws3 = XLSX.utils.aoa_to_sheet([invHeaders, ...invRows]);
+        ws3['!cols'] = [{ wch: 12 }, { wch: 30 }, { wch: 12 }];
+        XLSX.utils.book_append_sheet(wb, ws3, 'Τιμολόγια');
+    }
+
+    // Sheet 4: Payments
+    if (data.recent_payments && data.recent_payments.length > 0) {
+        const payHeaders = ['Ημερομηνία', 'Ποσό', 'Σημείωση'];
+        const payRows = data.recent_payments.map(p => [
+            p.payment_date ? formatDate(p.payment_date) : '',
+            parseFloat(p.amount),
+            p.notes || p.description || ''
+        ]);
+        // Add total row
+        payRows.push(['', parseFloat(data.payments_summary.total_collected), 'ΣΥΝΟΛΟ']);
+
+        const ws4 = XLSX.utils.aoa_to_sheet([payHeaders, ...payRows]);
+        ws4['!cols'] = [{ wch: 12 }, { wch: 12 }, { wch: 30 }];
+        XLSX.utils.book_append_sheet(wb, ws4, 'Πληρωμές');
+    }
+
+    // Sheet 5: Overtime
+    if (data.approved_overtime && data.approved_overtime.length > 0) {
+        const otHeaders = ['Όνομα', 'Ημερομηνία', 'Ώρες', 'Περιγραφή'];
+        const otRows = data.approved_overtime.map(ot => [
+            ot.user_name,
+            ot.date ? formatDate(ot.date) : '',
+            parseFloat(ot.hours),
+            ot.description || ''
+        ]);
+        const ws5 = XLSX.utils.aoa_to_sheet([otHeaders, ...otRows]);
+        ws5['!cols'] = [{ wch: 20 }, { wch: 12 }, { wch: 8 }, { wch: 30 }];
+        XLSX.utils.book_append_sheet(wb, ws5, 'Υπερωρίες');
+    }
+
+    XLSX.writeFile(wb, `Αναφορά_${proj.name.replace(/\s+/g, '_')}.xlsx`);
+}
+
+// ==================== REPORT HELPERS ====================
+function formatDate(dateStr) {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString('el-GR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function escHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
 
 // ==================== LOGOUT ====================
 function handleLogout() {
@@ -762,10 +984,6 @@ if (window.__DB_PROJECTS__ && window.__DB_PROJECTS__.length) {
 // Inject real DB overtime requests (set by PHP before this script loads)
 if (window.__DB_OVERTIME__) {
     appState.overtimeRequests = window.__DB_OVERTIME__;
-}
-// Inject real DB invoices (set by PHP before this script loads)
-if (window.__DB_INVOICES__) {
-    appState.invoices = window.__DB_INVOICES__;
 }
 // ==================== Create Project ====================
 
@@ -949,4 +1167,25 @@ function populateEditForm(userId) {
         document.getElementById('eu_email').value = user.email || '';
         document.getElementById('eu_hourly_rate').value = user.hourly_rate || '';
     }
+}
+
+// ==================== DB DATA INJECTION ====================
+// These run immediately after the script loads, using PHP-injected globals.
+
+if (window.__DB_EMPLOYEES__ && window.__DB_EMPLOYEES__.length) {
+    appState.employees = window.__DB_EMPLOYEES__;
+}
+
+if (window.__DB_PROJECTS__ && window.__DB_PROJECTS__.length) {
+    appState.projects = window.__DB_PROJECTS__;
+    appState.kpi.budget = appState.projects.reduce((sum, p) => sum + p.budget, 0);
+    appState.kpi.cost   = appState.projects.reduce((sum, p) => sum + p.costLabor + p.costMaterials, 0);
+}
+
+if (window.__DB_OVERTIME__) {
+    appState.overtimeRequests = window.__DB_OVERTIME__;
+}
+
+if (window.__DB_INVOICES__) {
+    appState.invoices = window.__DB_INVOICES__;
 }
