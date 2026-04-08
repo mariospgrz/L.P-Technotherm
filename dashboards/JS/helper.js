@@ -133,4 +133,62 @@ document.addEventListener('DOMContentLoaded', () => {
                 .catch(() => showToast('Σφάλμα δικτύου', 'error'));
         });
     }
+
+    // ── Dynamic scroll for work-list ────────────────────────────
+    initWorkListScroll();
 });
+
+/* ── Work-list dynamic scroll ───────────────────────────────── */
+function initWorkListScroll() {
+    const inner   = document.getElementById('work-list-inner');
+    const wrapper = inner?.parentElement;
+    if (!inner || !wrapper) return;
+
+    const items = inner.querySelectorAll('.work-item');
+    if (items.length === 0) return;
+
+    // ── Apply entry animation styles to each item
+    items.forEach((item, i) => {
+        item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        item.style.opacity    = '1';
+        item.style.transform  = 'translateY(0)';
+    });
+
+    // ── Update fade-edge classes based on scroll position
+    function updateEdges() {
+        const scrollTop    = inner.scrollTop;
+        const scrollBottom = inner.scrollHeight - inner.clientHeight - scrollTop;
+
+        wrapper.classList.toggle('at-top',    scrollTop    < 4);
+        wrapper.classList.toggle('at-bottom', scrollBottom < 4);
+        wrapper.classList.toggle('scrolling', scrollTop > 4 && scrollBottom > 4);
+    }
+
+    // ── Animate items entering/leaving viewport using IntersectionObserver
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity   = '1';
+                entry.target.style.transform = 'translateY(0)';
+            } else {
+                // Decide which direction the item is exiting
+                const rect      = entry.target.getBoundingClientRect();
+                const ctxRect   = inner.getBoundingClientRect();
+                const exitingUp = rect.top < ctxRect.top;
+                entry.target.style.opacity   = '0';
+                entry.target.style.transform = exitingUp ? 'translateY(-10px)' : 'translateY(10px)';
+            }
+        });
+    }, {
+        root: inner,
+        threshold: 0.25,   // item must be 25% visible to be considered "in"
+    });
+
+    items.forEach(item => observer.observe(item));
+
+    // Initial edge state
+    updateEdges();
+
+    // Update on scroll
+    inner.addEventListener('scroll', updateEdges, { passive: true });
+}

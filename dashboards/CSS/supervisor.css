@@ -619,6 +619,57 @@ body {
     gap: 8px;
 }
 
+/* Scroll wrapper: shows exactly 4 items before scrolling */
+.work-list-scroll-wrapper {
+    position: relative;
+    /* 4 items × ~68px each */
+    max-height: 296px;
+    overflow: hidden;
+}
+
+/* Fade edges top & bottom to signal scrollability */
+.work-list-scroll-wrapper::before,
+.work-list-scroll-wrapper::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 28px;
+    pointer-events: none;
+    z-index: 2;
+    transition: opacity .3s;
+}
+.work-list-scroll-wrapper::before {
+    top: 0;
+    background: linear-gradient(to bottom, var(--bg-card), transparent);
+    opacity: 0;
+}
+.work-list-scroll-wrapper::after {
+    bottom: 0;
+    background: linear-gradient(to top, var(--bg-card), transparent);
+    opacity: 1;
+}
+.work-list-scroll-wrapper.at-top::before    { opacity: 0; }
+.work-list-scroll-wrapper.at-bottom::after  { opacity: 0; }
+.work-list-scroll-wrapper.scrolling::before,
+.work-list-scroll-wrapper.scrolling::after  { opacity: 1; }
+
+/* The inner list scrolls smoothly */
+#sup-work-list-hours, #sup-work-list-mine {
+    overflow-y: auto;
+    max-height: 296px;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+#sup-work-list-hours::-webkit-scrollbar,
+#sup-work-list-mine::-webkit-scrollbar { width: 5px; }
+#sup-work-list-hours::-webkit-scrollbar-track,
+#sup-work-list-mine::-webkit-scrollbar-track { background: transparent; }
+#sup-work-list-hours::-webkit-scrollbar-thumb,
+#sup-work-list-mine::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+
 .work-item {
     background: var(--bg-card);
     border: 1px solid var(--border-color);

@@ -250,22 +250,50 @@ $js_overtime = json_encode($overtime, JSON_UNESCAPED_UNICODE);
                     <p>Δεν υπάρχουν καταγεγραμμένες εργασίες</p>
                 </div>
             <?php else: ?>
-                <div class="work-list">
-                    <?php foreach ($work_logs as $wl): ?>
-                        <div class="work-item">
-                            <div class="work-item-left">
-                                <strong><?= htmlspecialchars($wl['project_name']) ?></strong>
-                                <small>
-                                    <?= htmlspecialchars($wl['work_date']) ?> &nbsp;
-                                    <?= htmlspecialchars(substr($wl['clock_in'] ?? '', 0, 5)) ?> π.μ. έως
-                                    <?= htmlspecialchars(substr($wl['clock_out'] ?? '', 0, 5)) ?> μ.μ.
-                                </small>
+                <div class="work-list-scroll-wrapper">
+                    <div class="work-list" id="work-list-inner">
+                        <?php
+                        /**
+                         * Convert a MySQL DATETIME or TIME string → "H:MM π.μ./μ.μ."
+                         * Handles both "HH:MM:SS" and "YYYY-MM-DD HH:MM:SS"
+                         */
+                        function fmtClockTime(string $raw): string
+                        {
+                            if ($raw === '')
+                                return '—';
+                            // Full DATETIME → extract time portion after the space
+                            $timePart = str_contains($raw, ' ') ? explode(' ', $raw, 2)[1] : $raw;
+                            $parts = explode(':', $timePart);
+                            if (count($parts) < 2 || !is_numeric($parts[0]))
+                                return '—';
+                            $h = (int) $parts[0];
+                            $m = $parts[1];
+                            $lbl = $h < 12 ? 'π.μ.' : 'μ.μ.';
+                            $h24 = $h % 24;
+                            return sprintf('%d:%s %s', $h24, $m, $lbl);
+                        }
+                        ?>
+                        <?php foreach ($work_logs as $wl): ?>
+                            <?php
+                            $ci_display = fmtClockTime($wl['clock_in'] ?? '');
+                            $co_display = fmtClockTime($wl['clock_out'] ?? '');
+                            ?>
+                            <div class="work-item">
+                                <div class="work-item-left">
+                                    <strong><?= htmlspecialchars($wl['project_name']) ?></strong>
+                                    <small>
+                                        <?= htmlspecialchars($wl['work_date']) ?> &nbsp;
+                                        <?= htmlspecialchars($ci_display) ?> έως
+                                        <?= htmlspecialchars($co_display) ?>
+                                    </small>
+                                </div>
+                                <div class="work-item-hours"><?= number_format((float) $wl['total_hours'], 2) ?></div>
                             </div>
-                            <div class="work-item-hours"><?= number_format((float) $wl['total_hours'], 2) ?></div>
-                        </div>
-                    <?php endforeach; ?>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
             <?php endif; ?>
+
         </div>
 
         <!-- ── 5. ΣΗΜΕΙΩΣΗ ────────────────────────────────────── -->

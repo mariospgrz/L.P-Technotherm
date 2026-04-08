@@ -7,7 +7,7 @@
 }
 
 body {
-    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    background: #1616db;
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -38,12 +38,18 @@ form:hover {
 }
 
 .Avatar {
-    width: 160px; /* Increased size */
-    height: 160px; /* Square aspect ratio */
-    object-fit: contain; /* Changed from 'cover' to 'contain' */
-    border: 2px solid #e1e5eb; /* Softer border */
-    border-radius: 8px; /* Square with slight rounding */
-    padding: 10px; /* More padding */
+    width: 160px;
+    /* Increased size */
+    height: 160px;
+    /* Square aspect ratio */
+    object-fit: contain;
+    /* Changed from 'cover' to 'contain' */
+    border: 2px solid #e1e5eb;
+    /* Softer border */
+    border-radius: 8px;
+    /* Square with slight rounding */
+    padding: 10px;
+    /* More padding */
     background-color: white;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     display: inline-block;
@@ -102,7 +108,7 @@ input[type="password"]::placeholder {
 
 /* Buttons */
 button[type="submit"] {
-    background: linear-gradient(to right, #2575fc, #6a11cb);
+    background: #1616db;
     color: white;
     padding: 16px 24px;
     border: none;
@@ -118,7 +124,7 @@ button[type="submit"] {
 }
 
 button[type="submit"]:hover {
-    background: linear-gradient(to right, #1c6ae4, #5a0cb9);
+    background: #1616db;
     box-shadow: 0 6px 20px rgba(37, 117, 252, 0.4);
     transform: translateY(-2px);
 }
@@ -168,12 +174,13 @@ button[type="submit"]:active {
         padding: 30px 20px;
         margin: 10px;
     }
-    
+
     .Avatar {
-        width: 140px; /* Adjusted for mobile */
+        width: 140px;
+        /* Adjusted for mobile */
         height: 140px;
     }
-    
+
     input[type="text"],
     input[type="password"],
     button[type="submit"],

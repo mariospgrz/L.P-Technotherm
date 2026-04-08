@@ -145,6 +145,22 @@ if ($resW) {
     $resW->close();
 }
 
+// ── Helper: format MySQL DATETIME/TIME → "H:MM π.μ./μ.μ." ────────────────────
+if (!function_exists('fmtClockTime')) {
+    function fmtClockTime(string $raw): string
+    {
+        if ($raw === '') return '—';
+        $timePart = str_contains($raw, ' ') ? explode(' ', $raw, 2)[1] : $raw;
+        $parts = explode(':', $timePart);
+        if (count($parts) < 2 || !is_numeric($parts[0])) return '—';
+        $h   = (int) $parts[0];
+        $m   = $parts[1];
+        $lbl = $h < 12 ? 'π.μ.' : 'μ.μ.';
+        $h24 = $h % 24;
+        return sprintf('%d:%s %s', $h24, $m, $lbl);
+    }
+}
+
 // ── JSON for JS ───────────────────────────────────────────────────────────────
 $js_projects = json_encode($projects, JSON_UNESCAPED_UNICODE);
 $js_invoices = json_encode(array_map(fn($i) => [
@@ -487,25 +503,26 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                             <p>Δεν υπάρχουν καταγεγραμμένες εργασίες</p>
                         </div>
                     <?php else: ?>
-                        <div class="work-list">
-                            <?php foreach ($work_logs as $wl): ?>
-                                <div class="work-item">
-                                    <div class="work-item-left">
-                                        <a href="#">
-                                            <?= htmlspecialchars($wl['project_name']) ?>
-                                        </a>
-                                        <small>
-                                            <?= htmlspecialchars($wl['work_date']) ?> &nbsp;
-                                            <?= htmlspecialchars(substr($wl['clock_in'] ?? '', 0, 5)) ?> π.μ.
-                                            έως
-                                            <?= htmlspecialchars(substr($wl['clock_out'] ?? '', 0, 5)) ?> μ.μ.
-                                        </small>
+                        <div class="work-list-scroll-wrapper">
+                            <div class="work-list" id="sup-work-list-hours">
+                                <?php foreach ($work_logs as $wl): ?>
+                                    <?php
+                                    $ci = fmtClockTime($wl['clock_in']  ?? '');
+                                    $co = fmtClockTime($wl['clock_out'] ?? '');
+                                    ?>
+                                    <div class="work-item">
+                                        <div class="work-item-left">
+                                            <strong><?= htmlspecialchars($wl['project_name']) ?></strong>
+                                            <small>
+                                                <?= htmlspecialchars($wl['work_date']) ?> &nbsp;
+                                                <?= htmlspecialchars($ci) ?> έως
+                                                <?= htmlspecialchars($co) ?>
+                                            </small>
+                                        </div>
+                                        <div class="work-item-hours"><?= number_format((float) $wl['total_hours'], 2) ?></div>
                                     </div>
-                                    <div class="work-item-hours">
-                                        <?= (float) $wl['total_hours'] ?>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
+                                <?php endforeach; ?>
+                            </div>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -629,25 +646,26 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                         <p>Δεν υπάρχουν καταγεγραμμένες εργασίες</p>
                     </div>
                 <?php else: ?>
-                    <div class="work-list">
-                        <?php foreach (array_slice($work_logs, 0, 5) as $wl): ?>
-                            <div class="work-item">
-                                <div class="work-item-left">
-                                    <a href="#">
-                                        <?= htmlspecialchars($wl['project_name']) ?>
-                                    </a>
-                                    <small>
-                                        <?= htmlspecialchars($wl['work_date']) ?> &nbsp;
-                                        <?= htmlspecialchars(substr($wl['clock_in'] ?? '', 0, 5)) ?> π.μ.
-                                        έως
-                                        <?= htmlspecialchars(substr($wl['clock_out'] ?? '', 0, 5)) ?> μ.μ.
-                                    </small>
+                    <div class="work-list-scroll-wrapper">
+                        <div class="work-list" id="sup-work-list-mine">
+                            <?php foreach ($work_logs as $wl): ?>
+                                <?php
+                                $ci = fmtClockTime($wl['clock_in']  ?? '');
+                                $co = fmtClockTime($wl['clock_out'] ?? '');
+                                ?>
+                                <div class="work-item">
+                                    <div class="work-item-left">
+                                        <strong><?= htmlspecialchars($wl['project_name']) ?></strong>
+                                        <small>
+                                            <?= htmlspecialchars($wl['work_date']) ?> &nbsp;
+                                            <?= htmlspecialchars($ci) ?> έως
+                                            <?= htmlspecialchars($co) ?>
+                                        </small>
+                                    </div>
+                                    <div class="work-item-hours"><?= number_format((float) $wl['total_hours'], 2) ?></div>
                                 </div>
-                                <div class="work-item-hours">
-                                    <?= (float) $wl['total_hours'] ?>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
                 <?php endif; ?>
             </div>
