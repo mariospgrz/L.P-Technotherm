@@ -95,6 +95,24 @@ if ($ot_res) {
     }
 }
 $overtime_json = json_encode($overtime_requests, JSON_UNESCAPED_UNICODE);
+
+// ── Fetch all invoices for Invoices tab ───────────────────────────────────────
+$all_invoices = [];
+$inv_res = $conn->query(
+    "SELECT i.id, i.description AS vendor, i.amount, i.date, i.photo_url,
+            p.name AS project
+       FROM invoices i
+       JOIN projects p ON i.project_id = p.id
+      ORDER BY i.date DESC, i.created_at DESC"
+);
+if ($inv_res) {
+    while ($row = $inv_res->fetch_assoc()) {
+        $row['id']     = (int) $row['id'];
+        $row['amount'] = (float) $row['amount'];
+        $all_invoices[] = $row;
+    }
+}
+$invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
 ?>
 <!DOCTYPE html>
 <html lang="el">
@@ -109,6 +127,8 @@ $overtime_json = json_encode($overtime_requests, JSON_UNESCAPED_UNICODE);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Admin CSS -->
     <link rel="stylesheet" href="CSS/admin_dashboard.css">
     <link rel="stylesheet" href="/frontend/CSS/logout_button.css">
@@ -774,6 +794,8 @@ $overtime_json = json_encode($overtime_requests, JSON_UNESCAPED_UNICODE);
         window.__DB_PROJECTS__ = <?= $projects_json ?>;
         // Passes real DB overtime requests to admin.js
         window.__DB_OVERTIME__ = <?= $overtime_json ?>;
+        // Passes real DB invoices to admin.js
+        window.__DB_INVOICES__ = <?= $invoices_json ?>;
         <?php if ($active_tab === 'projects'): ?>
             // Start on projects tab — trigger first render after admin.js loads
             document.addEventListener('DOMContentLoaded', function () {

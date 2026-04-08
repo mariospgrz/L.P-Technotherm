@@ -20,6 +20,8 @@ if (!$project_id) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Λεπτομέρειες Έργου | LP Technotherm</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="CSS/admin_dashboard.css">
     <style>
         /* ===== PROJECT DETAILS PAGE ===== */
@@ -1346,9 +1348,9 @@ if (!$project_id) {
             </div>
 
             <!-- ===== Image Viewer Modal ===== -->
-            <div class="img-viewer-overlay" id="imgViewerOverlay" onclick="closeImageViewer(event)">
+            <div class="img-viewer-overlay" id="imgViewerOverlay" onclick="closeImageViewer()">
                 <button class="img-viewer-close" onclick="closeImageViewer()"><i class="fas fa-times"></i></button>
-                <img id="imgViewerImg" src="" alt="Τιμολόγιο">
+                <img id="imgViewerImg" src="" alt="Τιμολόγιο" onclick="event.stopPropagation()">
             </div>
             </div>
 
@@ -1919,11 +1921,7 @@ if (!$project_id) {
             overlay.classList.add('show');
         }
 
-        function closeImageViewer(event) {
-            if (event && event.target !== document.getElementById('imgViewerOverlay') && event.target.closest('.img-viewer-close') === null) {
-                if (event.target.tagName === 'IMG') return; // don't close on img click
-                return;
-            }
+        function closeImageViewer() {
             document.getElementById('imgViewerOverlay').classList.remove('show');
             document.getElementById('imgViewerImg').src = '';
         }
