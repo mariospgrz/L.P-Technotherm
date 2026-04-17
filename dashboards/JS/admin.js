@@ -189,7 +189,7 @@ function changeStatus(projectId, newStatus) {
             : `Είστε σίγουροι ότι θέλετε να επαναφέρετε το έργο "${project.name}" σε ενεργό;`;
 
         showConfirm(title, message, () => {
-            fetch('/Backend/ProjectDetails/toggle_project_status.php', {
+            fetch('../Backend/ProjectDetails/toggle_project_status.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ project_id: projectId, csrf_token: getCsrf() })
@@ -290,7 +290,7 @@ async function editInvoice(id) {
     if (!formValues) return;
 
     try {
-        const res = await fetch('/dashboards/actions/admin_edit_invoice.php', {
+        const res = await fetch('../dashboards/actions/admin_edit_invoice.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id, vendor: formValues.vendor, amount: formValues.amount, csrf_token: getCsrf() })
@@ -312,7 +312,7 @@ async function editInvoice(id) {
 function deleteInvoice(id) {
     showConfirm('Διαγραφή Τιμολογίου', 'Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το τιμολόγιο; Η ενέργεια δεν αναιρείται.', async () => {
         try {
-            const res = await fetch('/dashboards/actions/admin_delete_invoice.php', {
+            const res = await fetch('../dashboards/actions/admin_delete_invoice.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id, csrf_token: getCsrf() })
@@ -602,7 +602,7 @@ function isOvertimeMonthPassed(dateStr) {
 }
 
 function updateOvertimeStatus(id, newStatus) {
-    fetch('/Backend/Overtime/update_overtime.php', {
+    fetch('../Backend/Overtime/update_overtime.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status: newStatus, csrf_token: getCsrf() })
@@ -679,7 +679,7 @@ function openReportFor(projectId) {
     }
 
     // Fetch full data from backend
-    fetch(`/Backend/ProjectDetails/get_project_details.php?project_id=${projectId}`)
+    fetch(`../Backend/ProjectDetails/get_project_details.php?project_id=${projectId}`)
         .then(r => r.json())
         .then(data => {
             if (!data.success) {
