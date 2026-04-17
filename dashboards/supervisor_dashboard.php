@@ -604,10 +604,14 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                     </div>
                 <?php else: ?>
                     <?php foreach ($invoices as $inv): ?>
+                        <?php 
+                            $rawUrl = $inv['photo_url'] ?? '';
+                            $finalUrl = str_starts_with($rawUrl, 'http') ? $rawUrl : '/' . ltrim($rawUrl, '/'); 
+                        ?>
                         <div class="invoice-item" id="inv-<?= $inv['id'] ?>">
-                            <?php if (!empty($inv['photo_url']) && preg_match('/\.(jpe?g|png|webp|gif)$/i', $inv['photo_url'])): ?>
-                                <img src="/<?= htmlspecialchars($inv['photo_url']) ?>" class="inv-thumb"
-                                     onclick="supOpenImage('/<?= htmlspecialchars($inv['photo_url']) ?>')" title="Προβολή">
+                            <?php if (!empty($rawUrl) && preg_match('/\.(jpe?g|png|webp|gif)$/i', $rawUrl)): ?>
+                                <img src="<?= htmlspecialchars($finalUrl) ?>" class="inv-thumb"
+                                     onclick="supOpenImage('<?= htmlspecialchars($finalUrl) ?>')" title="Προβολή">
                             <?php else: ?>
                                 <div class="invoice-icon-box"><i class="fas fa-file-alt"></i></div>
                             <?php endif; ?>
@@ -620,11 +624,12 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                                 <small><?= date('Y-m-d', strtotime($inv['date'])) ?></small>
                             </div>
                             <div class="invoice-actions">
-                                <?php if (!empty($inv['photo_url'])): ?>
-                                    <button class="btn-inv-view-sup" onclick="supOpenImage('/<?= htmlspecialchars($inv['photo_url']) ?>')" title="Εικόνα">
+                                <?php if (!empty($rawUrl)): ?>
+                                    <button class="btn-inv-view-sup" onclick="supOpenImage('<?= htmlspecialchars($finalUrl) ?>')" title="Εικόνα">
                                         <i class="fas fa-eye"></i>
                                     </button>
                                 <?php endif; ?>
+
                                 <button class="icon-btn" title="Επεξεργασία" onclick="editInvoice(<?= $inv['id'] ?>)">
                                     <i class="fas fa-pencil-alt"></i>
                                 </button>

@@ -334,13 +334,14 @@ function renderMyInvoices(query = '') {
         const photoUrl = inv.photo_url || '';
         const isImage  = photoUrl && /\.(jpe?g|png|webp|gif)$/i.test(photoUrl);
         const isPdf    = photoUrl && /\.pdf$/i.test(photoUrl);
+        const finalPhotoUrl = photoUrl.startsWith('http') ? photoUrl : '/' + photoUrl;
 
         const thumbHtml = isImage
-            ? `<img src="/${photoUrl}" class="inv-thumb" onclick="supOpenImage('/${photoUrl}')" title="Προβολή">`
+            ? `<img src="${finalPhotoUrl}" class="inv-thumb" onclick="supOpenImage('${finalPhotoUrl}')" title="Προβολή">`
             : `<div class="invoice-icon-box"><i class="fas fa-file-alt"></i></div>`;
 
         const viewBtn = photoUrl
-            ? `<button class="btn-inv-view-sup" onclick="supOpenImage('/${photoUrl}')" title="Εικόνα"><i class="fas fa-eye"></i></button>`
+            ? `<button class="btn-inv-view-sup" onclick="supOpenImage('${finalPhotoUrl}')" title="Εικόνα"><i class="fas fa-eye"></i></button>`
             : '';
 
         const supplierEsc = (inv.description || '').replace(/'/g, "\\'");

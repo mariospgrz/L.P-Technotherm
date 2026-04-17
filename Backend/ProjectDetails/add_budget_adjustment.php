@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $project_id  = (int) ($_POST['project_id'] ?? 0);
 $amount_raw  = trim($_POST['amount'] ?? '');
-$description = trim($_POST['reason'] ?? '');
+$description = trim($_POST['description'] ?? '');
 $created_by  = (int) $_SESSION['user_id'];
 
 if (!$project_id) {

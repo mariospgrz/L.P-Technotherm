@@ -318,7 +318,7 @@ if (!$project_id) {
         .pd-cost-section h4 {
             font-size: 0.95rem;
             font-weight: 700;
-            color: var(--text-main);
+            color: #00750eff;
             margin-bottom: 16px;
         }
 
@@ -590,7 +590,7 @@ if (!$project_id) {
         .tl-filter-group input[type="text"]:focus,
         .tl-filter-group select:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         /* Employee multi-select dropdown */
@@ -621,7 +621,7 @@ if (!$project_id) {
 
         .tl-emp-header.active {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
             border-bottom-left-radius: 0;
             border-bottom-right-radius: 0;
         }
@@ -646,7 +646,7 @@ if (!$project_id) {
             border-top: none;
             border-bottom-left-radius: 8px;
             border-bottom-right-radius: 8px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
             z-index: 60;
             display: none;
             flex-direction: column;
@@ -778,14 +778,18 @@ if (!$project_id) {
             .tl-filters-row {
                 flex-direction: column;
             }
+
             .tl-filter-group {
                 width: 100%;
             }
+
             .tl-filter-actions {
                 margin-left: 0;
                 width: 100%;
             }
-            .tl-btn-apply, .tl-btn-clear {
+
+            .tl-btn-apply,
+            .tl-btn-clear {
                 flex: 1;
                 justify-content: center;
             }
@@ -803,6 +807,7 @@ if (!$project_id) {
             background: #eff6ff;
             color: #2563eb;
         }
+
         .normal-badge {
             display: inline-flex;
             align-items: center;
@@ -816,9 +821,11 @@ if (!$project_id) {
             padding-right: 22px;
             transition: color 0.15s;
         }
+
         .pd-table th.sortable:hover {
             color: #2563eb;
         }
+
         .pd-table th.sortable .sort-icon {
             position: absolute;
             right: 6px;
@@ -827,6 +834,7 @@ if (!$project_id) {
             font-size: 0.65rem;
             opacity: 0.35;
         }
+
         .pd-table th.sortable.sort-active .sort-icon {
             opacity: 1;
             color: #2563eb;
@@ -838,6 +846,7 @@ if (!$project_id) {
             gap: 6px;
             flex-wrap: nowrap;
         }
+
         .btn-inv-edit {
             padding: 5px 10px;
             background: #eff6ff;
@@ -851,7 +860,11 @@ if (!$project_id) {
             transition: all 0.15s;
             white-space: nowrap;
         }
-        .btn-inv-edit:hover { background: #dbeafe; }
+
+        .btn-inv-edit:hover {
+            background: #dbeafe;
+        }
+
         .btn-inv-delete {
             padding: 5px 10px;
             background: #fef2f2;
@@ -865,7 +878,11 @@ if (!$project_id) {
             transition: all 0.15s;
             white-space: nowrap;
         }
-        .btn-inv-delete:hover { background: #fee2e2; }
+
+        .btn-inv-delete:hover {
+            background: #fee2e2;
+        }
+
         .btn-inv-view {
             padding: 5px 10px;
             background: #f0fdf4;
@@ -879,35 +896,41 @@ if (!$project_id) {
             transition: all 0.15s;
             white-space: nowrap;
         }
-        .btn-inv-view:hover { background: #dcfce7; }
+
+        .btn-inv-view:hover {
+            background: #dcfce7;
+        }
 
         /* ===== Image Viewer Modal ===== */
         .img-viewer-overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0, 0, 0, 0.85);
             z-index: 9999;
             align-items: center;
             justify-content: center;
             flex-direction: column;
             gap: 14px;
         }
+
         .img-viewer-overlay.show {
             display: flex;
         }
+
         .img-viewer-overlay img {
             max-width: 90vw;
             max-height: 82vh;
             border-radius: 10px;
-            box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
             object-fit: contain;
         }
+
         .img-viewer-close {
             position: absolute;
             top: 18px;
             right: 24px;
-            background: rgba(255,255,255,0.15);
+            background: rgba(255, 255, 255, 0.15);
             border: none;
             color: #fff;
             font-size: 1.6rem;
@@ -920,28 +943,36 @@ if (!$project_id) {
             justify-content: center;
             transition: background 0.18s;
         }
-        .img-viewer-close:hover { background: rgba(255,255,255,0.28); }
+
+        .img-viewer-close:hover {
+            background: rgba(255, 255, 255, 0.28);
+        }
 
         /* ===== Edit Invoice Modal ===== */
         .modal-overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.45);
+            background: rgba(0, 0, 0, 0.45);
             z-index: 8888;
             align-items: center;
             justify-content: center;
         }
-        .modal-overlay.show { display: flex; }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
         .modal-box {
             background: var(--card-bg);
             border-radius: 12px;
             padding: 28px 28px 24px;
             width: 100%;
             max-width: 420px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
             position: relative;
         }
+
         .modal-box h3 {
             font-size: 1rem;
             font-weight: 700;
@@ -951,6 +982,7 @@ if (!$project_id) {
             align-items: center;
             gap: 8px;
         }
+
         .modal-close {
             position: absolute;
             top: 14px;
@@ -961,10 +993,15 @@ if (!$project_id) {
             color: var(--text-muted);
             cursor: pointer;
         }
-        .modal-close:hover { color: var(--text-main); }
+
+        .modal-close:hover {
+            color: var(--text-main);
+        }
+
         .modal-field {
             margin-bottom: 16px;
         }
+
         .modal-field label {
             display: block;
             font-size: 0.75rem;
@@ -974,6 +1011,7 @@ if (!$project_id) {
             letter-spacing: 0.05em;
             margin-bottom: 6px;
         }
+
         .modal-field input {
             width: 100%;
             padding: 9px 12px;
@@ -987,10 +1025,12 @@ if (!$project_id) {
             outline: none;
             box-sizing: border-box;
         }
+
         .modal-field input:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
+
         .modal-actions {
             display: flex;
             gap: 10px;
@@ -1162,7 +1202,7 @@ if (!$project_id) {
 
                 <!-- ========== ROW 5: Cost Analysis ========== -->
                 <div class="pd-cost-section">
-                    <h4>💲 Ανάλυση Κόστους</h4>
+                    <h4>€ Ανάλυση Κόστους</h4>
                     <div class="pd-cost-grid">
                         <div class="pd-cost-card blue-cost">
                             <div class="cc-label">Κόστος Εργατοωρών</div>
@@ -1260,12 +1300,18 @@ if (!$project_id) {
                     <table class="pd-table">
                         <thead>
                             <tr>
-                                <th class="sortable sort-active" data-sort="date" onclick="sortTimeLogs('date')">Ημερομηνία <i class="fas fa-sort-down sort-icon"></i></th>
-                                <th class="sortable" data-sort="employee" onclick="sortTimeLogs('employee')">Εργαζόμενος <i class="fas fa-sort sort-icon"></i></th>
-                                <th class="sortable" data-sort="role" onclick="sortTimeLogs('role')">Ρόλος <i class="fas fa-sort sort-icon"></i></th>
+                                <th class="sortable sort-active" data-sort="date" onclick="sortTimeLogs('date')">
+                                    Ημερομηνία <i class="fas fa-sort-down sort-icon"></i></th>
+                                <th class="sortable" data-sort="employee" onclick="sortTimeLogs('employee')">Εργαζόμενος
+                                    <i class="fas fa-sort sort-icon"></i>
+                                </th>
+                                <th class="sortable" data-sort="role" onclick="sortTimeLogs('role')">Ρόλος <i
+                                        class="fas fa-sort sort-icon"></i></th>
                                 <th>Είσοδος - Έξοδος</th>
-                                <th class="sortable" data-sort="duration" onclick="sortTimeLogs('duration')">Διάρκεια <i class="fas fa-sort sort-icon"></i></th>
-                                <th class="sortable" data-sort="type" onclick="sortTimeLogs('type')">Τύπος <i class="fas fa-sort sort-icon"></i></th>
+                                <th class="sortable" data-sort="duration" onclick="sortTimeLogs('duration')">Διάρκεια <i
+                                        class="fas fa-sort sort-icon"></i></th>
+                                <th class="sortable" data-sort="type" onclick="sortTimeLogs('type')">Τύπος <i
+                                        class="fas fa-sort sort-icon"></i></th>
                             </tr>
                         </thead>
                         <tbody id="timeLogsList">
@@ -1277,7 +1323,7 @@ if (!$project_id) {
 
             <!-- Tab: Invoices -->
             <div id="tab-invoices" class="pd-tab-content">
-                
+
                 <!-- Filter Bar -->
                 <div class="tl-filters">
                     <div class="tl-filters-title"><i class="fas fa-filter"></i> Φίλτρα Τιμολογίων</div>
@@ -1285,9 +1331,10 @@ if (!$project_id) {
                         <!-- Global Search -->
                         <div class="tl-filter-group" style="flex: 2;">
                             <label for="invFilterSearch">Αναζήτηση (Προμηθευτής, Χρήστης)</label>
-                            <input type="text" id="invFilterSearch" placeholder="π.χ. Υλικά ΟΕ" style="width:100%;" onkeyup="applyInvoiceFilters()">
+                            <input type="text" id="invFilterSearch" placeholder="π.χ. Υλικά ΟΕ" style="width:100%;"
+                                onkeyup="applyInvoiceFilters()">
                         </div>
-                        
+
                         <!-- Date Period -->
                         <div class="tl-filter-group">
                             <label for="invFilterPeriod">Χρονική Περίοδος</label>
@@ -1306,10 +1353,15 @@ if (!$project_id) {
                         <thead>
                             <tr>
                                 <th>Φωτογραφία</th>
-                                <th class="sortable sort-active" data-sort="date" onclick="sortInvoices('date')">Ημερομηνία <i class="fas fa-sort-down sort-icon"></i></th>
-                                <th class="sortable" data-sort="supplier" onclick="sortInvoices('supplier')">Προμηθευτής <i class="fas fa-sort sort-icon"></i></th>
-                                <th class="sortable" data-sort="user" onclick="sortInvoices('user')">Καταχωρήθηκε από <i class="fas fa-sort sort-icon"></i></th>
-                                <th class="sortable" data-sort="amount" onclick="sortInvoices('amount')">Ποσό <i class="fas fa-sort sort-icon"></i></th>
+                                <th class="sortable sort-active" data-sort="date" onclick="sortInvoices('date')">
+                                    Ημερομηνία <i class="fas fa-sort-down sort-icon"></i></th>
+                                <th class="sortable" data-sort="supplier" onclick="sortInvoices('supplier')">Προμηθευτής
+                                    <i class="fas fa-sort sort-icon"></i>
+                                </th>
+                                <th class="sortable" data-sort="user" onclick="sortInvoices('user')">Καταχωρήθηκε από <i
+                                        class="fas fa-sort sort-icon"></i></th>
+                                <th class="sortable" data-sort="amount" onclick="sortInvoices('amount')">Ποσό <i
+                                        class="fas fa-sort sort-icon"></i></th>
                                 <th>Ενέργειες</th>
                             </tr>
                         </thead>
@@ -1319,39 +1371,42 @@ if (!$project_id) {
                     </table>
                 </div>
 
-            <!-- ===== Edit Invoice Modal ===== -->
-            <div class="modal-overlay" id="editInvoiceModal">
-                <div class="modal-box">
-                    <button class="modal-close" onclick="closeEditInvoiceModal()"><i class="fas fa-times"></i></button>
-                    <h3><i class="fas fa-file-invoice" style="color:var(--primary);"></i> Επεξεργασία Τιμολογίου</h3>
-                    <div class="form-msg" id="edit-invoice-msg"></div>
-                    <form id="editInvoiceForm" onsubmit="submitEditInvoice(event)" novalidate>
-                        <input type="hidden" id="editInvId">
-                        <div class="modal-field">
-                            <label for="editInvSupplier">Προμηθευτής</label>
-                            <input type="text" id="editInvSupplier" placeholder="π.χ. ΤΕΧΝΙΚΗ ΑΕ" required>
-                        </div>
-                        <div class="modal-field">
-                            <label for="editInvAmount">Ποσό (€)</label>
-                            <input type="number" id="editInvAmount" placeholder="0.00" min="0.01" step="0.01" required>
-                        </div>
-                        <div class="modal-actions">
-                            <button type="button" class="btn btn-outline" onclick="closeEditInvoiceModal()">
-                                Ακύρωση
-                            </button>
-                            <button type="submit" class="btn btn-blue" id="editInvSubmitBtn">
-                                <i class="fas fa-save"></i> Αποθήκευση
-                            </button>
-                        </div>
-                    </form>
+                <!-- ===== Edit Invoice Modal ===== -->
+                <div class="modal-overlay" id="editInvoiceModal">
+                    <div class="modal-box">
+                        <button class="modal-close" onclick="closeEditInvoiceModal()"><i
+                                class="fas fa-times"></i></button>
+                        <h3><i class="fas fa-file-invoice" style="color:var(--primary);"></i> Επεξεργασία Τιμολογίου
+                        </h3>
+                        <div class="form-msg" id="edit-invoice-msg"></div>
+                        <form id="editInvoiceForm" onsubmit="submitEditInvoice(event)" novalidate>
+                            <input type="hidden" id="editInvId">
+                            <div class="modal-field">
+                                <label for="editInvSupplier">Προμηθευτής</label>
+                                <input type="text" id="editInvSupplier" placeholder="π.χ. ΤΕΧΝΙΚΗ ΑΕ" required>
+                            </div>
+                            <div class="modal-field">
+                                <label for="editInvAmount">Ποσό (€)</label>
+                                <input type="number" id="editInvAmount" placeholder="0.00" min="0.01" step="0.01"
+                                    required>
+                            </div>
+                            <div class="modal-actions">
+                                <button type="button" class="btn btn-outline" onclick="closeEditInvoiceModal()">
+                                    Ακύρωση
+                                </button>
+                                <button type="submit" class="btn btn-blue" id="editInvSubmitBtn">
+                                    <i class="fas fa-save"></i> Αποθήκευση
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-            </div>
 
-            <!-- ===== Image Viewer Modal ===== -->
-            <div class="img-viewer-overlay" id="imgViewerOverlay" onclick="closeImageViewer()">
-                <button class="img-viewer-close" onclick="closeImageViewer()"><i class="fas fa-times"></i></button>
-                <img id="imgViewerImg" src="" alt="Τιμολόγιο" onclick="event.stopPropagation()">
-            </div>
+                <!-- ===== Image Viewer Modal ===== -->
+                <div class="img-viewer-overlay" id="imgViewerOverlay" onclick="closeImageViewer()">
+                    <button class="img-viewer-close" onclick="closeImageViewer()"><i class="fas fa-times"></i></button>
+                    <img id="imgViewerImg" src="" alt="Τιμολόγιο" onclick="event.stopPropagation()">
+                </div>
             </div>
 
             <!-- Tab: Team -->
@@ -1543,7 +1598,7 @@ if (!$project_id) {
                 const amt = parseFloat(adj.amount);
                 const color = amt >= 0 ? '#22c55e' : '#ef4444';
                 const prefix = amt >= 0 ? '+' : '';
-                const label = adj.reason || adj.description || '—';
+                const label = adj.reason || adj.description;
                 const by = adj.created_by_name ? ' · ' + adj.created_by_name : '';
                 const date = formatDate(adj.created_at || adj.date);
                 return `
@@ -1552,7 +1607,12 @@ if (!$project_id) {
                             <div class="hc-title">${label}${by}</div>
                             <div class="hc-date">${date}</div>
                         </div>
-                        <div class="hc-amount" style="color:${color};">${prefix}${formatEuro(Math.abs(amt))}</div>
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div class="hc-amount" style="color:${color};">${prefix}${formatEuro(Math.abs(amt))}</div>
+                            <button onclick="deleteAdjustment(${adj.id})" style="background:none; border:none; color:#dc2626; cursor:pointer;" title="Διαγραφή Αναπροσαρμογής">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -1624,18 +1684,19 @@ if (!$project_id) {
             tbody.innerHTML = invoices.map(inv => {
                 const photoUrl = inv.photo_url || inv.photo_path || inv.file_path || inv.image_path;
                 const isImage = photoUrl && /\.(jpe?g|png|webp|gif)$/i.test(photoUrl);
-                const isPdf   = photoUrl && /\.pdf$/i.test(photoUrl);
+                const isPdf = photoUrl && /\.pdf$/i.test(photoUrl);
+                const finalPhotoUrl = photoUrl ? (photoUrl.startsWith('http') ? photoUrl : '/' + photoUrl) : '';
 
                 let thumbCell;
                 if (photoUrl) {
-                    thumbCell = `<img src="/${photoUrl}" class="pd-invoice-thumb" onclick="openImageViewer(event, '${photoUrl}', ${isPdf ? 'true' : 'false'})" title="Προβολή">`;
+                    thumbCell = `<img src="${finalPhotoUrl}" class="pd-invoice-thumb" onclick="openImageViewer(event, '${finalPhotoUrl}', ${isPdf ? 'true' : 'false'})" title="Προβολή">`;
                 } else {
                     thumbCell = '<div style="width:50px;height:50px;background:#eee;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#aaa;"><i class="fas fa-image"></i></div>';
                 }
 
                 const supplier = (inv.supplier_name || '').replace(/'/g, "\\'");
-                const amount   = parseFloat(inv.amount);
-                const invId    = inv.id;
+                const amount = parseFloat(inv.amount);
+                const invId = inv.id;
 
                 return `
                     <tr>
@@ -1659,7 +1720,7 @@ if (!$project_id) {
         // ── Invoice Filtering & Sorting ───────────────────────────────────────
         function applyInvoiceFilters() {
             let filtered = [...allInvoices];
-            
+
             const searchStr = (document.getElementById('invFilterSearch').value || '').toLowerCase();
             const periodStr = document.getElementById('invFilterPeriod').value;
 
@@ -1668,7 +1729,7 @@ if (!$project_id) {
                 const daysLimit = parseInt(periodStr);
                 const cutoff = new Date();
                 cutoff.setDate(cutoff.getDate() - daysLimit);
-                
+
                 filtered = filtered.filter(inv => {
                     const invDate = new Date(inv.date || inv.created_at);
                     return invDate >= cutoff;
@@ -1734,7 +1795,7 @@ if (!$project_id) {
             ths.forEach(th => {
                 th.classList.remove('sort-active');
                 const i = th.querySelector('.sort-icon');
-                if(i) i.className = 'fas fa-sort sort-icon';
+                if (i) i.className = 'fas fa-sort sort-icon';
             });
             // Add active to current
             const activeTh = document.querySelector(`#tab-invoices th[data-sort="${currentInvSortCol}"]`);
@@ -1831,7 +1892,7 @@ if (!$project_id) {
 
         // ── Invoice Admin Actions ─────────────────────────────────────────────
         function adminEditInvoice(id, supplier, amount) {
-            document.getElementById('editInvId').value     = id;
+            document.getElementById('editInvId').value = id;
             document.getElementById('editInvSupplier').value = supplier;
             document.getElementById('editInvAmount').value = amount;
             document.getElementById('editInvoiceModal').classList.add('show');
@@ -1844,10 +1905,10 @@ if (!$project_id) {
 
         async function submitEditInvoice(e) {
             e.preventDefault();
-            const id       = parseInt(document.getElementById('editInvId').value);
+            const id = parseInt(document.getElementById('editInvId').value);
             const supplier = document.getElementById('editInvSupplier').value.trim();
-            const amount   = parseFloat(document.getElementById('editInvAmount').value);
-            const btn      = document.getElementById('editInvSubmitBtn');
+            const amount = parseFloat(document.getElementById('editInvAmount').value);
+            const btn = document.getElementById('editInvSubmitBtn');
 
             if (!supplier || !amount || amount <= 0) {
                 showMsg('edit-invoice-msg', 'Συμπληρώστε προμηθευτή και έγκυρο ποσό.', true);
@@ -1858,7 +1919,7 @@ if (!$project_id) {
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Αποθήκευση…';
 
             try {
-                const res  = await fetch('actions/admin_edit_invoice.php', {
+                const res = await fetch('actions/admin_edit_invoice.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id, vendor: supplier, amount, csrf_token: getCsrf() })
@@ -1878,6 +1939,37 @@ if (!$project_id) {
             }
         }
 
+        async function deleteAdjustment(id) {
+            const result = await Swal.fire({
+                title: 'Διαγραφή Αναπροσαρμογής;',
+                text: 'Η ενέργεια αυτή δεν μπορεί να αναιρεθεί και θα επηρεάσει τον συνολικό προϋπολογισμό.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ναι, διαγραφή',
+                cancelButtonText: 'Ακύρωση'
+            });
+            if (!result.isConfirmed) return;
+
+            try {
+                const res = await fetch('../Backend/ProjectDetails/delete_budget_adjustment.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    await Swal.fire({ icon: 'success', title: 'Διαγράφηκε!', timer: 1500, showConfirmButton: false });
+                    await refreshData();
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Σφάλμα', text: data.message || 'Αποτυχία διαγραφής.' });
+                }
+            } catch {
+                Swal.fire({ icon: 'error', title: 'Σφάλμα', text: 'Σφάλμα σύνδεσης.' });
+            }
+        }
+
         async function adminDeleteInvoice(id) {
             const result = await Swal.fire({
                 title: 'Διαγραφή τιμολογίου;',
@@ -1892,7 +1984,7 @@ if (!$project_id) {
             if (!result.isConfirmed) return;
 
             try {
-                const res  = await fetch('actions/admin_delete_invoice.php', {
+                const res = await fetch('actions/admin_delete_invoice.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id, csrf_token: getCsrf() })
@@ -1912,12 +2004,13 @@ if (!$project_id) {
         // ── Image Viewer Modal ────────────────────────────────────────────────
         function openImageViewer(event, photoUrl, isPdf) {
             event.stopPropagation();
+            const url = photoUrl.startsWith('http') ? photoUrl : '/' + photoUrl;
             if (isPdf) {
-                window.open('/' + photoUrl, '_blank');
+                window.open(url, '_blank');
                 return;
             }
             const overlay = document.getElementById('imgViewerOverlay');
-            document.getElementById('imgViewerImg').src = '/' + photoUrl;
+            document.getElementById('imgViewerImg').src = url;
             overlay.classList.add('show');
         }
 
@@ -1950,7 +2043,7 @@ if (!$project_id) {
                 const icon = th.querySelector('.sort-icon');
                 th.classList.remove('sort-active');
                 icon.className = 'fas fa-sort sort-icon';
-                
+
                 if (th.dataset.sort === field) {
                     th.classList.add('sort-active');
                     icon.className = `fas fa-sort-${currentSort.direction === 'asc' ? 'up' : 'down'} sort-icon`;
@@ -2027,7 +2120,7 @@ if (!$project_id) {
             // Apply sorting
             filtered.sort((a, b) => {
                 let valA, valB;
-                
+
                 if (currentSort.field === 'date') {
                     valA = a.date;
                     valB = b.date;
@@ -2076,7 +2169,7 @@ if (!$project_id) {
             document.querySelectorAll('#tlEmpList input[type=checkbox]').forEach(cb => cb.checked = false);
             document.getElementById('tlEmpHeaderText').textContent = 'Όλοι οι υπάλληλοι';
             document.getElementById('tlResultsInfo').style.display = 'none';
-            
+
             // Reset sorting
             currentSort = { field: 'date', direction: 'desc' };
             document.querySelectorAll('.pd-table th.sortable').forEach(th => {

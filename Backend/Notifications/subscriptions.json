@@ -1,6 +1,5 @@
 {
-    "6": [],
-    "7": [
+    "6": [
         {
             "endpoint": "https:\/\/fcm.googleapis.com\/fcm\/send\/duNX1tjw60M:APA91bE1g54FwZcDmJUwQ1u7026eYRn9d5WECDfs4vZEfU7Hw62rcN6W9XmgbU9ALXN2xeoGwgZVzcSA4Ikzle6LEyEF8mK0YohaTN32-X1fLu9F_eS-CTP5oFCYCkOXUkOkt-vzid-N",
             "keys": {
@@ -8,5 +7,6 @@
                 "auth": "aAsLzDu7F-cmCamOC7JhaA"
             }
         }
-    ]
+    ],
+    "7": []
 }

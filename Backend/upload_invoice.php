@@ -18,6 +18,12 @@
 require_once __DIR__ . '/supervisor_session.php';
 require_once __DIR__ . '/Database/Database.php';
 
+// Include the Composer autoloader
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use Aws\S3\S3Client;
+use Aws\Exception\AwsException;
+
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -135,24 +141,37 @@ if ($check->num_rows === 0) {
 }
 $check->close();
 
-// ── Save file to disk (optional) ─────────────────────────────────────────────
+// ── Save file to disk or S3 (optional) ─────────────────────────────────────────────
 if ($file !== null && $safe_ext !== null) {
-    $upload_dir = __DIR__ . '/../uploads/invoices/';
-    if (!is_dir($upload_dir)) {
-        mkdir($upload_dir, 0755, true);
-    }
-
     // Τυχαίο όνομα αρχείου για αποφυγή συγκρούσεων
     $new_filename = 'inv_' . $uploaded_by . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $safe_ext;
-    $destination  = $upload_dir . $new_filename;
+    
+    try {
+        $s3Client = new S3Client([
+            'region'      => $config['aws_region'] ?? 'eu-central-1',
+            'version'     => 'latest',
+            'credentials' => [
+                'key'    => $config['aws_key'] ?? '',
+                'secret' => $config['aws_secret'] ?? '',
+            ]
+        ]);
 
-    if (!move_uploaded_file($file['tmp_name'], $destination)) {
-        echo json_encode(['success' => false, 'message' => 'Αποτυχία αποθήκευσης αρχείου.']);
+        $result = $s3Client->putObject([
+            'Bucket'     => $config['aws_bucket'] ?? '',
+            'Key'        => 'invoices/' . $new_filename,
+            'SourceFile' => $file['tmp_name'],
+            'ACL'        => 'public-read'
+        ]);
+
+        // Full URL to image
+        $photo_url = $result->get('ObjectURL');
+        $destination = null; // No local file
+
+    } catch (AwsException $e) {
+        error_log('S3 Upload Error: ' . $e->getMessage());
+        echo json_encode(['success' => false, 'message' => 'Αποτυχία αποθήκευσης αρχείου στο S3.']);
         exit;
     }
-
-    // Relative path για αποθήκευση στη βάση (no leading slash)
-    $photo_url = 'uploads/invoices/' . $new_filename;
 }
 
 // ── Insert into DB ────────────────────────────────────────────────────────────
@@ -161,10 +180,6 @@ $stmt = $conn->prepare(
      VALUES (?, ?, ?, ?, ?, CURDATE(), NOW())'
 );
 if (!$stmt) {
-    // Διαγραφή αρχείου αν αποτύχει η βάση
-    if ($destination && is_file($destination)) {
-        unlink($destination);
-    }
     echo json_encode(['success' => false, 'message' => 'Σφάλμα βάσης δεδομένων.']);
     exit;
 }
@@ -172,9 +187,6 @@ $stmt->bind_param('iisds', $project_id, $uploaded_by, $supplier, $amount, $photo
 
 if (!$stmt->execute()) {
     $stmt->close();
-    if ($destination && is_file($destination)) {
-        unlink($destination);
-    }
     echo json_encode(['success' => false, 'message' => 'Αποτυχία καταχώρησης τιμολογίου.']);
     exit;
 }
