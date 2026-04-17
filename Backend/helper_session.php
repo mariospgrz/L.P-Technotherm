@@ -3,7 +3,16 @@
  * Backend/helper_session.php
  * Include at the TOP of every helper-only PHP page.
  */
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path'     => '/',
+        'secure'   => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true,
+        'samesite' => 'Strict',
+    ]);
+    session_start();
+}
 
 $timeout = 600; // 10 minutes
 

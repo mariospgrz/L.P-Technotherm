@@ -52,16 +52,21 @@ if ($open > 0) {
     redirectError('Ο χρήστης έχει ανοιχτές εγγραφές χρόνου και δεν μπορεί να διαγραφεί.');
 }
 
-$stmt = $conn->prepare('DELETE FROM users WHERE id = ?');
-if (!$stmt) {
-    redirectError('Σφάλμα βάσης δεδομένων.');
-}
-$stmt->bind_param('i', $target_id);
-if (!$stmt->execute()) {
+try {
+    $stmt = $conn->prepare('DELETE FROM users WHERE id = ?');
+    if (!$stmt) {
+        redirectError('Σφάλμα βάσης δεδομένων.');
+    }
+    $stmt->bind_param('i', $target_id);
+    $stmt->execute();
     $stmt->close();
-    redirectError('Αποτυχία διαγραφής χρήστη.');
+} catch (mysqli_sql_exception $e) {
+    // Check if it's a foreign key constraint error (1451)
+    if (strpos($e->getMessage(), 'foreign key constraint fails') !== false || $e->getCode() === 1451) {
+        redirectError('Αδύνατη η διαγραφή! Ο χρήστης έχει καταγεγραμμένο ιστορικό (βάρδιες ή υπερωρίες). Η διαγραφή θα κατέστρεφε τα δεδομένα μισθοδοσίας και αναφορών έργων.');
+    }
+    redirectError('Αποτυχία διαγραφής: Σφάλμα βάσης δεδομένων.');
 }
-$stmt->close();
 
 header('Location: /dashboards/admin_dashboard.php?success=' . urlencode(
     'Ο χρήστης «' . $target_username . '» διαγράφηκε επιτυχώς!'
