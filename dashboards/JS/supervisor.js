@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = new FormData(this);
             data.append('csrf_token', getCsrf());
 
-            fetch('/Backend/upload_invoice.php', {
+            fetch('../Backend/upload_invoice.php', {
                 method: 'POST',
                 body: data,
             })
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = new FormData(this);
             data.append('csrf_token', getCsrf());
 
-            fetch('/dashboards/actions/submit_overtime.php', {
+            fetch('actions/submit_overtime.php', {
                 method: 'POST',
                 body: data,
             })
@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = new FormData(this);
             data.append('csrf_token', getCsrf());
 
-            fetch('/dashboards/actions/assign_helpers.php', {
+            fetch('actions/assign_helpers.php', {
                 method: 'POST',
                 body: data,
             })
@@ -386,7 +386,7 @@ async function deleteInvoice(id) {
         cancelButtonText: 'Ακύρωση'
     });
     if (!result.isConfirmed) return;
-    fetch('/dashboards/actions/delete_invoice.php', {
+    fetch('actions/delete_invoice.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, csrf_token: getCsrf() }),
@@ -434,7 +434,7 @@ async function supSubmitEditInvoice(e) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Αποθήκευση…';
 
     try {
-        const res2 = await fetch('/dashboards/actions/supervisor_edit_invoice.php', {
+        const res2 = await fetch('actions/supervisor_edit_invoice.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id, vendor: supplier, amount, csrf_token: getCsrf() })
@@ -563,7 +563,7 @@ document.addEventListener('click', e => {
 
 /* ── Logout ─────────────────────────────────────────────── */
 function handleLogout() {
-    window.location.href = '/Backend/logout.php';
+    window.location.href = '../Backend/logout.php';
 }
 
 /* ── Toast notification ─────────────────────────────────── */

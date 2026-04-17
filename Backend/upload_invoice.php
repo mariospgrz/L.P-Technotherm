@@ -89,9 +89,9 @@ if ($possibleFile !== null) {
         exit;
     }
 
-    $max_size = 5 * 1024 * 1024; // 5 MB
+    $max_size = 20 * 1024 * 1024; // 20 MB
     if (($file['size'] ?? 0) > $max_size) {
-        echo json_encode(['success' => false, 'message' => 'Το αρχείο δεν μπορεί να υπερβαίνει τα 5 MB.']);
+        echo json_encode(['success' => false, 'message' => 'Το αρχείο δεν μπορεί να υπερβαίνει τα 20 MB.']);
         exit;
     }
 
@@ -102,8 +102,14 @@ if ($possibleFile !== null) {
         'application/pdf' => 'pdf',
     ];
 
-    $finfo     = new finfo(FILEINFO_MIME_TYPE);
-    $mime_type = $finfo->file($file['tmp_name']);
+    if (class_exists('finfo')) {
+        $finfo     = new finfo(FILEINFO_MIME_TYPE);
+        $mime_type = $finfo->file($file['tmp_name']);
+    } elseif (function_exists('mime_content_type')) {
+        $mime_type = mime_content_type($file['tmp_name']);
+    } else {
+        $mime_type = $file['type'] ?? '';
+    }
 
     if (!array_key_exists($mime_type, $allowed_mimes)) {
         echo json_encode(['success' => false, 'message' => 'Επιτρέπονται μόνο εικόνες (JPEG, PNG, WebP) ή PDF.']);
