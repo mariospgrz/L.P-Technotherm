@@ -190,10 +190,29 @@ if (!$stmt->execute()) {
     echo json_encode(['success' => false, 'message' => 'Αποτυχία καταχώρησης τιμολογίου.']);
     exit;
 }
+$new_id = $conn->insert_id;
 $stmt->close();
 
+// ── Fetch the project name to return to the frontend ─────────────────────────
+$project_name = '';
+$pstmt = $conn->prepare('SELECT name FROM projects WHERE id = ? LIMIT 1');
+if ($pstmt) {
+    $pstmt->bind_param('i', $project_id);
+    $pstmt->execute();
+    $pstmt->bind_result($project_name);
+    $pstmt->fetch();
+    $pstmt->close();
+}
+
 echo json_encode([
-    'success'   => true,
-    'message'   => 'Το τιμολόγιο ανέβηκε επιτυχώς.',
-    'photo_url' => $photo_url,
+    'success'      => true,
+    'message'      => 'Το τιμολόγιο ανέβηκε επιτυχώς.',
+    'invoice'      => [
+        'id'          => $new_id,
+        'description' => $supplier,
+        'project'     => $project_name,
+        'amount'      => $amount,
+        'date'        => date('Y-m-d'),
+        'photo_url'   => $photo_url,
+    ],
 ]);

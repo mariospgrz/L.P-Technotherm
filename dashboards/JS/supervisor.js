@@ -111,8 +111,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(r => r.json())
                 .then(res => {
                     if (res.success) {
+                        // Add the new invoice to state so the list updates without a page reload
+                        if (res.invoice) {
+                            state.invoices.unshift({
+                                id:          res.invoice.id,
+                                description: res.invoice.description,
+                                project:     res.invoice.project,
+                                amount:      res.invoice.amount,
+                                date:        res.invoice.date,
+                                photo_url:   res.invoice.photo_url || null,
+                            });
+                        }
                         showToast('Τιμολόγιο καταχωρήθηκε!', 'success');
                         invForm.reset();
+                        document.getElementById('invoice-photo-label').textContent = 'Επιλέξτε αρχείο';
                         switchTab('invoices-mine');
                     } else {
                         showToast(res.message || 'Σφάλμα καταχώρησης', 'error');
