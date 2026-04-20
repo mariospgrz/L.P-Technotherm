@@ -50,9 +50,11 @@ function clockToggle() {
             const t = document.createElement('div');
             t.id = 'ct-toast';
             t.textContent = 'Επιλέξτε έργο πρώτα!';
-            Object.assign(t.style, { position:'fixed', bottom:'80px', right:'24px', padding:'12px 20px',
-                borderRadius:'8px', background:'var(--danger,#ef4444)', color:'#fff',
-                fontWeight:'600', fontSize:'0.875rem', zIndex:'9999' });
+            Object.assign(t.style, {
+                position: 'fixed', bottom: '80px', right: '24px', padding: '12px 20px',
+                borderRadius: '8px', background: 'var(--danger,#ef4444)', color: '#fff',
+                fontWeight: '600', fontSize: '0.875rem', zIndex: '9999'
+            });
             document.body.appendChild(t);
             setTimeout(() => t.remove(), 3000);
             return;
@@ -114,12 +116,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Add the new invoice to state so the list updates without a page reload
                         if (res.invoice) {
                             state.invoices.unshift({
-                                id:          res.invoice.id,
+                                id: res.invoice.id,
                                 description: res.invoice.description,
-                                project:     res.invoice.project,
-                                amount:      res.invoice.amount,
-                                date:        res.invoice.date,
-                                photo_url:   res.invoice.photo_url || null,
+                                project: res.invoice.project,
+                                amount: res.invoice.amount,
+                                date: res.invoice.date,
+                                photo_url: res.invoice.photo_url || null,
                             });
                         }
                         showToast('Τιμολόγιο καταχωρήθηκε!', 'success');
@@ -266,11 +268,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Dynamic scroll for work-list ────────────────────────────
     initWorkListScroll('sup-work-list-hours');
     initWorkListScroll('sup-work-list-mine');
+    initWorkListScroll('sup-work-list-overtime');
 });
 
 /* ── Work-list dynamic scroll ───────────────────────────────── */
 function initWorkListScroll(containerId) {
-    const inner   = document.getElementById(containerId);
+    const inner = document.getElementById(containerId);
     const wrapper = inner?.parentElement;
     if (!inner || !wrapper) return;
 
@@ -280,16 +283,16 @@ function initWorkListScroll(containerId) {
     // Apply entry animation styles to each item
     items.forEach((item) => {
         item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-        item.style.opacity    = '1';
-        item.style.transform  = 'translateY(0)';
+        item.style.opacity = '1';
+        item.style.transform = 'translateY(0)';
     });
 
     // Update fade-edge classes based on scroll position
     function updateEdges() {
-        const scrollTop    = inner.scrollTop;
+        const scrollTop = inner.scrollTop;
         const scrollBottom = inner.scrollHeight - inner.clientHeight - scrollTop;
 
-        wrapper.classList.toggle('at-top',    scrollTop    < 4);
+        wrapper.classList.toggle('at-top', scrollTop < 4);
         wrapper.classList.toggle('at-bottom', scrollBottom < 4);
         wrapper.classList.toggle('scrolling', scrollTop > 4 && scrollBottom > 4);
     }
@@ -298,13 +301,13 @@ function initWorkListScroll(containerId) {
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                entry.target.style.opacity   = '1';
+                entry.target.style.opacity = '1';
                 entry.target.style.transform = 'translateY(0)';
             } else {
-                const rect      = entry.target.getBoundingClientRect();
-                const ctxRect   = inner.getBoundingClientRect();
+                const rect = entry.target.getBoundingClientRect();
+                const ctxRect = inner.getBoundingClientRect();
                 const exitingUp = rect.top < ctxRect.top;
-                entry.target.style.opacity   = '0';
+                entry.target.style.opacity = '0';
                 entry.target.style.transform = exitingUp ? 'translateY(-10px)' : 'translateY(10px)';
             }
         });
@@ -344,8 +347,8 @@ function renderMyInvoices(query = '') {
 
     container.innerHTML = list.map(inv => {
         const photoUrl = inv.photo_url || '';
-        const isImage  = photoUrl && /\.(jpe?g|png|webp|gif)$/i.test(photoUrl);
-        const isPdf    = photoUrl && /\.pdf$/i.test(photoUrl);
+        const isImage = photoUrl && /\.(jpe?g|png|webp|gif)$/i.test(photoUrl);
+        const isPdf = photoUrl && /\.pdf$/i.test(photoUrl);
         const finalPhotoUrl = photoUrl.startsWith('http') ? photoUrl : '/' + photoUrl;
 
         const thumbHtml = isImage
@@ -417,9 +420,9 @@ async function deleteInvoice(id) {
 }
 
 function editInvoice(id, supplier, amount) {
-    document.getElementById('supEditInvId').value       = id;
+    document.getElementById('supEditInvId').value = id;
     document.getElementById('supEditInvSupplier').value = supplier;
-    document.getElementById('supEditInvAmount').value   = amount;
+    document.getElementById('supEditInvAmount').value = amount;
     const msgEl = document.getElementById('sup-edit-msg');
     if (msgEl) { msgEl.style.display = 'none'; msgEl.textContent = ''; }
     document.getElementById('supEditInvModal').classList.add('show');
@@ -431,11 +434,11 @@ function supCloseEditModal() {
 
 async function supSubmitEditInvoice(e) {
     e.preventDefault();
-    const id       = parseInt(document.getElementById('supEditInvId').value);
+    const id = parseInt(document.getElementById('supEditInvId').value);
     const supplier = document.getElementById('supEditInvSupplier').value.trim();
-    const amount   = parseFloat(document.getElementById('supEditInvAmount').value);
-    const btn      = document.getElementById('supEditInvBtn');
-    const msgEl    = document.getElementById('sup-edit-msg');
+    const amount = parseFloat(document.getElementById('supEditInvAmount').value);
+    const btn = document.getElementById('supEditInvBtn');
+    const msgEl = document.getElementById('sup-edit-msg');
 
     if (!supplier || !amount || amount <= 0) {
         msgEl.textContent = 'Συμπληρώστε προμηθευτή και έγκυρο ποσό.';
@@ -512,6 +515,7 @@ function renderOvertimeList() {
             <div class="ot-left">
                 <strong>${esc(ot.project)}</strong>
                 <small>${ot.date} · ${ot.hours} ώρες</small>
+               <br> <small><strong>Λόγος:</strong> ${esc(ot.reason)}</small>
             </div>
             <span class="badge ${ot.status}">${statusLabel(ot.status)}</span>
         </div>`).join('');

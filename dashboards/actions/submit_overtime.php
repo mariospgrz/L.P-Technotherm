@@ -24,11 +24,11 @@ if (!hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'] ?? '')) {
     exit;
 }
 
-$user_id    = (int) $_SESSION['user_id'];
+$user_id = (int) $_SESSION['user_id'];
 $project_id = (int) ($_POST['project_id'] ?? 0);
-$hours      = (float) ($_POST['hours'] ?? 0);
-$date       = trim($_POST['request_date'] ?? date('Y-m-d'));
-$reason     = trim($_POST['reason'] ?? '');
+$hours = (float) ($_POST['hours'] ?? 0);
+$date = trim($_POST['request_date'] ?? date('Y-m-d'));
+$reason = trim($_POST['reason'] ?? '');
 
 if (!$project_id || $hours <= 0) {
     echo json_encode(['success' => false, 'message' => 'Συμπληρώστε όλα τα απαραίτητα πεδία.']);

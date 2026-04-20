@@ -87,7 +87,8 @@ if (!empty($projects)) {
 // ── Fetch overtime requests ────────────────────────────────────────────────────
 $overtime = [];
 $res5 = $conn->prepare(
-    'SELECT o.id, p.name AS project, o.hours, o.date, o.description AS reason, o.status
+    'SELECT o.id, p.name AS project, o.hours, o.date, o.description AS reason, o.status,
+            DATE_FORMAT(o.created_at, \'%d %b %Y, %H:%i\') AS submitted
        FROM overtime_requests o
        JOIN projects p ON o.project_id = p.id
       WHERE o.user_id = ?
@@ -832,18 +833,50 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                     ];
                     foreach ($overtime as $ot): ?>
                         <div class="overtime-item">
-                            <div class="ot-left">
-                                <strong>
-                                    <?= htmlspecialchars($ot['project']) ?>
-                                </strong>
-                                <small>
-                                    <?= htmlspecialchars($ot['date']) ?> ·
-                                    <?= (float) $ot['hours'] ?> ώρες
-                                </small>
+                            <div class="ot-top">
+                                <div class="ot-meta">
+                                    <div class="ot-meta-item">
+                                        <label>Ημερομηνία</label>
+                                        <span>
+                                            <?php
+                                            $d = DateTime::createFromFormat('Y-m-d', $ot['date']);
+                                            $days = ['Mon' => 'Δευ', 'Tue' => 'Τρι', 'Wed' => 'Τετ', 'Thu' => 'Πέμ', 'Fri' => 'Παρ', 'Sat' => 'Σάβ', 'Sun' => 'Κυρ'];
+                                            $months = ['Jan' => 'Ιαν', 'Feb' => 'Φεβ', 'Mar' => 'Μαρ', 'Apr' => 'Απρ', 'May' => 'Μαΐ', 'Jun' => 'Ιουν', 'Jul' => 'Ιουλ', 'Aug' => 'Αυγ', 'Sep' => 'Σεπ', 'Oct' => 'Οκτ', 'Nov' => 'Νοε', 'Dec' => 'Δεκ'];
+                                            if ($d) {
+                                                echo ($days[$d->format('D')] ?? $d->format('D')) . ' '
+                                                    . $d->format('d') . ' '
+                                                    . ($months[$d->format('M')] ?? $d->format('M')) . ' '
+                                                    . $d->format('Y');
+                                            } else {
+                                                echo htmlspecialchars($ot['date']);
+                                            }
+                                            ?>
+                                        </span>
+                                    </div>
+                                    <div class="ot-meta-item">
+                                        <label>Ώρες</label>
+                                        <span>
+                                            <i class="fas fa-clock" style="color:var(--primary);font-size:0.8rem;"></i>
+                                            <?= (float) $ot['hours'] ?>h
+                                        </span>
+                                    </div>
+                                </div>
+                                <span class="badge <?= htmlspecialchars($ot['status']) ?>">
+                                    <i class="fas fa-<?= $ot['status'] === 'pending' ? 'clock' : ($ot['status'] === 'approved' ? 'check' : 'times') ?>"></i>
+                                    <?= htmlspecialchars($status_labels[$ot['status']] ?? $ot['status']) ?>
+                                </span>
                             </div>
-                            <span class="badge <?= htmlspecialchars($ot['status']) ?>">
-                                <?= htmlspecialchars($status_labels[$ot['status']] ?? $ot['status']) ?>
-                            </span>
+                            <?php if (!empty($ot['reason'])): ?>
+                                <div class="ot-reason">
+                                    <strong>Αιτιολογία:</strong>
+                                    <?= htmlspecialchars($ot['reason']) ?>
+                                </div>
+                            <?php endif; ?>
+                            <?php if (!empty($ot['submitted'])): ?>
+                                <div class="ot-submitted">
+                                    Υποβλήθηκε: <?= htmlspecialchars($ot['submitted']) ?>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
@@ -858,25 +891,26 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                         <p>Δεν υπάρχουν καταγεγραμμένες εργασίες</p>
                     </div>
                 <?php else: ?>
-                    <div class="work-list">
-                        <?php foreach (array_slice($work_logs, 0, 5) as $wl): ?>
-                            <div class="work-item">
-                                <div class="work-item-left">
-                                    <a href="#">
-                                        <?= htmlspecialchars($wl['project_name']) ?>
-                                    </a>
-                                    <small>
-                                        <?= htmlspecialchars($wl['work_date']) ?> &nbsp;
-                                        <?= htmlspecialchars(substr($wl['clock_in'] ?? '', 0, 5)) ?> π.μ.
-                                        έως
-                                        <?= htmlspecialchars(substr($wl['clock_out'] ?? '', 0, 5)) ?> μ.μ.
-                                    </small>
+                    <div class="work-list-scroll-wrapper">
+                        <div class="work-list" id="sup-work-list-overtime">
+                            <?php foreach (array_slice($work_logs, 0, 5) as $wl): ?>
+                                <?php
+                                $ci = fmtClockTime($wl['clock_in']  ?? '');
+                                $co = fmtClockTime($wl['clock_out'] ?? '');
+                                ?>
+                                <div class="work-item">
+                                    <div class="work-item-left">
+                                        <strong><?= htmlspecialchars($wl['project_name']) ?></strong>
+                                        <small>
+                                            <?= htmlspecialchars($wl['work_date']) ?> &nbsp;
+                                            <?= htmlspecialchars($ci) ?> έως
+                                            <?= htmlspecialchars($co) ?>
+                                        </small>
+                                    </div>
+                                    <div class="work-item-hours"><?= number_format((float) $wl['total_hours'], 2) ?></div>
                                 </div>
-                                <div class="work-item-hours">
-                                    <?= (float) $wl['total_hours'] ?>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
                 <?php endif; ?>
             </div>
@@ -942,8 +976,8 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                             required>
                     </div>
                     <div class="form-group">
-                        <label for="ot-date">Ημερομηνία <span class="req">*</span></label>
-                        <input type="date" id="ot-date" name="request_date" required value="<?= date('Y-m-d') ?>">
+                        <label for="ot-date">Ημερομηνία (Σήμερα)</label>
+                        <input type="date" id="ot-date" name="request_date" required value="<?= date('Y-m-d') ?>" readonly style="background:var(--bg-page);cursor:not-allowed;">
                     </div>
                     <div class="form-group">
                         <label for="ot-reason">Αιτιολογία</label>
