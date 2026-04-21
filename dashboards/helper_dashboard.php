@@ -399,9 +399,9 @@ $js_overtime = json_encode($overtime, JSON_UNESCAPED_UNICODE);
                         <input type="number" id="ot-hours" name="hours" placeholder="π.χ. 2" min="0.5" step="0.5"
                             required>
                     </div>
-                    <div class="form-group">
-                        <label for="ot-date">Ημερομηνία <span class="req">*</span></label>
-                        <input type="date" id="ot-date" name="request_date" required value="<?= date('Y-m-d') ?>">
+                    <div class="form-group" style="opacity: 1;">
+                        <label for="ot-date">Ημερομηνία (Σήμερα)</label>
+                        <input type="date" id="ot-date" name="request_date" required value="<?= date('Y-m-d') ?>" readonly style="background: var(--bg-page); cursor: not-allowed;">
                     </div>
                     <div class="form-group">
                         <label for="ot-reason">Αιτιολογία</label>
