@@ -116,7 +116,7 @@ $js_overtime = json_encode($overtime, JSON_UNESCAPED_UNICODE);
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="CSS/helper.css">
-    <link rel="icon" type="image/jpeg" href="/frontend/images/images.jpg">
+    <link rel="icon" type="image/jpeg" href="../frontend/images/images.jpg">
 </head>
 
 <body>

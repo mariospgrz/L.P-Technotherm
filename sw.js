@@ -6,10 +6,10 @@ self.addEventListener('push', function(event) {
             const title = data.title || 'Ειδοποίηση LP Technotherm';
             const options = {
                 body: data.body,
-                icon: data.icon || '/frontend/images/images.jpg',
-                badge: '/frontend/images/images.jpg',
+                icon: data.icon || 'frontend/images/images.jpg',
+                badge: 'frontend/images/images.jpg',
                 data: {
-                    url: data.url || '/'
+                    url: data.url || './'
                 }
             };
             event.waitUntil(self.registration.showNotification(title, options));

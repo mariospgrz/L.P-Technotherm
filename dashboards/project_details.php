@@ -8,7 +8,7 @@ require_once __DIR__ . '/../Backend/admin_session.php';
 
 $project_id = (int) ($_GET['project_id'] ?? 0);
 if (!$project_id) {
-    header('Location: /dashboards/admin_dashboard.php?tab=projects');
+    header('Location: admin_dashboard.php?tab=projects');
     exit;
 }
 ?>
@@ -1038,7 +1038,7 @@ if (!$project_id) {
             margin-top: 20px;
         }
     </style>
-    <link rel="icon" type="image/jpeg" href="/frontend/images/images.jpg">
+    <link rel="icon" type="image/jpeg" href="../frontend/images/images.jpg">
 </head>
 
 <body>
@@ -1058,7 +1058,7 @@ if (!$project_id) {
             <div class="pd-header-right">
                 <span class="badge" id="projStatus"
                     style="visibility:hidden;padding:5px 14px;font-size:0.78rem;"></span>
-                <a href="/dashboards/admin_dashboard.php?tab=projects" class="btn-back">
+                <a href="admin_dashboard.php?tab=projects" class="btn-back">
                     <i class="fas fa-arrow-left"></i> Πίσω
                 </a>
             </div>
@@ -1075,7 +1075,7 @@ if (!$project_id) {
             <i class="fas fa-exclamation-triangle"
                 style="color:var(--danger);font-size:2rem;display:block;margin-bottom:12px;"></i>
             <p id="errorMsg" style="color:var(--danger);"></p>
-            <a href="/dashboards/admin_dashboard.php?tab=projects" class="btn btn-blue"
+            <a href="admin_dashboard.php?tab=projects" class="btn btn-blue"
                 style="display:inline-flex;margin-top:18px;">
                 <i class="fas fa-arrow-left"></i> Πίσω στα Έργα
             </a>

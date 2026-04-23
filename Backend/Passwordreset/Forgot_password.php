@@ -21,14 +21,14 @@ define('DEBUG_MODE', $cfg['debug_mode']);
 // ─────────────────────────────────────────────────────────────────────────────
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: /frontend/forgot_password.html');
+    header('Location: ../../frontend/forgot_password.html');
     exit();
 }
 
 $email = trim(filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL));
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    header('Location: /frontend/forgot_password.html?error=' . urlencode('Παρακαλώ εισάγετε έγκυρη διεύθυνση email.'));
+    header('Location: ../../frontend/forgot_password.html?error=' . urlencode('Παρακαλώ εισάγετε έγκυρη διεύθυνση email.'));
     exit();
 }
 
@@ -41,7 +41,7 @@ $stmt->close();
 
 if ($result->num_rows === 0) {
     // Don't reveal whether the email exists
-    header('Location: /frontend/forgot_password.html?success=' . urlencode('Εάν το email είναι καταχωρημένο, θα σταλεί σύνδεσμος επαναφοράς.'));
+    header('Location: ../../frontend/forgot_password.html?success=' . urlencode('Εάν το email είναι καταχωρημένο, θα σταλεί σύνδεσμος επαναφοράς.'));
     exit();
 }
 
@@ -81,7 +81,7 @@ if (DEBUG_MODE) {
                 color: #2563eb;
             }
         </style>
-        <link rel="icon" type="image/jpeg" href="/frontend/images/images.jpg">
+        <link rel="icon" type="image/jpeg" href="../../frontend/images/images.jpg">
     </head>
 
     <body>
@@ -90,7 +90,7 @@ if (DEBUG_MODE) {
             <strong>Link for:</strong> <?= htmlspecialchars($email) ?><br>
             <a href="<?= htmlspecialchars($resetLink) ?>"><?= htmlspecialchars($resetLink) ?></a>
         </div>
-        <a href="/frontend/forgot_password.html">← Δοκιμάστε άλλο email</a>
+        <a href="../../frontend/forgot_password.html">← Δοκιμάστε άλλο email</a>
     </body>
 
     </html>
@@ -125,11 +125,11 @@ try {
 
     $mail->send();
 
-    header('Location: /frontend/forgot_password.html?success=' . urlencode('Ο σύνδεσμος επαναφοράς κωδικού σάς στάλθηκε στο email σας.'));
+    header('Location: ../../frontend/forgot_password.html?success=' . urlencode('Ο σύνδεσμος επαναφοράς κωδικού σάς στάλθηκε στο email σας.'));
 
 } catch (Exception $e) {
     error_log("Mailer Error: " . $mail->ErrorInfo);
-    header('Location: /frontend/forgot_password.html?error=' . urlencode('Αποτυχία αποστολής email. Παρακαλώ δοκιμάστε ξανά.'));
+    header('Location: ../../frontend/forgot_password.html?error=' . urlencode('Αποτυχία αποστολής email. Παρακαλώ δοκιμάστε ξανά.'));
 }
 
 exit();

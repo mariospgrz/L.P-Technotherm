@@ -349,7 +349,7 @@ function renderMyInvoices(query = '') {
         const photoUrl = inv.photo_url || '';
         const isImage = photoUrl && /\.(jpe?g|png|webp|gif)$/i.test(photoUrl);
         const isPdf = photoUrl && /\.pdf$/i.test(photoUrl);
-        const finalPhotoUrl = photoUrl.startsWith('http') ? photoUrl : '/' + photoUrl;
+        const finalPhotoUrl = photoUrl.startsWith('http') ? photoUrl : '../' + photoUrl;
 
         const thumbHtml = isImage
             ? `<img src="${finalPhotoUrl}" class="inv-thumb" onclick="supOpenImage('${finalPhotoUrl}')" title="Προβολή">`

@@ -136,7 +136,7 @@ function renderProjects(status) {
                     </div>
                 </div>
                 <div class="project-card-actions">
-                    <a href="/dashboards/project_details.php?project_id=${p.id}" class="btn btn-green" style="text-decoration:none;">
+                    <a href="project_details.php?project_id=${p.id}" class="btn btn-green" style="text-decoration:none;">
                         <i class="fas fa-dollar-sign"></i> Λεπτομέρειες
                     </a>
                     <button class="btn btn-blue" onclick="openReportFor(${p.id})">
@@ -1061,7 +1061,7 @@ function escHtml(str) {
 
 // ==================== LOGOUT ====================
 function handleLogout() {
-    window.location.href = '/Backend/logout.php';
+    window.location.href = '../Backend/logout.php';
 }
 
 // ==================== TAB SWITCHING ====================

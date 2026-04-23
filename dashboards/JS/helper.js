@@ -66,7 +66,7 @@ function closeModal(id) {
 
 /* ── Logout ─────────────────────────────────────────────────── */
 function handleLogout() {
-    window.location.href = '/Backend/logout.php';
+    window.location.href = '../Backend/logout.php';
 }
 
 /* ── Toast ──────────────────────────────────────────────────── */
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const data = new FormData(this);
             data.append('csrf_token', getCsrf());
-            fetch('/dashboards/actions/submit_overtime.php', { method: 'POST', body: data })
+            fetch('actions/submit_overtime.php', { method: 'POST', body: data })
                 .then(r => r.json())
                 .then(res => {
                     if (res.success) {

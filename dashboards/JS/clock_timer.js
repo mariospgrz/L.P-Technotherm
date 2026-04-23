@@ -66,7 +66,7 @@ const ClockTimer = (() => {
     // ── Server poll (every 60s) ───────────────────────────────────────────────
     // Detects when the MySQL auto-clockout event fires server-side.
     function _pollStatus() {
-        fetch('/Backend/ClockInOut/clock_status.php')
+        fetch('../Backend/ClockInOut/clock_status.php')
             .then(r => r.json())
             .then(data => {
                 if (_clockInTime !== null && !data.clocked_in) {
@@ -147,7 +147,7 @@ const ClockTimer = (() => {
 
     // ── Restore state from server on page load ────────────────────────────────
     function _restoreFromServer() {
-        fetch('/Backend/ClockInOut/clock_status.php')
+        fetch('../Backend/ClockInOut/clock_status.php')
             .then(r => r.json())
             .then(data => {
                 if (data.clocked_in) {
@@ -175,7 +175,7 @@ const ClockTimer = (() => {
         body.append('project_id', projectId);
         body.append('csrf_token', getCsrf());
 
-        fetch('/Backend/ClockInOut/clock_in.php', { method: 'POST', body })
+        fetch('../Backend/ClockInOut/clock_in.php', { method: 'POST', body })
             .then(r => r.json())
             .then(res => {
                 if (res.success) {
@@ -196,7 +196,7 @@ const ClockTimer = (() => {
         const body = new FormData();
         body.append('csrf_token', getCsrf());
 
-        fetch('/Backend/ClockInOut/clock_out.php', { method: 'POST', body })
+        fetch('../Backend/ClockInOut/clock_out.php', { method: 'POST', body })
             .then(r => r.json())
             .then(res => {
                 if (res.success) {

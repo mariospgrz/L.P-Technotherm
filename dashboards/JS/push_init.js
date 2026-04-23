@@ -15,7 +15,7 @@ function urlBase64ToUint8Array(base64String) {
 if ('serviceWorker' in navigator && 'PushManager' in window) {
     window.addEventListener('load', async function() {
         try {
-            const registration = await navigator.serviceWorker.register('/sw.js');
+            const registration = await navigator.serviceWorker.register('../sw.js');
             
             // Prompt for notification permission
             const permission = await Notification.requestPermission();
@@ -25,7 +25,7 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
             }
             
             // Get public VAPID key
-            const vapidResponse = await fetch('/Backend/Notifications/vapid_public.php');
+            const vapidResponse = await fetch('../Backend/Notifications/vapid_public.php');
             if (!vapidResponse.ok) throw new Error('Failed to fetch VAPID key');
             const vapidData = await vapidResponse.json();
             
@@ -36,7 +36,7 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
             });
             
             // Send subscription to backend
-            await fetch('/Backend/Notifications/save_subscription.php', {
+            await fetch('../Backend/Notifications/save_subscription.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

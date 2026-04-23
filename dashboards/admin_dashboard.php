@@ -131,9 +131,9 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Admin CSS -->
     <link rel="stylesheet" href="CSS/admin_dashboard.css">
-    <link rel="stylesheet" href="/frontend/CSS/logout_button.css">
+    <link rel="stylesheet" href="../frontend/CSS/logout_button.css">
     <link rel="stylesheet" href="CSS/responsive.css">
-    <link rel="icon" type="image/jpeg" href="/frontend/images/images.jpg">
+    <link rel="icon" type="image/jpeg" href="../frontend/images/images.jpg">
     <style>
         /* Modern Report Grid Styles */
         .report-cards-row { display: grid; gap: 15px; width: 100%; margin-bottom: 20px; }
@@ -416,7 +416,7 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                     <button class="close-modal" aria-label="Close" onclick="toggleModal('modalCreateUser')">&times;</button>
                 </div>
                 <div class="modal-body" style="padding: 20px;">
-                    <form class="panel-form" action="/Backend/CreateUser/create_user.php" method="POST">
+                    <form class="panel-form" action="../Backend/CreateUser/create_user.php" method="POST">
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="cu_username">Username *</label>
@@ -472,7 +472,7 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                     <button class="close-modal" aria-label="Close" onclick="toggleModal('modalEditUser')">&times;</button>
                 </div>
                 <div class="modal-body" style="padding: 20px;">
-                    <form class="panel-form" action="/Backend/EditUser/edit_user.php" method="POST">
+                    <form class="panel-form" action="../Backend/EditUser/edit_user.php" method="POST">
                         <div class="form-group">
                             <label for="eu_user_select">Επιλογή Χρήστη *</label>
                             <select id="eu_user_select" name="user_id" required onchange="populateEditForm(this.value)">
@@ -528,7 +528,7 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                     <button class="close-modal" aria-label="Close" onclick="toggleModal('modalDeleteUser')">&times;</button>
                 </div>
                 <div class="modal-body" style="padding: 20px;">
-                    <form class="panel-form" action="/Backend/DeleteUser/delete_user.php" method="POST">
+                    <form class="panel-form" action="../Backend/DeleteUser/delete_user.php" method="POST">
                         <div class="form-group">
                             <label for="du_username">Χρήστης προς διαγραφή *</label>
                             <select id="du_username" name="username" required>
@@ -585,7 +585,7 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                         <i class="fas fa-exclamation-triangle" style="margin-right:6px;"></i>
                         <span id="projectFormErrorMsg"></span>
                     </div>
-                    <form id="createProjectForm" action="/Backend/CreateProject/create_project.php" method="POST"
+                    <form id="createProjectForm" action="../Backend/CreateProject/create_project.php" method="POST"
                         onsubmit="return validateProjectForm()" novalidate>
                         <div class="panel-form" style="margin-bottom:0;">
                             <div class="form-group">

@@ -198,7 +198,7 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="CSS/supervisor.css">
-    <link rel="stylesheet" href="/frontend/CSS/logout_button.css">
+    <link rel="stylesheet" href="../frontend/CSS/logout_button.css">
     <link rel="stylesheet" href="CSS/responsive.css">
     <style>
         @keyframes fadeIn {
@@ -338,7 +338,7 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
             margin-top: 18px;
         }
     </style>
-    <link rel="icon" type="image/jpeg" href="/frontend/images/images.jpg">
+    <link rel="icon" type="image/jpeg" href="../frontend/images/images.jpg">
 </head>
 
 <body>
@@ -542,7 +542,7 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                     </div>
                 </div>
 
-                <form id="invoice-form" action="/Backend/upload_invoice.php" method="POST"
+                <form id="invoice-form" action="../Backend/upload_invoice.php" method="POST"
                     enctype="multipart/form-data">
                     <div class="form-group">
                         <label for="inv-project">Έργο <span class="req">*</span></label>
@@ -607,7 +607,7 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                     <?php foreach ($invoices as $inv): ?>
                         <?php 
                             $rawUrl = $inv['photo_url'] ?? '';
-                            $finalUrl = str_starts_with($rawUrl, 'http') ? $rawUrl : '/' . ltrim($rawUrl, '/'); 
+                            $finalUrl = str_starts_with($rawUrl, 'http') ? $rawUrl : '../' . ltrim($rawUrl, '/'); 
                         ?>
                         <div class="invoice-item" id="inv-<?= $inv['id'] ?>">
                             <?php if (!empty($rawUrl) && preg_match('/\.(jpe?g|png|webp|gif)$/i', $rawUrl)): ?>
