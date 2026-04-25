@@ -89,7 +89,7 @@ $ot_res = $conn->query(
 );
 if ($ot_res) {
     while ($row = $ot_res->fetch_assoc()) {
-        $row['id']    = (int) $row['id'];
+        $row['id'] = (int) $row['id'];
         $row['hours'] = (float) $row['hours'];
         $overtime_requests[] = $row;
     }
@@ -107,7 +107,7 @@ $inv_res = $conn->query(
 );
 if ($inv_res) {
     while ($row = $inv_res->fetch_assoc()) {
-        $row['id']     = (int) $row['id'];
+        $row['id'] = (int) $row['id'];
         $row['amount'] = (float) $row['amount'];
         $all_invoices[] = $row;
     }
@@ -136,13 +136,33 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
     <link rel="icon" type="image/jpeg" href="../frontend/images/images.jpg">
     <style>
         /* Modern Report Grid Styles */
-        .report-cards-row { display: grid; gap: 15px; width: 100%; margin-bottom: 20px; }
-        .report-cards-6 { grid-template-columns: repeat(3, 1fr); }
-        .report-cards-4 { grid-template-columns: repeat(4, 1fr); }
-        .report-cards-3 { grid-template-columns: repeat(3, 1fr); }
-        .report-cards-2 { grid-template-columns: repeat(2, 1fr); }
-        .report-cards-1 { grid-template-columns: 1fr; }
-        
+        .report-cards-row {
+            display: grid;
+            gap: 15px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .report-cards-6 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .report-cards-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .report-cards-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .report-cards-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .report-cards-1 {
+            grid-template-columns: 1fr;
+        }
+
         .report-info-card {
             background: #fff;
             border: 1px solid var(--border-color);
@@ -150,45 +170,140 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
             padding: 15px;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
-        .report-card-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
-        .report-card-value { font-size: 1.1rem; font-weight: 600; color: var(--text-main); }
+
+        .report-card-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .report-card-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
 
         /* Payroll Archive Tabs/Accordion */
-        .archive-controls { background: #fff; border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; margin-bottom: 25px; box-shadow: var(--shadow-sm); }
-        .archive-year-row { margin-bottom: 10px; }
-        .archive-year-row:last-child { margin-bottom: 0; }
-        .year-header { 
-            display: flex; align-items: center; justify-content: space-between; 
-            padding: 10px 15px; background: #f8fafc; border-radius: 8px; cursor: pointer;
-            transition: all 0.2s; border: 1px solid transparent;
+        .archive-controls {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow-sm);
         }
-        .year-header:hover { background: #f1f5f9; border-color: #cbd5e1; }
-        .year-header.active { background: #eff6ff; border-color: #bfdbfe; color: var(--primary); }
-        .year-header strong { font-size: 1rem; }
-        .year-header i { transition: transform 0.3s; color: #94a3b8; }
-        .year-header.active i { transform: rotate(180deg); color: var(--primary); }
 
-        .month-grid { 
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; 
-            padding: 15px 10px 5px 10px; display: none; 
+        .archive-year-row {
+            margin-bottom: 10px;
         }
-        .month-grid.active { display: grid; }
+
+        .archive-year-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .year-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .year-header:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .year-header.active {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            color: var(--primary);
+        }
+
+        .year-header strong {
+            font-size: 1rem;
+        }
+
+        .year-header i {
+            transition: transform 0.3s;
+            color: #94a3b8;
+        }
+
+        .year-header.active i {
+            transform: rotate(180deg);
+            color: var(--primary);
+        }
+
+        .month-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+            padding: 15px 10px 5px 10px;
+            display: none;
+        }
+
+        .month-grid.active {
+            display: grid;
+        }
+
         .month-pill {
-            padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; text-align: center;
-            font-size: 0.85rem; cursor: pointer; transition: all 0.2s; background: #fff;
-            color: #475569; font-weight: 500;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fff;
+            color: #475569;
+            font-weight: 500;
         }
-        .month-pill:hover { background: #f8fafc; border-color: #94a3b8; color: var(--text-main); }
-        .month-pill.selected { background: var(--primary); border-color: var(--primary); color: #fff; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2); }
-        
-        .archive-empty { padding: 30px; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
-        .archive-stats-dropdown { grid-column: 1 / -1; width: 100%; margin: 10px 0 20px 0; animation: slideDown 0.3s ease-out; }
-        
+
+        .month-pill:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+            color: var(--text-main);
+        }
+
+        .month-pill.selected {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+        }
+
+        .archive-empty {
+            padding: 30px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .archive-stats-dropdown {
+            grid-column: 1 / -1;
+            width: 100%;
+            margin: 10px 0 20px 0;
+            animation: slideDown 0.3s ease-out;
+        }
+
         @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -256,19 +371,24 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
         <div id="panel-users" style="display:<?= $active_tab === 'users' ? 'block' : 'none' ?>;">
 
             <div class="users-action-bar" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-                <button class="btn-panel btn-panel-primary" style="width: auto; padding: 10px 20px; font-weight: 500;" onclick="toggleModal('modalCreateUser')">
+                <button class="btn-panel btn-panel-primary" style="width: auto; padding: 10px 20px; font-weight: 500;"
+                    onclick="toggleModal('modalCreateUser')">
                     <i class="fas fa-user-plus"></i> Νέος Χρήστης
                 </button>
-                <button class="btn-panel" style="width: auto; padding: 10px 20px; font-weight: 500; background: var(--warning); color: #fff; border: none; cursor: pointer;" onclick="toggleModal('modalEditUser')">
+                <button class="btn-panel"
+                    style="width: auto; padding: 10px 20px; font-weight: 500; background: var(--warning); color: #fff; border: none; cursor: pointer;"
+                    onclick="toggleModal('modalEditUser')">
                     <i class="fas fa-user-edit"></i> Επεξεργασία Χρήστη
                 </button>
-                <button class="btn-panel btn-panel-danger" style="width: auto; padding: 10px 20px; font-weight: 500;" onclick="toggleModal('modalDeleteUser')">
+                <button class="btn-panel btn-panel-danger" style="width: auto; padding: 10px 20px; font-weight: 500;"
+                    onclick="toggleModal('modalDeleteUser')">
                     <i class="fas fa-user-minus"></i> Διαγραφή Χρήστη
                 </button>
             </div>
 
             <!-- USERS TABLE -->
-            <div class="section-heading" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div class="section-heading"
+                style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                 <div>
                     <i class="fas fa-list-ul"></i> Κατάλογος Χρηστών
                     <span class="count-pill" id="usersCountPill">
@@ -278,10 +398,13 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                 <!-- USERS TABLE CONTROLS -->
                 <div class="users-table-controls" style="display:flex; gap:10px; flex-wrap:wrap;">
                     <div class="search-container" style="flex:1; position:relative;">
-                        <i class="fas fa-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#6b7280; pointer-events:none;"></i>
-                        <input type="text" id="userSearchInput" placeholder="Αναζήτηση..." style="padding:8px 8px 8px 35px !important; border-radius:6px; border:1px solid var(--border-color); width:100%; box-sizing:border-box; font-family:inherit;">
+                        <i class="fas fa-search"
+                            style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#6b7280; pointer-events:none;"></i>
+                        <input type="text" id="userSearchInput" placeholder="Αναζήτηση..."
+                            style="padding:8px 8px 8px 35px !important; border-radius:6px; border:1px solid var(--border-color); width:100%; box-sizing:border-box; font-family:inherit;">
                     </div>
-                    <select id="userRoleFilter" style="padding:8px; border-radius:6px; border:1px solid var(--border-color); background:#fff; min-width:140px;">
+                    <select id="userRoleFilter"
+                        style="padding:8px; border-radius:6px; border:1px solid var(--border-color); background:#fff; min-width:140px;">
                         <option value="">Όλοι οι Ρόλοι</option>
                         <option value="administrator">Διαχειριστής</option>
                         <option value="supervisor">Υπεύθυνος</option>
@@ -296,14 +419,22 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                     <table class="data-table" id="usersTable">
                         <thead>
                             <tr>
-                                <th style="cursor:pointer;" data-sort-type="number" data-col="0"># <i class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
-                                <th style="cursor:pointer;" data-sort-type="string" data-col="1">Ονοματεπώνυμο <i class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
-                                <th style="cursor:pointer;" data-sort-type="string" data-col="2">Username <i class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
-                                <th style="cursor:pointer;" data-sort-type="string" data-col="3">Ρόλος <i class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
-                                <th style="cursor:pointer;" data-sort-type="string" data-col="4">Email <i class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
-                                <th style="cursor:pointer;" data-sort-type="string" data-col="5">Τηλέφωνο <i class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
-                                <th style="cursor:pointer;" data-sort-type="currency" data-col="6">Ωρομίσθιο <i class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
-                                <th style="cursor:pointer;" data-sort-type="date" data-col="7">Εγγραφή <i class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
+                                <th style="cursor:pointer;" data-sort-type="number" data-col="0"># <i
+                                        class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
+                                <th style="cursor:pointer;" data-sort-type="string" data-col="1">Ονοματεπώνυμο <i
+                                        class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
+                                <th style="cursor:pointer;" data-sort-type="string" data-col="2">Username <i
+                                        class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
+                                <th style="cursor:pointer;" data-sort-type="string" data-col="3">Ρόλος <i
+                                        class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
+                                <th style="cursor:pointer;" data-sort-type="string" data-col="4">Email <i
+                                        class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
+                                <th style="cursor:pointer;" data-sort-type="string" data-col="5">Τηλέφωνο <i
+                                        class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
+                                <th style="cursor:pointer;" data-sort-type="currency" data-col="6">Ωρομίσθιο <i
+                                        class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
+                                <th style="cursor:pointer;" data-sort-type="date" data-col="7">Εγγραφή <i
+                                        class="fas fa-sort float-right" style="color:#9ca3af;"></i></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -413,23 +544,27 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
             <div class="modal-container" style="max-width:480px;">
                 <div class="modal-header">
                     <h3><i class="fas fa-user-plus icon-primary"></i> Δημιουργία Νέου Χρήστη</h3>
-                    <button class="close-modal" aria-label="Close" onclick="toggleModal('modalCreateUser')">&times;</button>
+                    <button class="close-modal" aria-label="Close"
+                        onclick="toggleModal('modalCreateUser')">&times;</button>
                 </div>
                 <div class="modal-body" style="padding: 20px;">
                     <form class="panel-form" action="../Backend/CreateUser/create_user.php" method="POST">
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="cu_username">Username *</label>
-                                <input type="text" id="cu_username" name="username" placeholder="π.χ. nikos123" required autocomplete="off">
+                                <input type="text" id="cu_username" name="username" placeholder="π.χ. nikos123" required
+                                    autocomplete="off">
                             </div>
                             <div class="form-group">
                                 <label for="cu_password">Κωδικός * (min. 8)</label>
-                                <input type="password" id="cu_password" name="password" placeholder="Τουλάχιστον 8 χαρακτήρες" minlength="6" required>
+                                <input type="password" id="cu_password" name="password"
+                                    placeholder="Τουλάχιστον 8 χαρακτήρες" minlength="6" required>
                             </div>
                         </div>
                         <div class="form-group">
                             <label for="cu_full_name">Ονοματεπώνυμο *</label>
-                            <input type="text" id="cu_full_name" name="full_name" placeholder="π.χ. Νίκος Παπαδόπουλος" required autocomplete="off">
+                            <input type="text" id="cu_full_name" name="full_name" placeholder="π.χ. Νίκος Παπαδόπουλος"
+                                required autocomplete="off">
                         </div>
                         <div class="form-row">
                             <div class="form-group">
@@ -443,7 +578,8 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                             </div>
                             <div class="form-group">
                                 <label for="cu_hourly_rate">Ωρομίσθιο (€)</label>
-                                <input type="number" id="cu_hourly_rate" name="hourly_rate" placeholder="π.χ. 15.00" min="0" step="0.01">
+                                <input type="number" id="cu_hourly_rate" name="hourly_rate" placeholder="π.χ. 15.00"
+                                    min="0" step="0.01">
                             </div>
                         </div>
                         <div class="form-row">
@@ -453,7 +589,8 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                             </div>
                             <div class="form-group">
                                 <label for="cu_email">Email *</label>
-                                <input type="email" id="cu_email" name="email" placeholder="π.χ. nikos@gmail.com" required>
+                                <input type="email" id="cu_email" name="email" placeholder="π.χ. nikos@gmail.com"
+                                    required>
                             </div>
                         </div>
                         <button type="submit" class="btn btn-blue" style="width:100%; margin-top:10px;">
@@ -468,8 +605,10 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
         <div id="modalEditUser" class="modal-overlay">
             <div class="modal-container" style="max-width:480px;">
                 <div class="modal-header">
-                    <h3><i class="fas fa-user-edit icon-primary" style="color:var(--warning);"></i> Επεξεργασία Χρήστη</h3>
-                    <button class="close-modal" aria-label="Close" onclick="toggleModal('modalEditUser')">&times;</button>
+                    <h3><i class="fas fa-user-edit icon-primary" style="color:var(--warning);"></i> Επεξεργασία Χρήστη
+                    </h3>
+                    <button class="close-modal" aria-label="Close"
+                        onclick="toggleModal('modalEditUser')">&times;</button>
                 </div>
                 <div class="modal-body" style="padding: 20px;">
                     <form class="panel-form" action="../Backend/EditUser/edit_user.php" method="POST">
@@ -512,7 +651,8 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                             <label for="eu_hourly_rate">Ωρομίσθιο (€)</label>
                             <input type="number" id="eu_hourly_rate" name="hourly_rate" min="0" step="0.01">
                         </div>
-                        <button type="submit" class="btn" style="width:100%; margin-top:10px; background:var(--warning); color:#fff; border:none;">
+                        <button type="submit" class="btn"
+                            style="width:100%; margin-top:10px; background:var(--warning); color:#fff; border:none;">
                             <i class="fas fa-save"></i> Αποθήκευση Αλλαγών
                         </button>
                     </form>
@@ -524,8 +664,10 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
         <div id="modalDeleteUser" class="modal-overlay">
             <div class="modal-container" style="max-width:480px;">
                 <div class="modal-header">
-                    <h3><i class="fas fa-user-minus" style="color:var(--danger); margin-right:8px;"></i> Διαγραφή Χρήστη</h3>
-                    <button class="close-modal" aria-label="Close" onclick="toggleModal('modalDeleteUser')">&times;</button>
+                    <h3><i class="fas fa-user-minus" style="color:var(--danger); margin-right:8px;"></i> Διαγραφή Χρήστη
+                    </h3>
+                    <button class="close-modal" aria-label="Close"
+                        onclick="toggleModal('modalDeleteUser')">&times;</button>
                 </div>
                 <div class="modal-body" style="padding: 20px;">
                     <form class="panel-form" action="../Backend/DeleteUser/delete_user.php" method="POST">
@@ -543,7 +685,8 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                             </select>
                         </div>
                         <div class="confirm-row" style="margin-bottom:15px; margin-top:15px;">
-                            <input type="checkbox" id="du_confirm" name="confirm" required style="width:auto; margin-right:8px;" onchange="
+                            <input type="checkbox" id="du_confirm" name="confirm" required
+                                style="width:auto; margin-right:8px;" onchange="
                                 const btn = document.getElementById('btnDeleteSubmit');
                                 if (this.checked) {
                                     btn.disabled = false;
@@ -563,7 +706,9 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                                 Επιβεβαιώνω ότι θέλω να διαγράψω <strong>οριστικά</strong> αυτόν τον χρήστη.
                             </label>
                         </div>
-                        <button type="submit" id="btnDeleteSubmit" class="btn" style="width:100%; border:none; background-color:#e5e7eb; color:#9ca3af; cursor:not-allowed; opacity:0.7; transition:all 0.3s ease;" disabled>
+                        <button type="submit" id="btnDeleteSubmit" class="btn"
+                            style="width:100%; border:none; background-color:#e5e7eb; color:#9ca3af; cursor:not-allowed; opacity:0.7; transition:all 0.3s ease;"
+                            disabled>
                             <i class="fas fa-trash-alt"></i> Οριστική Διαγραφή
                         </button>
                     </form>
@@ -630,16 +775,19 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
         <!-- Modal: Αναφορά Έργου -->
         <div id="reportModal" class="modal-overlay">
             <div class="modal-container report-container" style="max-width:960px; max-height:92vh; overflow-y:auto;">
-                <div class="modal-header" style="position:sticky; top:0; background:#fff; z-index:10; border-bottom:1px solid var(--border-color); padding:18px 24px; display:flex; justify-content:space-between; align-items:center;">
+                <div class="modal-header"
+                    style="position:sticky; top:0; background:#fff; z-index:10; border-bottom:1px solid var(--border-color); padding:18px 24px; display:flex; justify-content:space-between; align-items:center;">
                     <div>
                         <h2 style="font-size:1.2rem; margin-bottom:2px;">Αναφορά Έργου</h2>
                         <p id="reportProjName" style="color:var(--text-muted); font-size:0.9rem;"></p>
                     </div>
                     <div style="display:flex; gap:8px; align-items:center;">
-                        <button class="btn btn-blue" onclick="exportReportPDF()" style="font-size:0.82rem; padding:7px 14px;">
+                        <button class="btn btn-blue" onclick="exportReportPDF()"
+                            style="font-size:0.82rem; padding:7px 14px;">
                             <i class="fas fa-file-pdf"></i> PDF
                         </button>
-                        <button class="btn" onclick="exportReportExcel()" style="font-size:0.82rem; padding:7px 14px; background:#10b981; color:#fff; border:none;">
+                        <button class="btn" onclick="exportReportExcel()"
+                            style="font-size:0.82rem; padding:7px 14px; background:#10b981; color:#fff; border:none;">
                             <i class="fas fa-file-excel"></i> Excel
                         </button>
                         <button class="close-modal" onclick="closeReport()" style="margin-left:4px;">&times;</button>
@@ -686,24 +834,36 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                         <div class="report-section">
                             <h4 class="report-section-title">Οικονομική Επισκόπηση</h4>
                             <div class="report-cards-row report-cards-6">
-                                <div class="report-info-card"><span class="report-card-label">Προϋπολογισμός</span><strong class="report-card-value" id="rep-budget"></strong></div>
-                                <div class="report-info-card"><span class="report-card-label">Εργατικά</span><strong class="report-card-value" id="reportLaborCost"></strong></div>
-                                <div class="report-info-card"><span class="report-card-label">Υλικά</span><strong class="report-card-value" id="reportMaterialCost"></strong></div>
-                                <div class="report-info-card"><span class="report-card-label">Συνολικό Κόστος</span><strong class="report-card-value" id="reportTotalCost"></strong></div>
-                                <div class="report-info-card"><span class="report-card-label">Κέρδος/Ζημία</span><strong class="report-card-value" id="reportProfit"></strong></div>
-                                <div class="report-info-card"><span class="report-card-label">Ποσοστό (%)</span><strong class="report-card-value" id="rep-pct"></strong></div>
+                                <div class="report-info-card"><span
+                                        class="report-card-label">Προϋπολογισμός</span><strong class="report-card-value"
+                                        id="rep-budget"></strong></div>
+                                <div class="report-info-card"><span class="report-card-label">Εργατικά</span><strong
+                                        class="report-card-value" id="reportLaborCost"></strong></div>
+                                <div class="report-info-card"><span class="report-card-label">Υλικά</span><strong
+                                        class="report-card-value" id="reportMaterialCost"></strong></div>
+                                <div class="report-info-card"><span class="report-card-label">Συνολικό
+                                        Κόστος</span><strong class="report-card-value" id="reportTotalCost"></strong>
+                                </div>
+                                <div class="report-info-card"><span class="report-card-label">Κέρδος/Ζημία</span><strong
+                                        class="report-card-value" id="reportProfit"></strong></div>
+                                <div class="report-info-card"><span class="report-card-label">Ποσοστό (%)</span><strong
+                                        class="report-card-value" id="rep-pct"></strong></div>
                             </div>
                         </div>
 
                         <div class="report-section">
                             <div class="report-cards-row report-cards-1">
                                 <div class="chart-box" style="margin-bottom: 20px;">
-                                    <h4 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--text-muted);">ΚΑΤΑΝΟΜΗ ΚΟΣΤΟΥΣ (%)</h4>
-                                    <div style="position:relative; height:220px;"><canvas id="costPieChart"></canvas></div>
+                                    <h4 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--text-muted);">
+                                        ΚΑΤΑΝΟΜΗ ΚΟΣΤΟΥΣ (%)</h4>
+                                    <div style="position:relative; height:220px;"><canvas id="costPieChart"></canvas>
+                                    </div>
                                 </div>
                                 <div class="chart-box">
-                                    <h4 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--text-muted);">ΩΡΕΣ ΑΝΑ ΑΤΟΜΟ</h4>
-                                    <div id="laborChartContainer" style="position:relative; min-height:200px;"><canvas id="laborBarChart"></canvas></div>
+                                    <h4 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--text-muted);">ΩΡΕΣ
+                                        ΑΝΑ ΑΤΟΜΟ</h4>
+                                    <div id="laborChartContainer" style="position:relative; min-height:200px;"><canvas
+                                            id="laborBarChart"></canvas></div>
                                 </div>
                             </div>
                         </div>
@@ -714,7 +874,13 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                             <div class="report-cards-row report-cards-3" id="reportPaymentSummary"></div>
                             <div class="report-table-wrap">
                                 <table class="data-table" id="reportPaymentsTable">
-                                    <thead><tr><th>Ημερομηνία</th><th>Ποσό</th><th>Σημείωση</th></tr></thead>
+                                    <thead>
+                                        <tr>
+                                            <th>Ημερομηνία</th>
+                                            <th>Ποσό</th>
+                                            <th>Σημείωση</th>
+                                        </tr>
+                                    </thead>
                                     <tbody id="reportPaymentsBody"></tbody>
                                 </table>
                             </div>
@@ -725,7 +891,14 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                             <h4 class="report-section-title">Ομάδα & Εργατοώρες</h4>
                             <div class="report-table-wrap">
                                 <table class="data-table">
-                                    <thead><tr><th>Όνομα</th><th>Ρόλος</th><th>Ώρες</th><th>Κόστος</th></tr></thead>
+                                    <thead>
+                                        <tr>
+                                            <th>Όνομα</th>
+                                            <th>Ρόλος</th>
+                                            <th>Ώρες</th>
+                                            <th>Κόστος</th>
+                                        </tr>
+                                    </thead>
                                     <tbody id="staffTableBody"></tbody>
                                 </table>
                             </div>
@@ -736,7 +909,14 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                             <h4 class="report-section-title">Εγκεκριμένες Υπερωρίες</h4>
                             <div class="report-table-wrap">
                                 <table class="data-table">
-                                    <thead><tr><th>Όνομα</th><th>Ημερομηνία</th><th>Ώρες</th><th>Περιγραφή</th></tr></thead>
+                                    <thead>
+                                        <tr>
+                                            <th>Όνομα</th>
+                                            <th>Ημερομηνία</th>
+                                            <th>Ώρες</th>
+                                            <th>Περιγραφή</th>
+                                        </tr>
+                                    </thead>
                                     <tbody id="reportOvertimeBody"></tbody>
                                 </table>
                             </div>
@@ -747,7 +927,13 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                             <h4 class="report-section-title">Τιμολόγια Υλικών</h4>
                             <div class="report-table-wrap">
                                 <table class="data-table">
-                                    <thead><tr><th>Ημερομηνία</th><th>Προμηθευτής</th><th>Ποσό</th></tr></thead>
+                                    <thead>
+                                        <tr>
+                                            <th>Ημερομηνία</th>
+                                            <th>Προμηθευτής</th>
+                                            <th>Ποσό</th>
+                                        </tr>
+                                    </thead>
                                     <tbody id="reportInvoicesBody"></tbody>
                                 </table>
                             </div>
@@ -760,21 +946,27 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
 
         <!-- Modal: Επιβεβαίωση Ενέργειας -->
         <div id="confirmModal" class="modal-overlay">
-            <div class="modal-container" style="max-width:400px; transform: translateY(20px); transition: transform 0.3s ease-out;">
+            <div class="modal-container"
+                style="max-width:400px; transform: translateY(20px); transition: transform 0.3s ease-out;">
                 <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
                     <h3 id="confirmModalTitle" style="font-size: 1.15rem; color: var(--text-main);">Επιβεβαίωση</h3>
                     <button class="close-modal" onclick="toggleModal('confirmModal')">&times;</button>
                 </div>
                 <div class="modal-body" style="padding: 20px 24px 28px; text-align: center;">
-                    <div class="confirm-icon" style="width: 56px; height: 56px; background: #fff7ed; color: #f97316; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; font-size: 1.5rem;">
+                    <div class="confirm-icon"
+                        style="width: 56px; height: 56px; background: #fff7ed; color: #f97316; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; font-size: 1.5rem;">
                         <i class="fas fa-exclamation-triangle"></i>
                     </div>
-                    <p id="confirmModalMessage" style="margin-bottom: 28px; font-size: 0.95rem; color: var(--text-muted); line-height: 1.6;"></p>
+                    <p id="confirmModalMessage"
+                        style="margin-bottom: 28px; font-size: 0.95rem; color: var(--text-muted); line-height: 1.6;">
+                    </p>
                     <div style="display: flex; gap: 12px; justify-content: center;">
-                        <button class="btn" onclick="toggleModal('confirmModal')" style="flex: 1; background: #fff; color: #374151; border: 1px solid #d1d5db; justify-content: center;">
+                        <button class="btn" onclick="toggleModal('confirmModal')"
+                            style="flex: 1; background: #fff; color: #374151; border: 1px solid #d1d5db; justify-content: center;">
                             Ακύρωση
                         </button>
-                        <button id="confirmModalActionBtn" class="btn btn-blue" style="flex: 1; justify-content: center; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);">
+                        <button id="confirmModalActionBtn" class="btn btn-blue"
+                            style="flex: 1; justify-content: center; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);">
                             Επιβεβαίωση
                         </button>
                     </div>
@@ -809,10 +1001,18 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
     <!-- Print styles for PDF export -->
     <style>
         @media print {
-            @page { size: A4; margin: 10mm; }
+            @page {
+                size: A4;
+                margin: 10mm;
+            }
 
             /* Hide everything */
-            body, body * { visibility: hidden !important; margin: 0 !important; padding: 0 !important; }
+            body,
+            body * {
+                visibility: hidden !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
 
             /* Show only report content */
             #reportModal,
@@ -820,7 +1020,9 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
             #reportPrintArea,
             #reportPrintArea *,
             #reportContent,
-            #reportContent * { visibility: visible !important; }
+            #reportContent * {
+                visibility: visible !important;
+            }
 
             /* Reset modal to fill page */
             #reportModal {
@@ -831,7 +1033,11 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                 overflow: visible !important;
                 width: 100% !important;
             }
-            #reportModal .modal-overlay { background: none !important; }
+
+            #reportModal .modal-overlay {
+                background: none !important;
+            }
+
             #reportModal .modal-container {
                 position: relative !important;
                 width: 100% !important;
@@ -843,30 +1049,65 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                 margin: 0 !important;
                 padding: 0 !important;
             }
-            #reportModal .modal-header { display: none !important; }
-            #reportModal .modal-body { padding: 5mm 0 !important; width: 100% !important; }
-            #reportContent { width: 100% !important; }
+
+            #reportModal .modal-header {
+                display: none !important;
+            }
+
+            #reportModal .modal-body {
+                padding: 5mm 0 !important;
+                width: 100% !important;
+            }
+
+            #reportContent {
+                width: 100% !important;
+            }
 
             /* Grids - scale down for A4 */
-            .report-cards-row { display: grid !important; gap: 8px !important; width: 100% !important; margin-bottom: 15px !important; }
-            .report-cards-6 { grid-template-columns: repeat(3, 1fr) !important; }
-            .report-cards-4 { grid-template-columns: repeat(4, 1fr) !important; }
-            .report-cards-3 { grid-template-columns: repeat(3, 1fr) !important; }
-            .report-cards-2 { grid-template-columns: repeat(2, 1fr) !important; }
+            .report-cards-row {
+                display: grid !important;
+                gap: 8px !important;
+                width: 100% !important;
+                margin-bottom: 15px !important;
+            }
+
+            .report-cards-6 {
+                grid-template-columns: repeat(3, 1fr) !important;
+            }
+
+            .report-cards-4 {
+                grid-template-columns: repeat(4, 1fr) !important;
+            }
+
+            .report-cards-3 {
+                grid-template-columns: repeat(3, 1fr) !important;
+            }
+
+            .report-cards-2 {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
 
             .report-info-card {
                 background: #f9fafb !important;
                 border: 1px solid #ddd !important;
                 padding: 6px 8px !important;
             }
-            .report-card-label { font-size: 7pt !important; }
-            .report-card-value { font-size: 9pt !important; }
+
+            .report-card-label {
+                font-size: 7pt !important;
+            }
+
+            .report-card-value {
+                font-size: 9pt !important;
+            }
+
             /* Page break rules — keep sections together */
             .report-section {
                 margin-bottom: 25px !important;
                 page-break-inside: auto;
                 break-inside: auto;
             }
+
             .report-section-title {
                 font-size: 10pt !important;
                 margin-bottom: 8px !important;
@@ -885,27 +1126,42 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                 page-break-inside: avoid;
                 break-inside: avoid;
             }
-            #reportModal canvas { width: 100% !important; height: auto !important; }
+
+            #reportModal canvas {
+                width: 100% !important;
+                height: auto !important;
+            }
 
             /* Tables — full width, compact, smart page breaks */
             .report-table-wrap {
                 overflow: visible !important;
                 width: 100% !important;
             }
+
             .data-table {
                 width: 100% !important;
                 font-size: 8pt !important;
                 page-break-inside: auto;
             }
+
             .data-table thead {
                 display: table-header-group;
             }
-            .data-table th { padding: 4px 6px !important; font-size: 7.5pt !important; }
-            .data-table td { padding: 4px 6px !important; }
+
+            .data-table th {
+                padding: 4px 6px !important;
+                font-size: 7.5pt !important;
+            }
+
+            .data-table td {
+                padding: 4px 6px !important;
+            }
+
             .data-table tr {
                 page-break-inside: avoid;
                 break-inside: avoid;
             }
+
             .data-table tfoot {
                 page-break-inside: avoid;
                 break-inside: avoid;
@@ -918,10 +1174,25 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
             }
 
             /* KPI cards in finance section */
-            .kpi-grid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 6px !important; page-break-inside: avoid; break-inside: avoid; }
-            .kpi-card { padding: 8px 10px !important; }
-            .kpi-card span { font-size: 7pt !important; }
-            .kpi-card h3 { font-size: 10pt !important; }
+            .kpi-grid {
+                display: grid !important;
+                grid-template-columns: repeat(4, 1fr) !important;
+                gap: 6px !important;
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            .kpi-card {
+                padding: 8px 10px !important;
+            }
+
+            .kpi-card span {
+                font-size: 7pt !important;
+            }
+
+            .kpi-card h3 {
+                font-size: 10pt !important;
+            }
 
             /* Official Header Print */
             .report-official-header {
@@ -932,16 +1203,49 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                 padding-bottom: 10pt !important;
                 margin-bottom: 15pt !important;
             }
-            .roh-logo { height: 45pt !important; }
-            .roh-company h3 { font-size: 14pt !important; color: #2563eb !important; margin: 0 !important; }
-            .roh-company p { font-size: 8pt !important; margin: 0 !important; }
-            .roh-info-item { margin-bottom: 2pt !important; }
-            .roh-label { font-size: 7pt !important; width: 60pt !important; display: inline-block !important; }
-            .roh-value { font-size: 9pt !important; }
+
+            .roh-logo {
+                height: 45pt !important;
+            }
+
+            .roh-company h3 {
+                font-size: 14pt !important;
+                color: #2563eb !important;
+                margin: 0 !important;
+            }
+
+            .roh-company p {
+                font-size: 8pt !important;
+                margin: 0 !important;
+            }
+
+            .roh-info-item {
+                margin-bottom: 2pt !important;
+            }
+
+            .roh-label {
+                font-size: 7pt !important;
+                width: 60pt !important;
+                display: inline-block !important;
+            }
+
+            .roh-value {
+                font-size: 9pt !important;
+            }
 
             /* Hide non-report UI */
-            .main-header, .main-tab-bar, .flash-banner, #panel-users, #panel-projects,
-            #confirmModal, #projectModal, #modalCreateUser, #modalEditUser, #modalDeleteUser { display: none !important; }
+            .main-header,
+            .main-tab-bar,
+            .flash-banner,
+            #panel-users,
+            #panel-projects,
+            #confirmModal,
+            #projectModal,
+            #modalCreateUser,
+            #modalEditUser,
+            #modalDeleteUser {
+                display: none !important;
+            }
         }
 
         /* Section Titles Style */
@@ -967,14 +1271,56 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
             padding-bottom: 20px;
             margin-bottom: 25px;
         }
-        .roh-left { display: flex; align-items: center; gap: 15px; }
-        .roh-logo { height: 60px; object-fit: contain; }
-        .roh-company h3 { margin: 0; color: var(--primary); font-size: 1.4rem; letter-spacing: 0.5px; }
-        .roh-company p { margin: 0; font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
-        .roh-right { text-align: right; }
-        .roh-info-item { margin-bottom: 4px; display: flex; justify-content: flex-end; align-items: baseline; gap: 8px; }
-        .roh-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); opacity: 0.8; }
-        .roh-value { font-size: 0.95rem; color: var(--text-main); font-weight: 600; }
+
+        .roh-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .roh-logo {
+            height: 60px;
+            object-fit: contain;
+        }
+
+        .roh-company h3 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 1.4rem;
+            letter-spacing: 0.5px;
+        }
+
+        .roh-company p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .roh-right {
+            text-align: right;
+        }
+
+        .roh-info-item {
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .roh-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            opacity: 0.8;
+        }
+
+        .roh-value {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            font-weight: 600;
+        }
     </style>
     <!-- Admin JS -->
     <script src="JS/admin.js"></script>

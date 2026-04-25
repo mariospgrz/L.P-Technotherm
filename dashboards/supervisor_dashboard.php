@@ -150,12 +150,14 @@ if ($resW) {
 if (!function_exists('fmtClockTime')) {
     function fmtClockTime(string $raw): string
     {
-        if ($raw === '') return '—';
+        if ($raw === '')
+            return '—';
         $timePart = str_contains($raw, ' ') ? explode(' ', $raw, 2)[1] : $raw;
         $parts = explode(':', $timePart);
-        if (count($parts) < 2 || !is_numeric($parts[0])) return '—';
-        $h   = (int) $parts[0];
-        $m   = $parts[1];
+        if (count($parts) < 2 || !is_numeric($parts[0]))
+            return '—';
+        $h = (int) $parts[0];
+        $m = $parts[1];
         $lbl = $h < 12 ? 'π.μ.' : 'μ.μ.';
         $h24 = $h % 24;
         return sprintf('%d:%s %s', $h24, $m, $lbl);
@@ -165,12 +167,12 @@ if (!function_exists('fmtClockTime')) {
 // ── JSON for JS ───────────────────────────────────────────────────────────────
 $js_projects = json_encode($projects, JSON_UNESCAPED_UNICODE);
 $js_invoices = json_encode(array_map(fn($i) => [
-    'id'          => (int) $i['id'],
+    'id' => (int) $i['id'],
     'description' => $i['description'],
-    'project'     => $i['project'],
-    'amount'      => (float) $i['amount'],
-    'date'        => $i['date'],
-    'photo_url'   => $i['photo_url'] ?? null,
+    'project' => $i['project'],
+    'amount' => (float) $i['amount'],
+    'date' => $i['date'],
+    'photo_url' => $i['photo_url'] ?? null,
 ], $invoices), JSON_UNESCAPED_UNICODE);
 $js_helpers = json_encode($helpers, JSON_UNESCAPED_UNICODE);
 $js_overtime = json_encode(array_map(fn($o) => [
@@ -202,8 +204,15 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
     <link rel="stylesheet" href="CSS/responsive.css">
     <style>
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px) }
-            to   { opacity: 1; transform: none }
+            from {
+                opacity: 0;
+                transform: translateY(6px)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
         }
 
         /* ===== Invoice photo thumbnail ===== */
@@ -217,7 +226,11 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
             flex-shrink: 0;
             transition: opacity 0.15s;
         }
-        .inv-thumb:hover { opacity: 0.8; }
+
+        .inv-thumb:hover {
+            opacity: 0.8;
+        }
+
         .btn-inv-view-sup {
             padding: 5px 10px;
             background: #f0fdf4;
@@ -231,31 +244,39 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
             transition: all 0.15s;
             white-space: nowrap;
         }
-        .btn-inv-view-sup:hover { background: #dcfce7; }
+
+        .btn-inv-view-sup:hover {
+            background: #dcfce7;
+        }
 
         /* ===== Image Viewer Modal ===== */
         .sup-img-viewer {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.88);
+            background: rgba(0, 0, 0, 0.88);
             z-index: 9999;
             align-items: center;
             justify-content: center;
         }
-        .sup-img-viewer.show { display: flex; }
+
+        .sup-img-viewer.show {
+            display: flex;
+        }
+
         .sup-img-viewer img {
             max-width: 90vw;
             max-height: 85vh;
             border-radius: 10px;
             object-fit: contain;
-            box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
         }
+
         .sup-img-close {
             position: absolute;
             top: 16px;
             right: 20px;
-            background: rgba(255,255,255,0.15);
+            background: rgba(255, 255, 255, 0.15);
             border: none;
             color: #fff;
             font-size: 1.5rem;
@@ -267,28 +288,36 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
             align-items: center;
             justify-content: center;
         }
-        .sup-img-close:hover { background: rgba(255,255,255,0.28); }
+
+        .sup-img-close:hover {
+            background: rgba(255, 255, 255, 0.28);
+        }
 
         /* ===== Edit Invoice Modal ===== */
         .sup-edit-modal {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.45);
+            background: rgba(0, 0, 0, 0.45);
             z-index: 8888;
             align-items: center;
             justify-content: center;
         }
-        .sup-edit-modal.show { display: flex; }
+
+        .sup-edit-modal.show {
+            display: flex;
+        }
+
         .sup-edit-box {
             background: #fff;
             border-radius: 12px;
             padding: 26px 26px 22px;
             width: 100%;
             max-width: 400px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
             position: relative;
         }
+
         .sup-edit-box h3 {
             font-size: 1rem;
             font-weight: 700;
@@ -297,6 +326,7 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
             align-items: center;
             gap: 8px;
         }
+
         .sup-edit-close {
             position: absolute;
             top: 12px;
@@ -307,7 +337,11 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
             color: #6b7280;
             cursor: pointer;
         }
-        .sup-edit-field { margin-bottom: 14px; }
+
+        .sup-edit-field {
+            margin-bottom: 14px;
+        }
+
         .sup-edit-field label {
             display: block;
             font-size: 0.72rem;
@@ -317,6 +351,7 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
             letter-spacing: 0.05em;
             margin-bottom: 5px;
         }
+
         .sup-edit-field input {
             width: 100%;
             padding: 9px 11px;
@@ -327,10 +362,12 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
             outline: none;
             box-sizing: border-box;
         }
+
         .sup-edit-field input:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
+
         .sup-edit-actions {
             display: flex;
             gap: 10px;
@@ -508,7 +545,7 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                             <div class="work-list" id="sup-work-list-hours">
                                 <?php foreach ($work_logs as $wl): ?>
                                     <?php
-                                    $ci = fmtClockTime($wl['clock_in']  ?? '');
+                                    $ci = fmtClockTime($wl['clock_in'] ?? '');
                                     $co = fmtClockTime($wl['clock_out'] ?? '');
                                     ?>
                                     <div class="work-item">
@@ -605,14 +642,14 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                     </div>
                 <?php else: ?>
                     <?php foreach ($invoices as $inv): ?>
-                        <?php 
-                            $rawUrl = $inv['photo_url'] ?? '';
-                            $finalUrl = str_starts_with($rawUrl, 'http') ? $rawUrl : '../' . ltrim($rawUrl, '/'); 
+                        <?php
+                        $rawUrl = $inv['photo_url'] ?? '';
+                        $finalUrl = str_starts_with($rawUrl, 'http') ? $rawUrl : '../' . ltrim($rawUrl, '/');
                         ?>
                         <div class="invoice-item" id="inv-<?= $inv['id'] ?>">
                             <?php if (!empty($rawUrl) && preg_match('/\.(jpe?g|png|webp|gif)$/i', $rawUrl)): ?>
                                 <img src="<?= htmlspecialchars($finalUrl) ?>" class="inv-thumb"
-                                     onclick="supOpenImage('<?= htmlspecialchars($finalUrl) ?>')" title="Προβολή">
+                                    onclick="supOpenImage('<?= htmlspecialchars($finalUrl) ?>')" title="Προβολή">
                             <?php else: ?>
                                 <div class="invoice-icon-box"><i class="fas fa-file-alt"></i></div>
                             <?php endif; ?>
@@ -626,7 +663,8 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                             </div>
                             <div class="invoice-actions">
                                 <?php if (!empty($rawUrl)): ?>
-                                    <button class="btn-inv-view-sup" onclick="supOpenImage('<?= htmlspecialchars($finalUrl) ?>')" title="Εικόνα">
+                                    <button class="btn-inv-view-sup" onclick="supOpenImage('<?= htmlspecialchars($finalUrl) ?>')"
+                                        title="Εικόνα">
                                         <i class="fas fa-eye"></i>
                                     </button>
                                 <?php endif; ?>
@@ -656,7 +694,7 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                         <div class="work-list" id="sup-work-list-mine">
                             <?php foreach ($work_logs as $wl): ?>
                                 <?php
-                                $ci = fmtClockTime($wl['clock_in']  ?? '');
+                                $ci = fmtClockTime($wl['clock_in'] ?? '');
                                 $co = fmtClockTime($wl['clock_out'] ?? '');
                                 ?>
                                 <div class="work-item">
@@ -728,13 +766,16 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                                 <div class="dropdown-body" id="helpers-dropdown-body">
                                     <div class="dropdown-search">
                                         <i class="fas fa-search"></i>
-                                        <input type="text" id="helper-search" placeholder="Αναζήτηση βοηθού..." oninput="filterHelpers()">
+                                        <input type="text" id="helper-search" placeholder="Αναζήτηση βοηθού..."
+                                            oninput="filterHelpers()">
                                     </div>
                                     <div class="helpers-multi-select" style="max-height: 300px; overflow-y: auto;">
                                         <?php foreach ($helpers as $h): ?>
-                                            <div class="helper-card" data-name="<?= htmlspecialchars(mb_strtolower($h['name'], 'UTF-8')) ?>">
+                                            <div class="helper-card"
+                                                data-name="<?= htmlspecialchars(mb_strtolower($h['name'], 'UTF-8')) ?>">
                                                 <input type="checkbox" id="h-<?= $h['id'] ?>" name="helper_ids[]"
-                                                    value="<?= $h['id'] ?>" class="helper-checkbox" onchange="updateSelectedCount()">
+                                                    value="<?= $h['id'] ?>" class="helper-checkbox"
+                                                    onchange="updateSelectedCount()">
                                                 <div class="helper-card-inner">
                                                     <div class="helper-avatar">
                                                         <i class="fas fa-user-plus icon-unselected"></i>
@@ -862,7 +903,8 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                                     </div>
                                 </div>
                                 <span class="badge <?= htmlspecialchars($ot['status']) ?>">
-                                    <i class="fas fa-<?= $ot['status'] === 'pending' ? 'clock' : ($ot['status'] === 'approved' ? 'check' : 'times') ?>"></i>
+                                    <i
+                                        class="fas fa-<?= $ot['status'] === 'pending' ? 'clock' : ($ot['status'] === 'approved' ? 'check' : 'times') ?>"></i>
                                     <?= htmlspecialchars($status_labels[$ot['status']] ?? $ot['status']) ?>
                                 </span>
                             </div>
@@ -895,7 +937,7 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                         <div class="work-list" id="sup-work-list-overtime">
                             <?php foreach (array_slice($work_logs, 0, 5) as $wl): ?>
                                 <?php
-                                $ci = fmtClockTime($wl['clock_in']  ?? '');
+                                $ci = fmtClockTime($wl['clock_in'] ?? '');
                                 $co = fmtClockTime($wl['clock_out'] ?? '');
                                 ?>
                                 <div class="work-item">
@@ -924,7 +966,9 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
         <div class="sup-edit-box">
             <button class="sup-edit-close" onclick="supCloseEditModal()"><i class="fas fa-times"></i></button>
             <h3><i class="fas fa-file-invoice" style="color:var(--primary);"></i> Επεξεργασία Τιμολογίου</h3>
-            <div id="sup-edit-msg" style="display:none;padding:8px 12px;border-radius:6px;font-size:0.82rem;font-weight:500;margin-bottom:12px;"></div>
+            <div id="sup-edit-msg"
+                style="display:none;padding:8px 12px;border-radius:6px;font-size:0.82rem;font-weight:500;margin-bottom:12px;">
+            </div>
             <form id="supEditInvForm" onsubmit="supSubmitEditInvoice(event)" novalidate>
                 <input type="hidden" id="supEditInvId">
                 <div class="sup-edit-field">
@@ -937,7 +981,8 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                 </div>
                 <div class="sup-edit-actions">
                     <button type="button" class="btn btn-outline" onclick="supCloseEditModal()">Ακύρωση</button>
-                    <button type="submit" class="btn btn-primary" id="supEditInvBtn"><i class="fas fa-save"></i> Αποθήκευση</button>
+                    <button type="submit" class="btn btn-primary" id="supEditInvBtn"><i class="fas fa-save"></i>
+                        Αποθήκευση</button>
                 </div>
             </form>
         </div>
@@ -977,7 +1022,8 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                     </div>
                     <div class="form-group">
                         <label for="ot-date">Ημερομηνία (Σήμερα)</label>
-                        <input type="date" id="ot-date" name="request_date" required value="<?= date('Y-m-d') ?>" readonly style="background:var(--bg-page);cursor:not-allowed;">
+                        <input type="date" id="ot-date" name="request_date" required value="<?= date('Y-m-d') ?>"
+                            readonly style="background:var(--bg-page);cursor:not-allowed;">
                     </div>
                     <div class="form-group">
                         <label for="ot-reason">Αιτιολογία</label>
