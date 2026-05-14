@@ -3,13 +3,13 @@ require_once __DIR__ . '/../admin_session.php';
 require_once __DIR__ . '/../Database/Database.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: /dashboards/admin_dashboard.php');
+    header('Location: /L.P-Technotherm/dashboards/admin_dashboard.php');
     exit();
 }
 
 function redirectError(string $msg): void
 {
-    header('Location: /dashboards/admin_dashboard.php?error=' . urlencode($msg) . '&tab=users');
+    header('Location: /L.P-Technotherm/dashboards/admin_dashboard.php?error=' . urlencode($msg) . '&tab=users');
     exit();
 }
 
@@ -104,7 +104,7 @@ if (!$stmt->execute()) {
 }
 $stmt->close();
 
-header('Location: /dashboards/admin_dashboard.php?success=' . urlencode(
+header('Location: /L.P-Technotherm/dashboards/admin_dashboard.php?success=' . urlencode(
     'Ο χρήστης «' . $username . '» δημιουργήθηκε επιτυχώς!'
 ) . '&tab=users');
 exit();
