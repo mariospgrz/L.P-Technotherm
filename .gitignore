@@ -1,0 +1,22 @@
+# L.P Technotherm — .gitignore
+
+# ── Secrets / Config ──────────────────────────────────────────
+Backend/config.php
+.env
+*.env
+Backend/Notifications/vapid.json
+# ── Uploads (user content) ────────────────────────────────────
+uploads/
+
+# ── PHP / Composer ────────────────────────────────────────────
+vendor/
+composer.phar
+
+# ── OS files ──────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── IDE files ─────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp

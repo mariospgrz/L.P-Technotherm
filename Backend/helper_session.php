@@ -1,0 +1,48 @@
+<?php
+/**
+ * Backend/helper_session.php
+ * Include at the TOP of every helper-only PHP page.
+ */
+if (session_status() === PHP_SESSION_NONE) {
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path'     => '/',
+        'secure'   => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true,
+        'samesite' => 'Strict',
+    ]);
+    session_start();
+}
+
+$timeout = 600; // 10 minutes
+
+if (!isset($_SESSION['user_id'])) {
+    header('Location: /login/login.html');
+    exit();
+}
+
+if (
+    isset($_SESSION['LAST_ACTIVITY']) &&
+    (time() - $_SESSION['LAST_ACTIVITY'] > $timeout)
+) {
+    session_unset();
+    session_destroy();
+    header('Location: /login/login.html?error=' .
+        urlencode('Η συνεδρία σας έληξε. Παρακαλώ συνδεθείτε ξανά.'));
+    exit();
+}
+
+$_SESSION['LAST_ACTIVITY'] = time();
+
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'helper') {
+    session_unset();
+    session_destroy();
+    header('Location: /login/login.html?error=' .
+        urlencode('Δεν έχετε δικαίωμα πρόσβασης στην σελίδα βοηθού.'));
+    exit();
+}
+
+//CSRF token (generate once per session)
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
