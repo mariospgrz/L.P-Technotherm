@@ -1,10 +1,8 @@
 <?php
 /**
  * Backend/ProjectDetails/add_budget_adjustment.php
- * POST /Backend/ProjectDetails/add_budget_adjustment.php
- * Admin-only. Adds a (signed) budget adjustment and updates projects.budget.
- * POST fields: project_id, amount (μπορεί να είναι αρνητικό), description
  */
+require_once __DIR__ . '/../bootstrap.php';
 require_once __DIR__ . '/../admin_session.php';
 require_once __DIR__ . '/../Database/Database.php';
 
@@ -16,10 +14,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+require_csrf($_POST['csrf_token'] ?? '', true);
+
 $project_id  = (int) ($_POST['project_id'] ?? 0);
 $amount_raw  = trim($_POST['amount'] ?? '');
 $description = trim($_POST['description'] ?? '');
-$created_by  = (int) $_SESSION['user_id'];
 
 if (!$project_id) {
     echo json_encode(['success' => false, 'message' => 'Απαιτείται αναγνωριστικό έργου.']);
@@ -32,7 +31,6 @@ if (!is_numeric($amount_raw) || (float) $amount_raw == 0) {
 
 $amount = round((float) $amount_raw, 2);
 
-// Verify project exists
 $check = $conn->prepare('SELECT id FROM projects WHERE id = ? LIMIT 1');
 if (!$check) {
     echo json_encode(['success' => false, 'message' => 'Σφάλμα βάσης δεδομένων.']);
@@ -48,7 +46,6 @@ if ($check->num_rows === 0) {
 }
 $check->close();
 
-// Atomic: INSERT adjustment + UPDATE budget
 $conn->begin_transaction();
 
 $stmt = $conn->prepare(

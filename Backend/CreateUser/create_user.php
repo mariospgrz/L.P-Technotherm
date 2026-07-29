@@ -1,17 +1,19 @@
 <?php
+require_once __DIR__ . '/../bootstrap.php';
 require_once __DIR__ . '/../admin_session.php';
 require_once __DIR__ . '/../Database/Database.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: /L.P-Technotherm/dashboards/admin_dashboard.php');
-    exit();
+    redirect_to('dashboards/admin_dashboard.php');
 }
 
 function redirectError(string $msg): void
 {
-    header('Location: /L.P-Technotherm/dashboards/admin_dashboard.php?error=' . urlencode($msg) . '&tab=users');
-    exit();
+    redirect_to('dashboards/admin_dashboard.php?error=' . urlencode($msg) . '&tab=users');
 }
+
+require_csrf($_POST['csrf_token'] ?? '', false, 'dashboards/admin_dashboard.php?error=' .
+    urlencode('Άκυρο αίτημα (CSRF). Ανανεώστε τη σελίδα.') . '&tab=users');
 
 $username = trim($_POST['username'] ?? '');
 $password = $_POST['password'] ?? '';
@@ -59,7 +61,6 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 }
 if (strlen($password) < 8) {
     redirectError('Ο κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες.');
-
 }
 
 $stmt = $conn->prepare('SELECT id FROM users WHERE username = ? LIMIT 1');
@@ -104,7 +105,6 @@ if (!$stmt->execute()) {
 }
 $stmt->close();
 
-header('Location: /L.P-Technotherm/dashboards/admin_dashboard.php?success=' . urlencode(
+redirect_to('dashboards/admin_dashboard.php?success=' . urlencode(
     'Ο χρήστης «' . $username . '» δημιουργήθηκε επιτυχώς!'
 ) . '&tab=users');
-exit();

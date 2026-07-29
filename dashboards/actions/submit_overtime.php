@@ -1,15 +1,13 @@
 <?php
 /**
  * dashboards/actions/submit_overtime.php
- * Fix #2: Accept both supervisor AND helper roles.
- * Fix #5: Do not expose DB errors to client.
  */
+require_once __DIR__ . '/../../Backend/bootstrap.php';
 require_once __DIR__ . '/../../Backend/sessionvalidation.php';
 require_once __DIR__ . '/../../Backend/Database/Database.php';
 
 header('Content-Type: application/json');
 
-// ── Role check: only supervisor or helper may submit overtime ─────────────────
 $allowed_roles = ['supervisor', 'helper'];
 if (!in_array($_SESSION['role'] ?? '', $allowed_roles, true)) {
     http_response_code(403);
@@ -17,7 +15,6 @@ if (!in_array($_SESSION['role'] ?? '', $allowed_roles, true)) {
     exit;
 }
 
-// ── CSRF ─────────────────────────────────────────────────────────────────────
 if (!hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'] ?? '')) {
     http_response_code(403);
     echo json_encode(['success' => false, 'message' => 'Άκυρο αίτημα (CSRF).']);
@@ -35,9 +32,14 @@ if (!$project_id || $hours <= 0) {
     exit;
 }
 
-// Validate date format
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
     $date = date('Y-m-d');
+}
+
+if (($_SESSION['role'] ?? '') === 'helper' && !user_assigned_to_project($conn, $user_id, $project_id)) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'Δεν είστε ανατεθειμένος σε αυτό το έργο.']);
+    exit;
 }
 
 $stmt = $conn->prepare(

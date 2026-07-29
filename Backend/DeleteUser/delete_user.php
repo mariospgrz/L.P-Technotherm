@@ -1,17 +1,19 @@
 <?php
+require_once __DIR__ . '/../bootstrap.php';
 require_once __DIR__ . '/../admin_session.php';
 require_once __DIR__ . '/../Database/Database.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: /L.P-Technotherm/dashboards/admin_dashboard.php');
-    exit();
+    redirect_to('dashboards/admin_dashboard.php');
 }
 
 function redirectError(string $msg): void
 {
-    header('Location: /L.P-Technotherm/dashboards/admin_dashboard.php?error=' . urlencode($msg) . '&tab=users');
-    exit();
+    redirect_to('dashboards/admin_dashboard.php?error=' . urlencode($msg) . '&tab=users');
 }
+
+require_csrf($_POST['csrf_token'] ?? '', false, 'dashboards/admin_dashboard.php?error=' .
+    urlencode('Άκυρο αίτημα (CSRF). Ανανεώστε τη σελίδα.') . '&tab=users');
 
 if (!isset($_POST['confirm'])) {
     redirectError('Πρέπει να επιβεβαιώσετε τη διαγραφή.');
@@ -61,14 +63,12 @@ try {
     $stmt->execute();
     $stmt->close();
 } catch (mysqli_sql_exception $e) {
-    // Check if it's a foreign key constraint error (1451)
     if (strpos($e->getMessage(), 'foreign key constraint fails') !== false || $e->getCode() === 1451) {
         redirectError('Αδύνατη η διαγραφή! Ο χρήστης έχει καταγεγραμμένο ιστορικό (βάρδιες ή υπερωρίες). Η διαγραφή θα κατέστρεφε τα δεδομένα μισθοδοσίας και αναφορών έργων.');
     }
     redirectError('Αποτυχία διαγραφής: Σφάλμα βάσης δεδομένων.');
 }
 
-header('Location: /L.P-Technotherm/dashboards/admin_dashboard.php?success=' . urlencode(
+redirect_to('dashboards/admin_dashboard.php?success=' . urlencode(
     'Ο χρήστης «' . $target_username . '» διαγράφηκε επιτυχώς!'
 ) . '&tab=users');
-exit();

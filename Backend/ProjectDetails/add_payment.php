@@ -1,10 +1,8 @@
 <?php
 /**
  * Backend/ProjectDetails/add_payment.php
- * POST /Backend/ProjectDetails/add_payment.php
- * Admin-only. Records a payment for a project.
- * POST fields: project_id, invoice_number, amount
  */
+require_once __DIR__ . '/../bootstrap.php';
 require_once __DIR__ . '/../admin_session.php';
 require_once __DIR__ . '/../Database/Database.php';
 
@@ -15,6 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Μη επιτρεπτή μέθοδος.']);
     exit;
 }
+
+require_csrf($_POST['csrf_token'] ?? '', true);
 
 $project_id     = (int) ($_POST['project_id'] ?? 0);
 $invoice_number = trim($_POST['invoice_number'] ?? '');
@@ -35,7 +35,6 @@ if (!is_numeric($amount_raw) || (float) $amount_raw <= 0) {
 
 $amount = round((float) $amount_raw, 2);
 
-// Verify project exists
 $check = $conn->prepare('SELECT id FROM projects WHERE id = ? LIMIT 1');
 if (!$check) {
     echo json_encode(['success' => false, 'message' => 'Σφάλμα βάσης δεδομένων.']);

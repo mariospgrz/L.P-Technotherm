@@ -5,6 +5,10 @@ Backend/config.php
 .env
 *.env
 Backend/Notifications/vapid.json
+Backend/Notifications/subscriptions.json
+Backend/Notifications/warnings.json
+Backend/Passwordreset/pending_resets.json
+Backend/Passwordreset/used_tokens.json
 # ── Uploads (user content) ────────────────────────────────────
 uploads/
 
@@ -16,7 +20,5 @@ composer.phar
 .DS_Store
 Thumbs.db
 
-# ── IDE files ─────────────────────────────────────────────────
-.vscode/
-.idea/
-*.swp
+# ── Local tooling (portable PHP/MariaDB for smoke tests) ──────
+.tools/

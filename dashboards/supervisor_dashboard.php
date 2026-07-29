@@ -172,7 +172,7 @@ $js_invoices = json_encode(array_map(fn($i) => [
     'project' => $i['project'],
     'amount' => (float) $i['amount'],
     'date' => $i['date'],
-    'photo_url' => $i['photo_url'] ?? null,
+    'photo_url' => !empty($i['photo_url']) ? invoice_proxy_url((int) $i['id']) : null,
 ], $invoices), JSON_UNESCAPED_UNICODE);
 $js_helpers = json_encode($helpers, JSON_UNESCAPED_UNICODE);
 $js_overtime = json_encode(array_map(fn($o) => [
@@ -643,11 +643,12 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                 <?php else: ?>
                     <?php foreach ($invoices as $inv): ?>
                         <?php
-                        $rawUrl = $inv['photo_url'] ?? '';
-                        $finalUrl = str_starts_with($rawUrl, 'http') ? $rawUrl : '../' . ltrim($rawUrl, '/');
+                        $storedUrl = $inv['photo_url'] ?? '';
+                        $finalUrl = $storedUrl !== '' ? invoice_proxy_url((int) $inv['id']) : '';
+                        $isImage = $storedUrl !== '' && preg_match('/\.(jpe?g|png|webp|gif)$/i', $storedUrl);
                         ?>
                         <div class="invoice-item" id="inv-<?= $inv['id'] ?>">
-                            <?php if (!empty($rawUrl) && preg_match('/\.(jpe?g|png|webp|gif)$/i', $rawUrl)): ?>
+                            <?php if ($isImage): ?>
                                 <img src="<?= htmlspecialchars($finalUrl) ?>" class="inv-thumb"
                                     onclick="supOpenImage('<?= htmlspecialchars($finalUrl) ?>')" title="Προβολή">
                             <?php else: ?>
@@ -662,7 +663,7 @@ $js_work_logs = json_encode($work_logs, JSON_UNESCAPED_UNICODE);
                                 <small><?= date('Y-m-d', strtotime($inv['date'])) ?></small>
                             </div>
                             <div class="invoice-actions">
-                                <?php if (!empty($rawUrl)): ?>
+                                <?php if ($finalUrl !== ''): ?>
                                     <button class="btn-inv-view-sup" onclick="supOpenImage('<?= htmlspecialchars($finalUrl) ?>')"
                                         title="Εικόνα">
                                         <i class="fas fa-eye"></i>

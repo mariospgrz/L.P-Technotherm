@@ -1838,6 +1838,7 @@ if (!$project_id) {
 
             const fd = new FormData(form);
             fd.append('project_id', PROJECT_ID);
+            fd.append('csrf_token', getCsrf());
 
             try {
                 const res = await fetch('../Backend/ProjectDetails/add_payment.php', { method: 'POST', body: fd });
@@ -1866,6 +1867,7 @@ if (!$project_id) {
 
             const fd = new FormData(form);
             fd.append('project_id', PROJECT_ID);
+            fd.append('csrf_token', getCsrf());
 
             try {
                 const res = await fetch('../Backend/ProjectDetails/add_budget_adjustment.php', { method: 'POST', body: fd });
@@ -1956,7 +1958,7 @@ if (!$project_id) {
                 const res = await fetch('../Backend/ProjectDetails/delete_budget_adjustment.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: id })
+                    body: JSON.stringify({ id: id, csrf_token: getCsrf() })
                 });
                 const data = await res.json();
                 if (data.success) {

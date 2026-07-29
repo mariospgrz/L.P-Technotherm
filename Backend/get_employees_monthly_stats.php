@@ -86,5 +86,6 @@ try {
     echo json_encode(['success' => false, 'message' => 'Invalid action or parameters.']);
 
 } catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    error_log('get_employees_monthly_stats: ' . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'Σφάλμα βάσης δεδομένων.']);
 }

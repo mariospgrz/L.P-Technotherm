@@ -176,6 +176,9 @@ $stmt->execute();
 $res = $stmt->get_result();
 $invoices = [];
 while ($row = $res->fetch_assoc()) {
+    $row['id'] = (int) $row['id'];
+    $stored = $row['photo_url'] ?? '';
+    $row['photo_url'] = $stored !== '' ? invoice_proxy_url($row['id']) : null;
     $invoices[] = $row;
 }
 $stmt->close();

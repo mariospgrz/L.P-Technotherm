@@ -1,10 +1,11 @@
 <?php
 /**
  * dashboards/actions/admin_delete_invoice.php
- * Admin-only action to delete any invoice.
  */
+require_once __DIR__ . '/../../Backend/bootstrap.php';
 require_once __DIR__ . '/../../Backend/admin_session.php';
 require_once __DIR__ . '/../../Backend/Database/Database.php';
+require_once __DIR__ . '/../../Backend/S3Helper.php';
 
 header('Content-Type: application/json');
 
@@ -23,10 +24,22 @@ if (!$id) {
     exit;
 }
 
+$sel = $conn->prepare('SELECT photo_url FROM invoices WHERE id = ? LIMIT 1');
+$sel->bind_param('i', $id);
+$sel->execute();
+$row = $sel->get_result()->fetch_assoc();
+$sel->close();
+
+if (!$row) {
+    echo json_encode(['success' => false, 'message' => 'Το τιμολόγιο δεν βρέθηκε ή δεν διαγράφηκε.']);
+    exit;
+}
+
 $stmt = $conn->prepare('DELETE FROM invoices WHERE id = ?');
 $stmt->bind_param('i', $id);
 
 if ($stmt->execute() && $stmt->affected_rows > 0) {
+    s3_delete_by_photo_url($row['photo_url'] ?? null);
     echo json_encode(['success' => true]);
 } else {
     echo json_encode(['success' => false, 'message' => 'Το τιμολόγιο δεν βρέθηκε ή δεν διαγράφηκε.']);

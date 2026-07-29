@@ -1,6 +1,10 @@
 <?php
+require_once __DIR__ . '/../bootstrap.php';
+require_cron_access();
+
 require __DIR__ . '/../../vendor/autoload.php';
 require_once __DIR__ . '/../Database/Database.php';
+require_once __DIR__ . '/vapid_keys.php';
 
 use Minishlink\WebPush\WebPush;
 use Minishlink\WebPush\Subscription;
@@ -8,11 +12,13 @@ use Minishlink\WebPush\Subscription;
 $subsFile = __DIR__ . '/subscriptions.json';
 $warningsFile = __DIR__ . '/warnings.json';
 
-// Hardcoded VAPID keys to prevent encoding/BOM issues on Windows
-$vapid = [
-    'publicKey' => 'BBP41vPUp4vGZA0bRmje_Z2tvby4zutgpaaK4sqCKgZxdMGWYwPrcP_mJirhhwtBx4JmrpRo4d-9svg9DGEpWD0',
-    'privateKey' => 'NWMcg8BSqiuSh8POP8GZHOt5VzJgRNNbhddprxe0KKU'
-];
+try {
+    $vapid = notification_vapid_keys();
+} catch (Throwable $e) {
+    fwrite(STDERR, $e->getMessage() . "\n");
+    exit(1);
+}
+
 $subscriptions = file_exists($subsFile) ? json_decode(file_get_contents($subsFile), true) : [];
 $warnings = file_exists($warningsFile) ? json_decode(file_get_contents($warningsFile), true) : [];
 
@@ -29,7 +35,6 @@ $auth = [
 ];
 $webPush = new WebPush($auth);
 
-// Set up the thresholds in minutes
 $thresholds = [
     240 => [
         'title' => 'Ενημέρωση: 4 Ώρες Εργασίας',
@@ -41,7 +46,6 @@ $thresholds = [
     ]
 ];
 
-// Fetch open timer entries that are >= 240 minutes (4 hours)
 $query = "SELECT te.id, te.user_id, te.clock_in, p.name as project_name, 
                  TIMESTAMPDIFF(MINUTE, te.clock_in, NOW()) as elapsed
           FROM time_entries te
@@ -60,47 +64,42 @@ while ($row = $res->fetch_assoc()) {
     $entry_id = $row['id'];
     $user_id = $row['user_id'];
     $elapsed = (int)$row['elapsed'];
-    
-    // Convert old string format to array format for backward compatibility
+
     if (isset($warnings[$entry_id]) && !is_array($warnings[$entry_id])) {
         $warnings[$entry_id] = [ 450 => $warnings[$entry_id] ];
     }
-    
+
     if (!isset($warnings[$entry_id])) {
         $warnings[$entry_id] = [];
     }
-    
-    // Check which threshold applies
+
     foreach ($thresholds as $minutes => $msgData) {
         if ($elapsed >= $minutes) {
-            // Did we already warn for this specific threshold?
             if (!empty($warnings[$entry_id][$minutes])) {
-                continue; // Already warned for this threshold
+                continue;
             }
-            
-            // Do we have subscriptions?
+
             if (empty($subscriptions[$user_id])) {
                 continue;
             }
-            
+
             $payload = json_encode([
                 'title' => $msgData['title'],
                 'body' => str_replace('%PROJECT%', $row['project_name'], $msgData['body']),
                 'icon' => '/frontend/images/images.jpg',
                 'url' => '/'
             ]);
-            
+
             $success_for_user = false;
             foreach ($subscriptions[$user_id] as $subData) {
-                // Ensure array structure is valid
                 if (empty($subData['endpoint'])) continue;
-                
+
                 $subscription = Subscription::create([
                     'endpoint' => $subData['endpoint'],
                     'publicKey' => $subData['keys']['p256dh'] ?? '',
                     'authToken' => $subData['keys']['auth'] ?? '',
                 ]);
-                
+
                 $report = $webPush->sendOneNotification($subscription, $payload);
                 if ($report->isSuccess()) {
                     $success_for_user = true;
@@ -108,7 +107,7 @@ while ($row = $res->fetch_assoc()) {
                     echo "Push failed for endpoint {$subData['endpoint']}: " . $report->getReason() . "\n";
                 }
             }
-            
+
             if ($success_for_user) {
                 $warnings[$entry_id][$minutes] = date('Y-m-d H:i:s');
                 $sent_count++;
@@ -117,5 +116,14 @@ while ($row = $res->fetch_assoc()) {
     }
 }
 
-file_put_contents($warningsFile, json_encode($warnings, JSON_PRETTY_PRINT));
+$fp = fopen($warningsFile, 'c+');
+if ($fp) {
+    flock($fp, LOCK_EX);
+    ftruncate($fp, 0);
+    fwrite($fp, json_encode($warnings, JSON_PRETTY_PRINT));
+    fflush($fp);
+    flock($fp, LOCK_UN);
+    fclose($fp);
+}
+
 echo "Finished. Sent $sent_count warnings.\n";

@@ -109,6 +109,8 @@ if ($inv_res) {
     while ($row = $inv_res->fetch_assoc()) {
         $row['id'] = (int) $row['id'];
         $row['amount'] = (float) $row['amount'];
+        $stored = $row['photo_url'] ?? '';
+        $row['photo_url'] = $stored !== '' ? invoice_proxy_url($row['id']) : null;
         $all_invoices[] = $row;
     }
 }
@@ -549,6 +551,7 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                 </div>
                 <div class="modal-body" style="padding: 20px;">
                     <form class="panel-form" action="../Backend/CreateUser/create_user.php" method="POST">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="cu_username">Username *</label>
@@ -558,7 +561,7 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                             <div class="form-group">
                                 <label for="cu_password">Κωδικός * (min. 8)</label>
                                 <input type="password" id="cu_password" name="password"
-                                    placeholder="Τουλάχιστον 8 χαρακτήρες" minlength="6" required>
+                                    placeholder="Τουλάχιστον 8 χαρακτήρες" minlength="8" required>
                             </div>
                         </div>
                         <div class="form-group">
@@ -612,6 +615,7 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                 </div>
                 <div class="modal-body" style="padding: 20px;">
                     <form class="panel-form" action="../Backend/EditUser/edit_user.php" method="POST">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
                         <div class="form-group">
                             <label for="eu_user_select">Επιλογή Χρήστη *</label>
                             <select id="eu_user_select" name="user_id" required onchange="populateEditForm(this.value)">
@@ -671,6 +675,7 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                 </div>
                 <div class="modal-body" style="padding: 20px;">
                     <form class="panel-form" action="../Backend/DeleteUser/delete_user.php" method="POST">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
                         <div class="form-group">
                             <label for="du_username">Χρήστης προς διαγραφή *</label>
                             <select id="du_username" name="username" required>
@@ -732,6 +737,7 @@ $invoices_json = json_encode($all_invoices, JSON_UNESCAPED_UNICODE);
                     </div>
                     <form id="createProjectForm" action="../Backend/CreateProject/create_project.php" method="POST"
                         onsubmit="return validateProjectForm()" novalidate>
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
                         <div class="panel-form" style="margin-bottom:0;">
                             <div class="form-group">
                                 <label for="proj_name">Όνομα Έργου <span style="color:var(--danger);">*</span></label>

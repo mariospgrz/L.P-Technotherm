@@ -1,16 +1,21 @@
 <?php
+require_once __DIR__ . '/../bootstrap.php';
+require_cron_access();
+
 require __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__ . '/vapid_keys.php';
 
 use Minishlink\WebPush\WebPush;
 use Minishlink\WebPush\Subscription;
 
 $subsFile = __DIR__ . '/subscriptions.json';
 
-// Hardcoded VAPID keys
-$vapid = [
-    'publicKey' => 'BBP41vPUp4vGZA0bRmje_Z2tvby4zutgpaaK4sqCKgZxdMGWYwPrcP_mJirhhwtBx4JmrpRo4d-9svg9DGEpWD0',
-    'privateKey' => 'NWMcg8BSqiuSh8POP8GZHOt5VzJgRNNbhddprxe0KKU'
-];
+try {
+    $vapid = notification_vapid_keys();
+} catch (Throwable $e) {
+    fwrite(STDERR, $e->getMessage() . "\n");
+    exit(1);
+}
 
 if (!file_exists($subsFile)) {
     die("No subscriptions file found.\n");
@@ -40,16 +45,16 @@ $payload = json_encode([
 $count = 0;
 foreach ($subscriptions as $userId => $userSubs) {
     if (!is_array($userSubs)) continue;
-    
+
     foreach ($userSubs as $subData) {
         if (empty($subData['endpoint'])) continue;
-        
+
         $subscription = Subscription::create([
             'endpoint' => $subData['endpoint'],
             'publicKey' => $subData['keys']['p256dh'] ?? '',
             'authToken' => $subData['keys']['auth'] ?? '',
         ]);
-        
+
         $report = $webPush->sendOneNotification($subscription, $payload);
         if ($report->isSuccess()) {
             echo "Success! Sent push notification to User ID {$userId}.\n";

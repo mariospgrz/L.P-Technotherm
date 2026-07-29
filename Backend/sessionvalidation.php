@@ -2,10 +2,9 @@
 /**
  * Backend/sessionvalidation.php
  * Generic session guard (any authenticated role).
- * Fix #8: Check session_status() before session_start().
- * Fix #7: Secure cookie flags.
- * Fix #4: CSRF token generation.
  */
+require_once __DIR__ . '/bootstrap.php';
+
 if (session_status() === PHP_SESSION_NONE) {
     session_set_cookie_params([
         'lifetime' => 0,
@@ -18,8 +17,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (!isset($_SESSION['user_id'])) {
-    header('Location: /login/login.html');
-    exit();
+    redirect_to('login/login.html');
 }
 
 $timeout = 600;
@@ -30,14 +28,12 @@ if (
 ) {
     session_unset();
     session_destroy();
-    header('Location: /login/login.html?error=' .
+    redirect_to('login/login.html?error=' .
         urlencode('Η συνεδρία σας έληξε. Παρακαλώ συνδεθείτε ξανά.'));
-    exit();
 }
 
 $_SESSION['LAST_ACTIVITY'] = time();
 
-// ── CSRF token (generate once per session) ────────────────────────────────────
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }

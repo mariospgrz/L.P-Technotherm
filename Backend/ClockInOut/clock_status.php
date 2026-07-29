@@ -19,7 +19,16 @@
 
 header('Content-Type: application/json; charset=utf-8');
 
-if (session_status() === PHP_SESSION_NONE) session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true,
+        'samesite' => 'Strict',
+    ]);
+    session_start();
+}
 
 if (empty($_SESSION['user_id'])) {
     http_response_code(401);
@@ -68,10 +77,10 @@ $entry_id      = (int) $row['id'];
 $elapsed_secs  = (int) $row['elapsed_seconds'];
 $limit_8h_secs = 8 * 3600;   // 28800 seconds
 
-// ── 8-hour limit: auto clock-out using MySQL NOW() ────────────────────────────
+// ── 8-hour limit: clock_out = clock_in + 8h (consistent with Database.php cron) ─
 if ($elapsed_secs >= $limit_8h_secs) {
     $upd = $conn->prepare(
-        'UPDATE time_entries SET clock_out = NOW()
+        'UPDATE time_entries SET clock_out = DATE_ADD(clock_in, INTERVAL 8 HOUR)
           WHERE id = ? AND clock_out IS NULL'
     );
     $upd->bind_param('i', $entry_id);

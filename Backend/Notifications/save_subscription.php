@@ -38,5 +38,5 @@ $subscriptions[$user_id][] = [
     'keys' => $data['keys'] ?? null
 ];
 
-file_put_contents($subsFile, json_encode($subscriptions, JSON_PRETTY_PRINT));
+file_put_contents($subsFile, json_encode($subscriptions, JSON_PRETTY_PRINT), LOCK_EX);
 echo json_encode(['success' => true]);

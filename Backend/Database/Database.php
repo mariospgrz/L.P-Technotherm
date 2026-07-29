@@ -1,45 +1,44 @@
 <?php
 // Backend/Database/Database.php
 
-// Attempt to load configuration
+require_once __DIR__ . '/../bootstrap.php';
+
 $configFile = __DIR__ . '/../config.php';
 if (!file_exists($configFile)) {
+    http_response_code(500);
     die(json_encode(["error" => "Configuration file missing. Please copy config.example.php to config.php and configure it."]));
 }
 
-$config = require $configFile;
+$config = app_config();
+$GLOBALS['app_config'] = $config;
 
 $servername = $config['db_host'] ?? 'localhost';
 $username = $config['db_user'] ?? 'root';
 $password = $config['db_pass'] ?? '';
-$dbname = $config['db_name'] ?? 'l.p technotherm';
+$dbname = $config['db_name'] ?? 'lp_technotherm';
+$dbport = (int) ($config['db_port'] ?? 3306);
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+$conn = new mysqli($servername, $username, $password, $dbname, $dbport);
 
 if ($conn->connect_error) {
-    die(json_encode(["error" => "Connection failed: " . $conn->connect_error]));
+    http_response_code(500);
+    error_log('DB connection failed: ' . $conn->connect_error);
+    die(json_encode(["error" => "Connection failed. Please contact the administrator."]));
 }
 
-// Enforce UTF-8 so Greek characters are stored/retrieved correctly
 $conn->set_charset('utf8mb4');
 
-// Set PHP and MySQL timezone
 date_default_timezone_set('Europe/Nicosia');
 $offset = date('P');
-$conn->query("SET time_zone = '$offset'");
+// Offset from date('P') is like +02:00 — safe for SET time_zone
+if (preg_match('/^[+-]\d{2}:\d{2}$/', $offset)) {
+    $conn->query("SET time_zone = '$offset'");
+}
 
-// --- Poor Man's Cron: Auto Clock-out Fallback ---
-// Επειδή ο server δεν επιτρέπει MySQL Events και δεν υπάρχει πρόσβαση στα Cron Jobs,
-// εκτελούμε αυτόματα το κλείσιμο των βαρδιών (που ξεπέρασαν τις 8 ώρες) 
-// κάθε φορά που κάποιος χρήστης συνδέεται στη βάση δεδομένων.
+// Poor Man's Cron: auto clock-out after exactly 8 hours from clock_in
 $conn->query(
     "UPDATE time_entries 
      SET clock_out = DATE_ADD(clock_in, INTERVAL 8 HOUR) 
      WHERE clock_out IS NULL 
      AND clock_in <= DATE_SUB(NOW(), INTERVAL 8 HOUR)"
 );
-// ------------------------------------------------
-
-
-

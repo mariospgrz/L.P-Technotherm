@@ -1,9 +1,8 @@
 <?php
 /**
  * Backend/ProjectDetails/delete_budget_adjustment.php
- * POST /Backend/ProjectDetails/delete_budget_adjustment.php
- * Admin-only. Deletes a budget adjustment and reverts the budget.
  */
+require_once __DIR__ . '/../bootstrap.php';
 require_once __DIR__ . '/../admin_session.php';
 require_once __DIR__ . '/../Database/Database.php';
 
@@ -15,7 +14,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$input = json_decode(file_get_contents('php://input'), true);
+$raw = file_get_contents('php://input');
+$input = json_decode($raw, true) ?? [];
+require_csrf($input['csrf_token'] ?? '', true);
+
 $id = (int) ($input['id'] ?? ($_POST['id'] ?? 0));
 
 if (!$id) {
@@ -25,7 +27,6 @@ if (!$id) {
 
 $conn->begin_transaction();
 
-// Fetch amount and project_id
 $stmt = $conn->prepare('SELECT project_id, amount FROM budget_adjustments WHERE id = ?');
 $stmt->bind_param('i', $id);
 $stmt->execute();
@@ -42,7 +43,6 @@ if (!$adjustment) {
 $project_id = $adjustment['project_id'];
 $amount = (float) $adjustment['amount'];
 
-// Revert budget update (subtract amount)
 $upd = $conn->prepare('UPDATE projects SET budget = budget - ? WHERE id = ?');
 $upd->bind_param('di', $amount, $project_id);
 if (!$upd->execute()) {
@@ -52,7 +52,6 @@ if (!$upd->execute()) {
 }
 $upd->close();
 
-// Delete adjustment
 $del = $conn->prepare('DELETE FROM budget_adjustments WHERE id = ?');
 $del->bind_param('i', $id);
 if (!$del->execute()) {

@@ -1,25 +1,16 @@
 <?php
 /**
  * Backend/upload_invoice.php
- * S3 VERSION - Primary upload method.
+ * S3 VERSION - private objects + proxy URL for clients.
  */
 
+require_once __DIR__ . '/bootstrap.php';
 require_once __DIR__ . '/supervisor_session.php';
 require_once __DIR__ . '/Database/Database.php';
-
-// Include the Composer autoloader
-$autoloadPath = __DIR__ . '/../vendor/autoload.php';
-if (!file_exists($autoloadPath)) {
-    die(json_encode(['success' => false, 'message' => 'Λείπει ο φάκελος "vendor" στον server.']));
-}
-require_once $autoloadPath;
-
-use Aws\S3\S3Client;
-use Aws\Exception\AwsException;
+require_once __DIR__ . '/S3Helper.php';
 
 header('Content-Type: application/json');
 
-// Enable error reporting for debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
@@ -59,7 +50,7 @@ try {
 
     $file = null;
     $safe_ext = null;
-    $photo_url = null;
+    $photo_key = null;
 
     $possibleFile = null;
     if (isset($_FILES['invoice_photo']) && (($_FILES['invoice_photo']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE)) {
@@ -71,7 +62,12 @@ try {
     if ($possibleFile !== null) {
         $file = $possibleFile;
         if ($file['error'] !== UPLOAD_ERR_OK) {
-            echo json_encode(['success' => false, 'message' => 'Σφάλμα μεταφόρτωσης (Error code: ' . $file['error'] . ')']);
+            echo json_encode(['success' => false, 'message' => 'Σφάλμα μεταφόρτωσης.']);
+            exit;
+        }
+
+        if (($file['size'] ?? 0) > 20 * 1024 * 1024) {
+            echo json_encode(['success' => false, 'message' => 'Το αρχείο υπερβαίνει το όριο των 20MB.']);
             exit;
         }
 
@@ -92,13 +88,12 @@ try {
         }
 
         if (!array_key_exists($mime_type, $allowed_mimes)) {
-            echo json_encode(['success' => false, 'message' => 'Επιτρέπονται μόνο εικόνες ή PDF. (Mime: ' . $mime_type . ')']);
+            echo json_encode(['success' => false, 'message' => 'Επιτρέπονται μόνο εικόνες ή PDF.']);
             exit;
         }
         $safe_ext = $allowed_mimes[$mime_type];
     }
 
-    // ── Verify project exists ─────────────────────────────────────────────────────
     $check = $conn->prepare('SELECT id FROM projects WHERE id = ? LIMIT 1');
     $check->bind_param('i', $project_id);
     $check->execute();
@@ -110,40 +105,27 @@ try {
     }
     $check->close();
 
-    // ── Save file to S3 ───────────────────────────────────────────────────────────
     if ($file !== null && $safe_ext !== null) {
         $new_filename = 'inv_' . $uploaded_by . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $safe_ext;
+        $photo_key = 'invoices/' . $new_filename;
 
-        $s3Client = new S3Client([
-            'region' => $config['aws_region'] ?? 'eu-central-1',
-            'version' => 'latest',
-            'credentials' => [
-                'key' => $config['aws_key'] ?? '',
-                'secret' => $config['aws_secret'] ?? '',
-            ]
-        ]);
-
-        $result = $s3Client->putObject([
-            'Bucket' => $config['aws_bucket'] ?? '',
-            'Key' => 'invoices/' . $new_filename,
+        s3_client()->putObject([
+            'Bucket' => s3_bucket(),
+            'Key' => $photo_key,
             'SourceFile' => $file['tmp_name'],
-            'ACL' => 'public-read'
+            // Private object — access via Backend/invoice_file.php
         ]);
-
-        $photo_url = $result->get('ObjectURL');
     }
 
-    // ── Insert into DB ────────────────────────────────────────────────────────────
     $stmt = $conn->prepare(
         'INSERT INTO invoices (project_id, uploaded_by, description, amount, photo_url, date, created_at)
          VALUES (?, ?, ?, ?, ?, CURDATE(), NOW())'
     );
-    $stmt->bind_param('iisds', $project_id, $uploaded_by, $supplier, $amount, $photo_url);
+    $stmt->bind_param('iisds', $project_id, $uploaded_by, $supplier, $amount, $photo_key);
     $stmt->execute();
-    $new_id = $conn->insert_id;
+    $new_id = (int) $conn->insert_id;
     $stmt->close();
 
-    // Fetch project name
     $project_name = '';
     $pstmt = $conn->prepare('SELECT name FROM projects WHERE id = ? LIMIT 1');
     if ($pstmt) {
@@ -154,21 +136,22 @@ try {
         $pstmt->close();
     }
 
+    $clientPhotoUrl = $photo_key ? invoice_proxy_url($new_id) : null;
+
     echo json_encode([
         'success' => true,
-        'message' => 'Το τιμολόγιο ανέβηκε επιτυχώς στο S3.',
+        'message' => 'Το τιμολόγιο ανέβηκε επιτυχώς.',
         'invoice' => [
             'id' => $new_id,
             'description' => $supplier,
             'project' => $project_name,
             'amount' => $amount,
             'date' => date('Y-m-d'),
-            'photo_url' => $photo_url,
+            'photo_url' => $clientPhotoUrl,
         ],
     ]);
 
-} catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => 'Σφάλμα S3: ' . $e->getMessage()]);
-} catch (Error $e) {
-    echo json_encode(['success' => false, 'message' => 'PHP Fatal Error: ' . $e->getMessage()]);
+} catch (Throwable $e) {
+    error_log('upload_invoice error: ' . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'Αποτυχία μεταφόρτωσης. Παρακαλώ δοκιμάστε ξανά.']);
 }

@@ -1,17 +1,19 @@
 <?php
+require_once __DIR__ . '/../bootstrap.php';
 require_once __DIR__ . '/../admin_session.php';
 require_once __DIR__ . '/../Database/Database.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: /L.P-Technotherm/dashboards/admin_dashboard.php');
-    exit();
+    redirect_to('dashboards/admin_dashboard.php');
 }
 
 function redirectError(string $msg): void
 {
-    header('Location: /L.P-Technotherm/dashboards/admin_dashboard.php?error=' . urlencode($msg) . '&tab=users');
-    exit();
+    redirect_to('dashboards/admin_dashboard.php?error=' . urlencode($msg) . '&tab=users');
 }
+
+require_csrf($_POST['csrf_token'] ?? '', false, 'dashboards/admin_dashboard.php?error=' .
+    urlencode('Άκυρο αίτημα (CSRF). Ανανεώστε τη σελίδα.') . '&tab=users');
 
 $user_id = trim($_POST['user_id'] ?? '');
 $full_name = trim($_POST['full_name'] ?? '');
@@ -55,7 +57,6 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     redirectError('Μη έγκυρη διεύθυνση email.');
 }
 
-// Check if email is used by another user
 $stmt = $conn->prepare('SELECT id FROM users WHERE email = ? AND id != ? LIMIT 1');
 if (!$stmt) {
     redirectError('Σφάλμα βάσης δεδομένων κατά τον έλεγχο email.');
@@ -82,7 +83,6 @@ if (!$stmt->execute()) {
 }
 $stmt->close();
 
-header('Location: /L.P-Technotherm/dashboards/admin_dashboard.php?success=' . urlencode(
+redirect_to('dashboards/admin_dashboard.php?success=' . urlencode(
     'Τα στοιχεία του χρήστη ενημερώθηκαν επιτυχώς!'
 ) . '&tab=users');
-exit();

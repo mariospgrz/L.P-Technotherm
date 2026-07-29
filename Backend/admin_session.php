@@ -5,6 +5,8 @@
  * Fix #4: CSRF token generation.
  * Fix #8: Check session_status() before session_start().
  */
+require_once __DIR__ . '/bootstrap.php';
+
 if (session_status() === PHP_SESSION_NONE) {
     session_set_cookie_params([
         'lifetime' => 0,
@@ -16,11 +18,10 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-$timeout = 300; // 5 minutes
+$timeout = 600; // 10 minutes (aligned with helper/supervisor)
 
 if (!isset($_SESSION['user_id'])) {
-    header('Location: /login/login.html');
-    exit();
+    redirect_to('login/login.html');
 }
 
 if (
@@ -29,9 +30,8 @@ if (
 ) {
     session_unset();
     session_destroy();
-    header('Location: /login/login.html?error=' .
+    redirect_to('login/login.html?error=' .
         urlencode('Η συνεδρία σας έληξε. Παρακαλώ συνδεθείτε ξανά.'));
-    exit();
 }
 
 $_SESSION['LAST_ACTIVITY'] = time();
@@ -39,12 +39,10 @@ $_SESSION['LAST_ACTIVITY'] = time();
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'administrator') {
     session_unset();
     session_destroy();
-    header('Location: /login/login.html?error=' .
+    redirect_to('login/login.html?error=' .
         urlencode('Δεν έχετε δικαίωμα πρόσβασης στον πίνακα διαχείρισης.'));
-    exit();
 }
 
-// ── CSRF token (generate once per session) ────────────────────────────────────
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }

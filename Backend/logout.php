@@ -1,5 +1,9 @@
 <?php
-session_start();
+require_once __DIR__ . '/bootstrap.php';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 $_SESSION = [];
 
@@ -24,5 +28,4 @@ if (isset($_COOKIE['jwt_token'])) {
 
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
-header('Location: ../login/login.html');
-exit;
+redirect_to('login/login.html');
