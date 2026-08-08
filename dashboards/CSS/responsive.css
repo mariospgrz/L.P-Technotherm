@@ -1,0 +1,197 @@
+/* dashboards/CSS/responsive.css */
+@media (max-width: 768px) {
+
+    /* ==== GENERAL & HEADERS ==== */
+    .app-container {
+        padding: 0 10px 20px;
+    }
+
+    .main-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 16px;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .main-header.margin-reset {
+        margin: 0;
+        /* Overrides admin_dashboard margin: 0 -20px 28px */
+        border-radius: 0;
+    }
+
+    .header-left {
+        width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .header-left,
+    .user-info {
+        text-align: left;
+    }
+
+    .header-right {
+        width: 100%;
+        display: flex;
+        justify-content: flex-start;
+    }
+
+    .user-info h1 {
+        font-size: 1.1rem;
+    }
+
+    /* ==== GRIDS ==== */
+    /* Many grid systems in admin apply to supervisor too or need override */
+    .kpi-grid,
+    .status-cards-row,
+    .projects-grid,
+    .details-kpi-grid,
+    .users-grid,
+    .management-grid,
+    .analytics-grid,
+    .cost-pills,
+    .project-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .status-cards-row {
+        padding: 15px 15px 0;
+    }
+
+    .project-select-section,
+    .content-area,
+    .flash-banner {
+        padding-left: 15px;
+        padding-right: 15px;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    /* ==== TABS & BUTTONS ==== */
+    .main-tab-bar,
+    .tab-bar,
+    .tabs-nav {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 5px;
+        -webkit-overflow-scrolling: touch;
+        gap: 5px;
+        margin-left: 15px;
+        margin-right: 15px;
+        border-bottom: none;
+        /* admin dashboard */
+    }
+
+    .tab-btn,
+    .tab-link,
+    .main-tab-btn {
+        font-size: 0.85rem;
+        padding: 8px 12px;
+        white-space: nowrap;
+        border-bottom: 2px solid transparent;
+    }
+
+    .action-bar {
+        flex-direction: column;
+        align-items: stretch;
+        margin-left: 15px;
+        margin-right: 15px;
+    }
+
+    .search-container {
+        max-width: 100%;
+        margin-bottom: 8px;
+    }
+
+    .btn-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    /* ==== TABLES ==== */
+    .overflow-x {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 15px;
+        width: auto;
+        /* Allow scrolling inside parent */
+    }
+
+    .data-table {
+        min-width: 600px;
+        /* Force table to maintain width so it triggers horizontal scroll */
+    }
+
+    /* ==== FORMS ==== */
+    .panel-form .form-row,
+    .form-row {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    /* ==== MODALS ==== */
+    .modal-container {
+        width: 95%;
+        max-width: none;
+        max-height: 90vh;
+        overflow-y: auto;
+        border-radius: 12px;
+        margin: 15px auto;
+    }
+
+    .modal-body {
+        padding: 15px;
+    }
+
+    /* ==== INVOICE & OVERTIME LISTS ==== */
+    .invoice-item,
+    .overtime-item,
+    .work-item,
+    .assignment-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .inv-right,
+    .invoice-amount,
+    .ot-left,
+    .work-item-hours {
+        text-align: left;
+        width: 100%;
+        margin-top: 5px;
+    }
+
+    .invoice-actions,
+    .inv-actions {
+        width: 100%;
+        justify-content: flex-end;
+        display: flex;
+    }
+
+    /* ==== HELPERS ASSIGNMENT ==== */
+    .helpers-multi-select {
+        grid-template-columns: 1fr;
+    }
+
+    /* Miscellaneous specific fixes */
+    .panel-box {
+        margin: 0 15px;
+    }
+
+    .section-heading {
+        margin: 24px 15px 14px;
+    }
+
+    .btn-logout {
+        width: 100%;
+        justify-content: center;
+        padding: 10px;
+    }
+}

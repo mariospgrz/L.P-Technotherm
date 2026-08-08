@@ -1,0 +1,24 @@
+# L.P Technotherm — .gitignore
+
+# ── Secrets / Config ──────────────────────────────────────────
+Backend/config.php
+.env
+*.env
+Backend/Notifications/vapid.json
+Backend/Notifications/subscriptions.json
+Backend/Notifications/warnings.json
+Backend/Passwordreset/pending_resets.json
+Backend/Passwordreset/used_tokens.json
+# ── Uploads (user content) ────────────────────────────────────
+uploads/
+
+# ── PHP / Composer ────────────────────────────────────────────
+vendor/
+composer.phar
+
+# ── OS files ──────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Local tooling (portable PHP/MariaDB for smoke tests) ──────
+.tools/
